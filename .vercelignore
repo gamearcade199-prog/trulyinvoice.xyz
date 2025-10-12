@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+backend/
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build artifacts
+frontend/.next/
+frontend/out/
+dist/
+build/
+
+# Uploads
+uploads/
+temp_downloads/
+
+# IDE
+.vscode/
+.idea/
+
+# Documentation
+*.md
+!README.md
+
+# Scripts
+*.bat
+*.ps1
+*.py
+*.sql
+
+# Excel exports
+*.xlsx

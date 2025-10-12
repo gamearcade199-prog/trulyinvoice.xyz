@@ -135,14 +135,18 @@ export default function UploadPageRobust() {
             console.log(`🔄 AI processing attempt ${attempts}/${maxAttempts}`)
             
             try {
+              const controller = new AbortController()
+              const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+              
               const response = await fetch(`http://localhost:8000/api/documents/${docData.id}/process`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'
                 },
-                timeout: 30000  // 30 second timeout
+                signal: controller.signal
               })
-
+              
+              clearTimeout(timeoutId)
               console.log(`🔍 API response: ${response.status}`)
 
               if (response.ok) {
@@ -203,7 +207,8 @@ export default function UploadPageRobust() {
 
         } catch (fileError) {
           console.error(`❌ Error processing file ${file.name}:`, fileError)
-          setProcessingStatus(`❌ Failed to process ${file.name}: ${fileError.message}`)
+          const errorMessage = fileError instanceof Error ? fileError.message : 'Unknown error occurred'
+          setProcessingStatus(`❌ Failed to process ${file.name}: ${errorMessage}`)
           throw fileError
         }
       }
