@@ -1,0 +1,24 @@
+INVOICE
+
+Invoice Number: INV-2025-001
+Date: October 12, 2025
+
+From:
+Test Company Ltd
+123 Business Street
+City, State 12345
+
+To:
+Customer Name
+456 Customer Avenue
+Customer City, State 67890
+
+Items:
+- Product A: $100.00
+- Product B: $50.00
+
+Subtotal: $150.00
+Tax (10%): $15.00
+Total: $165.00
+
+Payment Terms: Net 30

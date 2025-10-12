@@ -1,0 +1,15 @@
+# ULTRA-SIMPLE REQUIREMENTS - 100% Compatible with Python 3.14
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-dotenv==1.0.0
+pydantic==2.5.0
+python-multipart==0.0.6
+
+# Use requests instead of supabase library (no httpx conflicts!)
+requests==2.31.0
+
+# PDF processing
+PyPDF2==3.0.1
+
+# Excel export with formatting
+openpyxl==3.1.2
