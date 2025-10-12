@@ -1,0 +1,15 @@
+# ========================================
+# VERCEL ENVIRONMENT VARIABLES
+# ========================================
+# Copy these to Vercel Dashboard → Settings → Environment Variables
+# Format: Key = Value (one per line)
+
+# Required: Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://ldvwxqluaheuhbycdpwn.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxkdnd4cWx1YWhldWhieWNkcHduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwNzY2NTYsImV4cCI6MjA3NTY1MjY1Nn0.uPBCzeJ3tH1SD0QObL850zcrKDDLr9TA6KCUzBp9e1A
+
+# Optional: OpenAI (for AI features - backend only, not needed for frontend deployment)
+# OPENAI_API_KEY=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
+
+# Optional: Google Cloud Vision (for image OCR - backend only)
+# GOOGLE_CLOUD_VISION_API_KEY=AIzaSyBQP5BaQeLE07wJj5WgneYJJA_QKAwiUh0
