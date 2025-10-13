@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FileText, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { linkTempInvoicesToUser } from '@/lib/invoiceUpload'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -28,6 +29,11 @@ export default function LoginPage() {
       })
 
       if (authError) throw authError
+
+      // Link any temporary invoices to the logged-in user
+      if (data.user) {
+        await linkTempInvoicesToUser(data.user.id)
+      }
 
       // Redirect to dashboard
       window.location.href = '/dashboard'

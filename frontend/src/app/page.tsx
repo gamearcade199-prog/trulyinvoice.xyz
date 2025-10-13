@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowRight, CheckCircle2, Upload, Zap, FileText, Sparkles, TrendingUp, Shield, X, Loader2, Eye, Moon, Sun, LayoutDashboard, LogOut } from 'lucide-react'
 import { useTheme } from '@/components/ThemeProvider'
 import { supabase } from '@/lib/supabase'
+import { uploadInvoiceAnonymous, linkTempInvoicesToUser } from '@/lib/invoiceUpload'
 
 export default function Home() {
   const { theme, toggleTheme } = useTheme()
@@ -17,6 +18,7 @@ export default function Home() {
   const [showSignupModal, setShowSignupModal] = useState(false)
   const [extractedData, setExtractedData] = useState<any>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [processingError, setProcessingError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Check authentication status
@@ -27,6 +29,11 @@ export default function Home() {
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     setIsLoggedIn(!!user)
+    
+    // If user just logged in, link any temp invoices
+    if (user) {
+      await linkTempInvoicesToUser(user.id)
+    }
   }
 
   const handleLogout = async () => {
@@ -37,7 +44,7 @@ export default function Home() {
 
   const handleFileSelect = (file: File) => {
     setSelectedFile(file)
-    startProcessing()
+    startProcessing(file)
   }
 
   const handleDrop = (e: React.DragEvent) => {
@@ -51,31 +58,47 @@ export default function Home() {
     }
   }
 
-  const startProcessing = () => {
+  const startProcessing = async (file: File) => {
     setIsProcessing(true)
     setProgress(0)
+    setProcessingError('')
+    setExtractedData(null)
 
-    // Simulate AI processing
-    const interval = setInterval(() => {
+    // Animate progress while uploading
+    const progressInterval = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          setIsProcessing(false)
-          // Mock extracted data
-          setExtractedData({
-            vendor: 'Amazon Web Services',
-            amount: '₹12,500',
-            invoiceNumber: 'INV-2024-001',
-            date: '10 Oct 2024',
-            gst: '₹2,250'
-          })
-          // Show signup modal after extraction
-          setTimeout(() => setShowSignupModal(true), 500)
-          return 100
+        if (prev >= 90) {
+          clearInterval(progressInterval)
+          return 90
         }
-        return prev + 20
+        return prev + 10
       })
-    }, 400)
+    }, 300)
+
+    try {
+      // Upload and process invoice (works for both logged-in and anonymous users)
+      const result = await uploadInvoiceAnonymous(file)
+      
+      clearInterval(progressInterval)
+      setProgress(100)
+      
+      if (result.success && result.data) {
+        setExtractedData(result.data)
+        setTimeout(() => {
+          setIsProcessing(false)
+          if (!isLoggedIn) {
+            setShowSignupModal(true)
+          }
+        }, 500)
+      } else {
+        setProcessingError(result.error || 'Failed to process invoice')
+        setIsProcessing(false)
+      }
+    } catch (error: any) {
+      clearInterval(progressInterval)
+      setProcessingError(error.message || 'Failed to process invoice')
+      setIsProcessing(false)
+    }
   }
 
   return (
@@ -244,25 +267,66 @@ export default function Home() {
                       <div className="grid grid-cols-2 gap-3 md:gap-4 text-left">
                         <div>
                           <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Vendor</p>
-                          <p className="font-semibold text-sm md:text-base text-gray-900 dark:text-gray-100 truncate">{extractedData.vendor}</p>
+                          <p className="font-semibold text-sm md:text-base text-gray-900 dark:text-gray-100 truncate">
+                            {extractedData.vendor_name || 'Not extracted'}
+                          </p>
                         </div>
                         <div>
                           <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Amount</p>
-                          <p className="font-semibold text-sm md:text-base text-gray-900 dark:text-gray-100">{extractedData.amount}</p>
+                          <p className="font-semibold text-sm md:text-base text-gray-900 dark:text-gray-100">
+                            {extractedData.currency || '₹'}{extractedData.total_amount || '0'}
+                          </p>
                         </div>
                         <div>
                           <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Invoice #</p>
-                          <p className="font-semibold text-sm md:text-base text-gray-900 dark:text-gray-100 truncate">{extractedData.invoiceNumber}</p>
+                          <p className="font-semibold text-sm md:text-base text-gray-900 dark:text-gray-100 truncate">
+                            {extractedData.invoice_number || 'N/A'}
+                          </p>
                         </div>
                         <div>
                           <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Date</p>
-                          <p className="font-semibold text-sm md:text-base text-gray-900 dark:text-gray-100">{extractedData.date}</p>
+                          <p className="font-semibold text-sm md:text-base text-gray-900 dark:text-gray-100">
+                            {extractedData.invoice_date ? new Date(extractedData.invoice_date).toLocaleDateString() : 'N/A'}
+                          </p>
                         </div>
                       </div>
-                      <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400">
-                        <Eye className="w-3 h-3 md:w-4 md:h-4" />
-                        <span className="text-xs md:text-sm font-semibold">Sign in to view full details</span>
+                      <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-gray-200 dark:border-gray-700">
+                        {isLoggedIn ? (
+                          <Link
+                            href="/dashboard/invoices"
+                            className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                          >
+                            <Eye className="w-3 h-3 md:w-4 md:h-4" />
+                            <span className="text-xs md:text-sm font-semibold">View in Dashboard</span>
+                          </Link>
+                        ) : (
+                          <div className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400">
+                            <Eye className="w-3 h-3 md:w-4 md:h-4" />
+                            <span className="text-xs md:text-sm font-semibold">Sign in to view full details</span>
+                          </div>
+                        )}
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Error State */}
+                {processingError && !isProcessing && (
+                  <div className="flex flex-col items-center gap-4 px-4">
+                    <div className="p-3 md:p-4 bg-red-100 dark:bg-red-900/50 rounded-full">
+                      <X className="w-10 h-10 md:w-12 md:h-12 text-red-600 dark:text-red-400" />
+                    </div>
+                    <div className="text-center">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+                        Processing Failed
+                      </h3>
+                      <p className="text-sm text-red-600 dark:text-red-400">{processingError}</p>
+                      <button
+                        onClick={() => { setProcessingError(''); setExtractedData(null); setSelectedFile(null); }}
+                        className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold"
+                      >
+                        Try Again
+                      </button>
                     </div>
                   </div>
                 )}
