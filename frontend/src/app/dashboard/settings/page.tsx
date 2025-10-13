@@ -1,7 +1,7 @@
 'use client'
 
 import DashboardLayout from '@/components/DashboardLayout'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   User, 
   Bell, 
@@ -14,13 +14,112 @@ import {
   MapPin,
   Save,
   Moon,
-  Sun
+  Sun,
+  Loader2
 } from 'lucide-react'
 import { useTheme } from '@/components/ThemeProvider'
+import { createClient } from '@/lib/supabase'
 
 export default function SettingsPage() {
   const { theme, toggleTheme } = useTheme()
   const [activeTab, setActiveTab] = useState('profile')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState({
+    full_name: '',
+    email: '',
+    phone: '',
+    company: '',
+    address: ''
+  })
+
+  useEffect(() => {
+    loadUserData()
+  }, [])
+
+  async function loadUserData() {
+    try {
+      const supabase = createClient()
+      
+      // Get current user
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+      
+      if (authError || !authUser) {
+        console.error('Error loading user:', authError)
+        setLoading(false)
+        return
+      }
+
+      setUser(authUser)
+
+      // Get user profile from users table
+      const { data: profileData, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', authUser.id)
+        .single()
+
+      if (profileData) {
+        setProfile({
+          full_name: profileData.full_name || authUser.user_metadata?.full_name || '',
+          email: authUser.email || '',
+          phone: profileData.phone || '',
+          company: profileData.company || '',
+          address: profileData.address || ''
+        })
+      } else {
+        // Use auth metadata if profile doesn't exist
+        setProfile({
+          full_name: authUser.user_metadata?.full_name || '',
+          email: authUser.email || '',
+          phone: '',
+          company: '',
+          address: ''
+        })
+      }
+
+      setLoading(false)
+    } catch (error) {
+      console.error('Error loading user data:', error)
+      setLoading(false)
+    }
+  }
+
+  async function handleSaveProfile() {
+    try {
+      setSaving(true)
+      const supabase = createClient()
+
+      if (!user) return
+
+      // Update or insert user profile
+      const { error } = await supabase
+        .from('users')
+        .upsert({
+          id: user.id,
+          email: user.email,
+          full_name: profile.full_name,
+          phone: profile.phone,
+          company: profile.company,
+          address: profile.address,
+          updated_at: new Date().toISOString()
+        })
+
+      if (error) {
+        console.error('Error saving profile:', error)
+        alert('Failed to save profile')
+      } else {
+        alert('Profile updated successfully!')
+      }
+
+      setSaving(false)
+    } catch (error) {
+      console.error('Error saving profile:', error)
+      alert('Failed to save profile')
+      setSaving(false)
+    }
+  }
 
   const tabs = [
     { id: 'profile', name: 'Profile', icon: User },
@@ -70,84 +169,116 @@ export default function SettingsPage() {
           {/* Content Area */}
           <div className="lg:col-span-3">
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-              {/* Profile Tab */}
-              {activeTab === 'profile' && (
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Profile Information</h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">Update your account profile information and email address.</p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                          Full Name
-                        </label>
-                        <input
-                          type="text"
-                          defaultValue="John Doe"
-                          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                          <Mail className="w-4 h-4 inline mr-1" />
-                          Email Address
-                        </label>
-                        <input
-                          type="email"
-                          defaultValue="john@example.com"
-                          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                          <Phone className="w-4 h-4 inline mr-1" />
-                          Phone Number
-                        </label>
-                        <input
-                          type="tel"
-                          defaultValue="+91 98765 43210"
-                          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                          <Building className="w-4 h-4 inline mr-1" />
-                          Company Name
-                        </label>
-                        <input
-                          type="text"
-                          defaultValue="Acme Corp"
-                          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                        <MapPin className="w-4 h-4 inline mr-1" />
-                        Address
-                      </label>
-                      <textarea
-                        rows={3}
-                        defaultValue="123 Main Street, Mumbai, Maharashtra 400001"
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors"
-                      />
-                    </div>
-
-                    <div className="flex justify-end pt-4">
-                      <button className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors">
-                        <Save className="w-4 h-4" />
-                        Save Changes
-                      </button>
-                    </div>
-                  </div>
+              {/* Loading State */}
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400" />
                 </div>
+              ) : (
+                <>
+                  {/* Profile Tab */}
+                  {activeTab === 'profile' && (
+                    <div className="space-y-6">
+                      <div>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Profile Information</h2>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">Update your account profile information and email address.</p>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                              Full Name
+                            </label>
+                            <input
+                              type="text"
+                              value={profile.full_name}
+                              onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
+                              placeholder="Enter your full name"
+                              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                              <Mail className="w-4 h-4 inline mr-1" />
+                              Email Address
+                            </label>
+                            <input
+                              type="email"
+                              value={profile.email}
+                              disabled
+                              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+                              title="Email cannot be changed"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                              <Phone className="w-4 h-4 inline mr-1" />
+                              Phone Number
+                            </label>
+                            <input
+                              type="tel"
+                              value={profile.phone}
+                              onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                              placeholder="+91 98765 43210"
+                              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                              <Building className="w-4 h-4 inline mr-1" />
+                              Company Name
+                            </label>
+                            <input
+                              type="text"
+                              value={profile.company}
+                              onChange={(e) => setProfile({ ...profile, company: e.target.value })}
+                              placeholder="Your company name"
+                              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            <MapPin className="w-4 h-4 inline mr-1" />
+                            Address
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={profile.address}
+                            onChange={(e) => setProfile({ ...profile, address: e.target.value })}
+                            placeholder="123 Main Street, Mumbai, Maharashtra 400001"
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors"
+                          />
+                        </div>
+
+                        <div className="flex justify-end pt-4">
+                          <button 
+                            onClick={handleSaveProfile}
+                            disabled={saving}
+                            className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {saving ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Saving...
+                              </>
+                            ) : (
+                              <>
+                                <Save className="w-4 h-4" />
+                                Save Changes
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
 
               {/* Notifications Tab */}
