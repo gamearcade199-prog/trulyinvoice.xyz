@@ -86,18 +86,6 @@ const nextConfig = {
   // Redirects for SEO
   async redirects() {
     return [
-      // Redirect www to non-www for .xyz domain
-      {
-        source: '/:path*',
-        has: [
-          {
-            type: 'host',
-            value: 'www.trulyinvoice.xyz',
-          },
-        ],
-        destination: 'https://trulyinvoice.xyz/:path*',
-        permanent: true,
-      },
       // Redirect old URLs (add as needed)
       {
         source: '/home',
