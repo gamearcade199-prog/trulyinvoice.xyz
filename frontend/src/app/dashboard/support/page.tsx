@@ -63,7 +63,7 @@ export default function SupportPage() {
           {/* Contact Information - Left Sidebar */}
           <div className="lg:col-span-1 space-y-6">
             {/* Quick Contact Cards */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <Phone className="w-5 h-5 text-blue-500" />
                 Quick Contact
@@ -153,7 +153,7 @@ export default function SupportPage() {
             </div>
 
             {/* Quick Links */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <Book className="w-5 h-5 text-blue-500" />
                 Resources
@@ -177,7 +177,7 @@ export default function SupportPage() {
 
           {/* Contact Form - Right Side */}
           <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-8">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 Send us a Message
               </h2>
@@ -296,7 +296,7 @@ export default function SupportPage() {
             </div>
 
             {/* FAQ Section */}
-            <div id="faq" className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+            <div id="faq" className="mt-8 bg-gray-50 dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-8">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                 Frequently Asked Questions
               </h2>
@@ -354,3 +354,4 @@ export default function SupportPage() {
     </DashboardLayout>
   )
 }
+

@@ -1,8 +1,8 @@
 'use client'
 
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { 
   LayoutDashboard, 
   Upload, 
@@ -11,7 +11,6 @@ import {
   LogOut,
   Menu,
   X,
-  Bell,
   User,
   Moon,
   Sun,
@@ -20,6 +19,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { useTheme } from './ThemeProvider'
+import { supabase } from '@/lib/supabase'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -27,8 +27,59 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const { theme, toggleTheme } = useTheme()
+  const [userName, setUserName] = useState('User')
+  const [userPlan, setUserPlan] = useState('Free Plan')
+
+  useEffect(() => {
+    loadUserData()
+  }, [])
+
+  async function loadUserData() {
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser()
+      
+      if (error || !user) {
+        console.error('Error loading user:', error)
+        return
+      }
+
+      // Try to get full name from users table
+      const { data: profileData } = await supabase
+        .from('users')
+        .select('full_name')
+        .eq('id', user.id)
+        .single()
+
+      if (profileData?.full_name) {
+        setUserName(profileData.full_name)
+      } else if (user.user_metadata?.full_name) {
+        setUserName(user.user_metadata.full_name)
+      } else if (user.email) {
+        // Use email username as fallback
+        setUserName(user.email.split('@')[0])
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error)
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Error logging out:', error)
+        alert('Failed to logout. Please try again.')
+      } else {
+        router.push('/login')
+      }
+    } catch (error) {
+      console.error('Error logging out:', error)
+      alert('Failed to logout. Please try again.')
+    }
+  }
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -40,18 +91,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 transition-colors">
       {/* Sidebar */}
       <aside
         className={`
           fixed top-0 left-0 z-40 h-screen transition-transform duration-300
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-          w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700
+          w-64 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
         `}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
             <Link href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                 <FileText className="w-5 h-5 text-white" />
@@ -60,7 +111,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </Link>
             <button
               onClick={() => setIsSidebarOpen(false)}
-              className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="lg:hidden p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition-colors"
             >
               <X className="w-5 h-5 dark:text-gray-300" />
             </button>
@@ -78,8 +129,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   className={`
                     flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
                     ${isActive 
-                      ? 'bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 font-semibold' 
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                      ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 font-semibold' 
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800'
                     }
                   `}
                 >
@@ -91,26 +142,29 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </nav>
 
           {/* User Section */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="p-4 border-t border-gray-200 dark:border-gray-800">
             {/* Dark Mode Toggle */}
             <button
               onClick={toggleTheme}
-              className="flex items-center gap-3 px-4 py-3 mb-2 w-full rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="flex items-center gap-3 px-4 py-3 mb-2 w-full rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
             >
               {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
               <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
             </button>
             
-            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors">
+            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer transition-colors">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
                 <User className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-gray-800 dark:text-white">John Doe</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Starter Plan</p>
+                <p className="font-semibold text-gray-800 dark:text-white">{userName}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{userPlan}</p>
               </div>
             </div>
-            <button className="flex items-center gap-3 px-4 py-3 mt-2 w-full rounded-lg text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+            <button 
+              onClick={handleLogout}
+              className="flex items-center gap-3 px-4 py-3 mt-2 w-full rounded-lg text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+            >
               <LogOut className="w-5 h-5" />
               <span>Logout</span>
             </button>
@@ -121,20 +175,20 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Main Content */}
       <div className={`transition-all duration-300 ${isSidebarOpen ? 'lg:ml-64' : 'ml-0'}`}>
         {/* Top Bar */}
-        <header className="sticky top-0 z-30 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 transition-colors">
+        <header className="sticky top-0 z-30 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 transition-colors">
           <div className="flex items-center justify-between px-6 py-4">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-2 bg-gray-50 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition-colors border border-gray-200 dark:border-gray-800"
             >
-              <Menu className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+              <Menu className="w-6 h-6 text-gray-700 dark:text-gray-300" />
             </button>
 
             <div className="flex items-center gap-4">
-              {/* Dark Mode Toggle (Mobile) */}
+              {/* Dark Mode Toggle */}
               <button
                 onClick={toggleTheme}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 aria-label="Toggle theme"
               >
                 {theme === 'light' ? (
@@ -143,17 +197,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   <Sun className="w-6 h-6 text-gray-600 dark:text-gray-300" />
                 )}
               </button>
-              
-              {/* Notifications */}
-              <button className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
-                <Bell className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </button>
-
-              {/* User Avatar */}
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center cursor-pointer">
-                <User className="w-5 h-5 text-white" />
-              </div>
             </div>
           </div>
         </header>

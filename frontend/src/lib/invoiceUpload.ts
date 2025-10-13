@@ -1,5 +1,5 @@
 // Invoice upload utility for non-authenticated users
-import { createClient } from './supabase'
+import { supabase } from './supabase'
 
 export interface TempInvoiceData {
   fileName: string
@@ -59,8 +59,6 @@ export async function linkTempInvoicesToUser(userId: string) {
   if (tempInvoices.length === 0) return
 
   console.log(`🔗 Linking ${tempInvoices.length} temp invoices to user:`, userId)
-
-  const supabase = createClient()
   
   for (const tempInvoice of tempInvoices) {
     try {
@@ -88,8 +86,6 @@ export async function linkTempInvoicesToUser(userId: string) {
 
 // Upload invoice without authentication (creates anonymous document)
 export async function uploadInvoiceAnonymous(file: File) {
-  const supabase = createClient()
-  
   try {
     // Step 1: Upload to storage with anonymous path
     const anonymousId = `anon_${Date.now()}`

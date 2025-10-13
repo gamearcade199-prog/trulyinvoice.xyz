@@ -130,7 +130,7 @@ export default function DashboardPage() {
             return (
               <div
                 key={stat.title}
-                className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow"
+                className="bg-gray-50 dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className={`p-3 rounded-lg ${getColorClasses(stat.color)}`}>
@@ -165,7 +165,7 @@ export default function DashboardPage() {
 
           <Link
             href="/invoices"
-            className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all group"
+            className="bg-gray-50 dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 hover:shadow-lg transition-all group"
           >
             <FileText className="w-8 h-8 mb-3 text-blue-600 dark:text-blue-400" />
             <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">View All Invoices</h3>
@@ -175,7 +175,7 @@ export default function DashboardPage() {
             </div>
           </Link>
 
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+          <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 hover:shadow-lg transition-shadow">
             <Calendar className="w-8 h-8 mb-3 text-purple-600 dark:text-purple-400" />
             <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Monthly Report</h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">Download your analytics</p>
@@ -186,8 +186,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Invoices */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">Recent Invoices</h2>
               <Link
@@ -200,7 +200,7 @@ export default function DashboardPage() {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+              <thead className="bg-gray-100 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                     Vendor
@@ -219,7 +219,7 @@ export default function DashboardPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                 {loading ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
@@ -243,7 +243,7 @@ export default function DashboardPage() {
                   </tr>
                 ) : (
                   recentInvoices.map((invoice) => (
-                    <tr key={invoice.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors">
+                    <tr key={invoice.id} className="hover:bg-gray-100 dark:hover:bg-gray-950 cursor-pointer transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-semibold text-gray-900 dark:text-white">{invoice.vendor_name || 'Unknown Vendor'}</div>
                       </td>

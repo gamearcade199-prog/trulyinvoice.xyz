@@ -257,7 +257,7 @@ export default function UploadPageRobust() {
 
         {/* Upload Progress */}
         {isUploading && (
-          <div className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700">
+          <div className="mt-8 bg-gray-50 dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
             <div className="flex items-center gap-3 mb-4">
               <Loader2 className="w-6 h-6 text-blue-600 dark:text-blue-400 animate-spin" />
               <span className="font-semibold text-gray-900 dark:text-white">Processing your invoices...</span>
@@ -318,7 +318,7 @@ export default function UploadPageRobust() {
 
         {/* Info Cards */}
         <div className="mt-12 grid md:grid-cols-3 gap-6">
-          <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+          <div className="text-center p-6 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
             <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">📄</span>
             </div>
@@ -326,7 +326,7 @@ export default function UploadPageRobust() {
             <p className="text-gray-600 dark:text-gray-400 text-sm">PDF, JPG, PNG up to 10MB</p>
           </div>
           
-          <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+          <div className="text-center p-6 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
             <div className="w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">🤖</span>
             </div>
@@ -334,7 +334,7 @@ export default function UploadPageRobust() {
             <p className="text-gray-600 dark:text-gray-400 text-sm">Vendor, amounts, dates & GST</p>
           </div>
           
-          <div className="text-center p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+          <div className="text-center p-6 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
             <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-lg flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">⚡</span>
             </div>

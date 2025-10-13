@@ -7,7 +7,7 @@ export default function PrivacyPage() {
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Navigation */}
-      <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+      <nav className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2">
@@ -67,7 +67,7 @@ export default function PrivacyPage() {
                   </div>
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">1. Information We Collect</h2>
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Personal Information:</h3>
                   <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-400 mb-4">
                     <li>Name, email address, and phone number</li>
@@ -100,7 +100,7 @@ export default function PrivacyPage() {
                   </div>
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">2. How We Use Your Information</h2>
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-400">
                     <li>Process and extract data from your invoices using AI</li>
                     <li>Provide, maintain, and improve our services</li>
@@ -121,7 +121,7 @@ export default function PrivacyPage() {
                   </div>
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">3. Data Security</h2>
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     We implement industry-standard security measures to protect your data:
                   </p>
@@ -174,7 +174,7 @@ export default function PrivacyPage() {
                   </div>
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">4. Your Rights</h2>
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   <p className="text-gray-600 dark:text-gray-400 mb-4">You have the right to:</p>
                   <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-400">
                     <li>Access your personal data and invoice information</li>
@@ -195,7 +195,7 @@ export default function PrivacyPage() {
                   </div>
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-white">5. Data Retention</h2>
                 </div>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     We retain your data only as long as necessary:
                   </p>
@@ -211,7 +211,7 @@ export default function PrivacyPage() {
               {/* Third-Party Services */}
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">6. Third-Party Services</h2>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     We use trusted third-party services for:
                   </p>
@@ -229,7 +229,7 @@ export default function PrivacyPage() {
               {/* Contact */}
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">7. Contact Us</h2>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     If you have any questions about this Privacy Policy or your data:
                   </p>
@@ -271,3 +271,4 @@ export default function PrivacyPage() {
     </main>
   )
 }
+

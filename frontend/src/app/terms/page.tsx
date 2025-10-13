@@ -7,7 +7,7 @@ export default function TermsPage() {
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Navigation */}
-      <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+      <nav className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2">
@@ -62,7 +62,7 @@ export default function TermsPage() {
               {/* Service Description */}
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">1. Service Description</h2>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     TrulyInvoice provides an AI-powered invoice management platform that:
                   </p>
@@ -78,7 +78,7 @@ export default function TermsPage() {
               {/* User Accounts */}
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">2. User Accounts</h2>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 space-y-4">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800 space-y-4">
                   <div className="flex items-start gap-3">
                     <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                     <div>
@@ -112,7 +112,7 @@ export default function TermsPage() {
               {/* Acceptable Use */}
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">3. Acceptable Use</h2>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   <p className="text-gray-600 dark:text-gray-400 mb-4">You agree NOT to:</p>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3">
@@ -152,9 +152,9 @@ export default function TermsPage() {
               {/* Subscription & Payment */}
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">4. Subscription & Payment</h2>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-400">
-                    <li>Free trial includes 30 invoice scans</li>
+                    <li>Free plan includes 10 invoice scans per month</li>
                     <li>Subscription fees are billed monthly or annually as selected</li>
                     <li>All payments are processed securely through third-party payment processors</li>
                     <li>You can cancel your subscription at any time</li>
@@ -167,7 +167,7 @@ export default function TermsPage() {
               {/* Data & Privacy */}
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">5. Data & Privacy</h2>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     Your invoice data and personal information are handled according to our{' '}
                     <Link href="/privacy" className="text-blue-600 dark:text-blue-400 hover:underline">
@@ -186,7 +186,7 @@ export default function TermsPage() {
               {/* AI Processing */}
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">6. AI Processing & Accuracy</h2>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   <div className="flex items-start gap-3 mb-4">
                     <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
                     <p className="text-gray-600 dark:text-gray-400">
@@ -206,7 +206,7 @@ export default function TermsPage() {
               {/* Intellectual Property */}
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">7. Intellectual Property</h2>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     TrulyInvoice and all related trademarks, logos, and content are owned by us. You receive 
                     a limited license to use the service, which does not grant you ownership of:
@@ -223,7 +223,7 @@ export default function TermsPage() {
               {/* Limitation of Liability */}
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">8. Limitation of Liability</h2>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     To the maximum extent permitted by law:
                   </p>
@@ -239,7 +239,7 @@ export default function TermsPage() {
               {/* Termination */}
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">9. Termination</h2>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     We may suspend or terminate your account if:
                   </p>
@@ -258,7 +258,7 @@ export default function TermsPage() {
               {/* Governing Law */}
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">10. Governing Law</h2>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   <p className="text-gray-600 dark:text-gray-400">
                     These terms are governed by the laws of India. Any disputes will be resolved in the courts 
                     of Assam, India. The parties agree to submit to the exclusive jurisdiction of these courts.
@@ -269,7 +269,7 @@ export default function TermsPage() {
               {/* Contact */}
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">11. Contact Information</h2>
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     Questions about these terms? Contact us:
                   </p>
@@ -311,3 +311,4 @@ export default function TermsPage() {
     </main>
   )
 }
+

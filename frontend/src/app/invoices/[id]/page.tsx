@@ -130,32 +130,39 @@ export default function InvoiceDetailsPage() {
   }
 
   const exportToExcel = () => {
-    // Create CSV content with proper formatting
-    const headers = ['Field', 'Value']
-    const rows = [
-      ['Vendor Name', invoice.vendor_name],
-      ['Invoice Number', invoice.invoice_number],
-      ['Invoice Date', invoice.invoice_date],
-      ['Due Date', invoice.due_date || 'N/A'],
-      ['Subtotal', `₹${invoice.subtotal.toFixed(2)}`],
-      ['CGST', `₹${invoice.cgst.toFixed(2)}`],
-      ['SGST', `₹${invoice.sgst.toFixed(2)}`],
-      ['IGST', `₹${invoice.igst.toFixed(2)}`],
-      ['Total Amount', `₹${invoice.total_amount.toFixed(2)}`],
-      ['Payment Status', invoice.payment_status],
-      ['Created At', new Date(invoice.created_at).toLocaleString()]
-    ]
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n')
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    // ACCOUNTANT-FRIENDLY EXCEL (light styling, formulas, import-ready)
+    // For accountants, SMEs, bookkeeping teams
+    // Import to Tally/Zoho/QuickBooks
     const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = `invoice_${invoice.invoice_number}_${invoice.vendor_name}.csv`
+    link.href = `http://localhost:8000/api/invoices/${invoiceId}/export-excel`
+    link.download = `Invoice_${invoice?.invoice_number || invoiceId}.xlsx`
+    document.body.appendChild(link)
     link.click()
+    document.body.removeChild(link)
+  }
+
+  const exportToPDF = () => {
+    // STYLIZED PDF (beautiful formatting, colors, branding)
+    // For clients, business owners, professional presentation
+    // Print-ready, perfect for emailing to customers
+    const link = document.createElement('a')
+    link.href = `http://localhost:8000/api/invoices/${invoiceId}/export-pdf`
+    link.download = `Invoice_${invoice?.invoice_number || invoiceId}.pdf`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const exportToCSV = () => {
+    // RAW CSV (plain text, no formatting, machine-readable)
+    // For developers, ERP/CRM systems, automation scripts
+    // Bulk processing and API integration
+    const link = document.createElement('a')
+    link.href = `http://localhost:8000/api/invoices/${invoiceId}/export-csv`
+    link.download = `Invoice_${invoice?.invoice_number || invoiceId}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   if (loading) {
@@ -226,16 +233,39 @@ export default function InvoiceDetailsPage() {
               </>
             ) : (
               <>
+                {/* PRIMARY BUTTON: Download PDF (for clients, stylized) */}
                 <button
-                  onClick={exportToExcel}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                  onClick={exportToPDF}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-sm"
+                  title="Stylized PDF - For clients, business owners, professional presentation"
                 >
                   <Download className="w-4 h-4" />
-                  Export
+                  PDF
                 </button>
+                
+                {/* SECONDARY BUTTON: Export Excel (for accountants, light styling) */}
+                <button
+                  onClick={exportToExcel}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2 shadow-sm"
+                  title="Accountant-friendly Excel - For Tally/Zoho/QuickBooks import, with formulas"
+                >
+                  <Download className="w-4 h-4" />
+                  Excel
+                </button>
+                
+                {/* TERTIARY BUTTON: Export CSV (for developers, raw data) */}
+                <button
+                  onClick={exportToCSV}
+                  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center gap-2 shadow-sm"
+                  title="Raw CSV - For developers, ERP systems, automation scripts"
+                >
+                  <Download className="w-4 h-4" />
+                  CSV
+                </button>
+                
                 <button
                   onClick={() => setEditing(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
                 >
                   <Edit2 className="w-4 h-4" />
                   Edit
@@ -256,13 +286,13 @@ export default function InvoiceDetailsPage() {
           {/* Left Column - Invoice Details */}
           <div className="space-y-6">
             {/* Basic Info Card */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h2>
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Basic Information</h2>
               
               <div className="space-y-4">
                 {/* Vendor Name */}
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     <Building2 className="w-4 h-4" />
                     Vendor Name
                   </label>
@@ -274,13 +304,13 @@ export default function InvoiceDetailsPage() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   ) : (
-                    <p className="text-gray-900">{invoice.vendor_name}</p>
+                    <p className="text-gray-900 dark:text-white">{invoice.vendor_name}</p>
                   )}
                 </div>
 
                 {/* Invoice Number */}
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     <Hash className="w-4 h-4" />
                     Invoice Number
                   </label>
@@ -292,14 +322,14 @@ export default function InvoiceDetailsPage() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   ) : (
-                    <p className="text-gray-900">{invoice.invoice_number}</p>
+                    <p className="text-gray-900 dark:text-white">{invoice.invoice_number}</p>
                   )}
                 </div>
 
                 {/* Dates */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <Calendar className="w-4 h-4" />
                       Invoice Date
                     </label>
@@ -311,12 +341,12 @@ export default function InvoiceDetailsPage() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     ) : (
-                      <p className="text-gray-900">{invoice.invoice_date}</p>
+                      <p className="text-gray-900 dark:text-white">{invoice.invoice_date}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <Calendar className="w-4 h-4" />
                       Due Date
                     </label>
@@ -328,14 +358,14 @@ export default function InvoiceDetailsPage() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
                     ) : (
-                      <p className="text-gray-900">{invoice.due_date || 'N/A'}</p>
+                      <p className="text-gray-900 dark:text-white">{invoice.due_date || 'N/A'}</p>
                     )}
                   </div>
                 </div>
 
                 {/* Payment Status */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
                     Payment Status
                   </label>
                   {editing ? (
@@ -364,8 +394,8 @@ export default function InvoiceDetailsPage() {
             </div>
 
             {/* Amount Details Card */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <DollarSign className="w-5 h-5" />
                 Amount Details
               </h2>
@@ -373,7 +403,7 @@ export default function InvoiceDetailsPage() {
               <div className="space-y-3">
                 {/* Subtotal */}
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Subtotal</span>
+                  <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
                   {editing ? (
                     <input
                       type="number"
@@ -383,13 +413,13 @@ export default function InvoiceDetailsPage() {
                       className="w-32 px-3 py-1 border border-gray-300 rounded-lg text-right"
                     />
                   ) : (
-                    <span className="font-medium">₹{invoice.subtotal.toLocaleString()}</span>
+                    <span className="font-medium">₹{(invoice.subtotal || 0).toLocaleString()}</span>
                   )}
                 </div>
 
                 {/* CGST */}
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">CGST</span>
+                  <span className="text-gray-600 dark:text-gray-400">CGST</span>
                   {editing ? (
                     <input
                       type="number"
@@ -399,13 +429,13 @@ export default function InvoiceDetailsPage() {
                       className="w-32 px-3 py-1 border border-gray-300 rounded-lg text-right"
                     />
                   ) : (
-                    <span className="font-medium">₹{invoice.cgst.toLocaleString()}</span>
+                    <span className="font-medium">₹{(invoice.cgst || 0).toLocaleString()}</span>
                   )}
                 </div>
 
                 {/* SGST */}
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">SGST</span>
+                  <span className="text-gray-600 dark:text-gray-400">SGST</span>
                   {editing ? (
                     <input
                       type="number"
@@ -415,13 +445,13 @@ export default function InvoiceDetailsPage() {
                       className="w-32 px-3 py-1 border border-gray-300 rounded-lg text-right"
                     />
                   ) : (
-                    <span className="font-medium">₹{invoice.sgst.toLocaleString()}</span>
+                    <span className="font-medium">₹{(invoice.sgst || 0).toLocaleString()}</span>
                   )}
                 </div>
 
                 {/* IGST */}
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">IGST</span>
+                  <span className="text-gray-600 dark:text-gray-400">IGST</span>
                   {editing ? (
                     <input
                       type="number"
@@ -431,13 +461,13 @@ export default function InvoiceDetailsPage() {
                       className="w-32 px-3 py-1 border border-gray-300 rounded-lg text-right"
                     />
                   ) : (
-                    <span className="font-medium">₹{invoice.igst.toLocaleString()}</span>
+                    <span className="font-medium">₹{(invoice.igst || 0).toLocaleString()}</span>
                   )}
                 </div>
 
-                <div className="border-t border-gray-200 pt-3 mt-3">
+                <div className="border-t border-gray-200 dark:border-gray-800 pt-3 mt-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold text-gray-900">Total Amount</span>
+                    <span className="text-lg font-semibold text-gray-900 dark:text-white">Total Amount</span>
                     {editing ? (
                       <input
                         type="number"
@@ -447,7 +477,7 @@ export default function InvoiceDetailsPage() {
                         className="w-32 px-3 py-1 border border-gray-300 rounded-lg text-right font-bold"
                       />
                     ) : (
-                      <span className="text-2xl font-bold text-blue-600">₹{invoice.total_amount.toLocaleString()}</span>
+                      <span className="text-2xl font-bold text-blue-600">₹{(invoice.total_amount || 0).toLocaleString()}</span>
                     )}
                   </div>
                 </div>
@@ -455,21 +485,21 @@ export default function InvoiceDetailsPage() {
             </div>
 
             {/* Metadata Card */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Metadata</h2>
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Metadata</h2>
               
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Created At</span>
-                  <span className="text-gray-900">{new Date(invoice.created_at).toLocaleString()}</span>
+                  <span className="text-gray-600 dark:text-gray-400">Created At</span>
+                  <span className="text-gray-900 dark:text-white">{new Date(invoice.created_at).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Last Updated</span>
-                  <span className="text-gray-900">{new Date(invoice.updated_at || invoice.created_at).toLocaleString()}</span>
+                  <span className="text-gray-600 dark:text-gray-400">Last Updated</span>
+                  <span className="text-gray-900 dark:text-white">{new Date(invoice.updated_at || invoice.created_at).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">File Name</span>
-                  <span className="text-gray-900">{invoice.documents?.file_name || 'N/A'}</span>
+                  <span className="text-gray-600 dark:text-gray-400">File Name</span>
+                  <span className="text-gray-900 dark:text-white">{invoice.documents?.file_name || 'N/A'}</span>
                 </div>
               </div>
             </div>
@@ -477,14 +507,14 @@ export default function InvoiceDetailsPage() {
 
           {/* Right Column - PDF Preview */}
           <div className="lg:sticky lg:top-6 h-fit">
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <FileText className="w-5 h-5" />
                 Document Preview
               </h2>
               
               {invoice.documents?.file_url ? (
-                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
                   {invoice.documents.file_name.toLowerCase().endsWith('.pdf') ? (
                     <iframe
                       src={invoice.documents.file_url}

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 import { exportInvoicesToCSV } from '@/lib/invoiceUtils'
+import { formatCurrency } from '@/lib/currency'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -317,9 +318,9 @@ export default function InvoicesPageClean() {
         ) : (
           <>
             {/* Desktop Table */}
-            <div className="hidden md:block bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="hidden md:block bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
               <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-700/50">
+                <thead className="bg-gray-100 dark:bg-gray-950">
                   <tr>
                     <th className="px-6 py-4">
                       <input
@@ -339,9 +340,9 @@ export default function InvoicesPageClean() {
                     <th className="text-left px-6 py-4 font-semibold text-gray-900 dark:text-gray-300">ACTIONS</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                   {filteredInvoices.map((invoice) => (
-                    <tr key={invoice.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <tr key={invoice.id} className="hover:bg-gray-100 dark:hover:bg-gray-950/50">
                       <td className="px-6 py-4">
                         <input
                           type="checkbox"
@@ -356,8 +357,12 @@ export default function InvoicesPageClean() {
                       <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{invoice.invoice_number || 'N/A'}</td>
                       <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{invoice.invoice_date || 'N/A'}</td>
                       <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{invoice.due_date || 'N/A'}</td>
-                      <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">₹{invoice.total_amount?.toLocaleString() || '0'}</td>
-                      <td className="px-6 py-4 text-gray-600 dark:text-gray-400">₹{(invoice.cgst + invoice.sgst + invoice.igst || 0).toLocaleString()}</td>
+                      <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                        {formatCurrency(invoice.total_amount || 0, invoice.currency)}
+                      </td>
+                      <td className="px-6 py-4 text-gray-600 dark:text-gray-400">
+                        {formatCurrency((invoice.cgst + invoice.sgst + invoice.igst || 0), invoice.currency)}
+                      </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           invoice.payment_status === 'paid' 
@@ -405,7 +410,7 @@ export default function InvoicesPageClean() {
             {/* Mobile Cards */}
             <div className="md:hidden space-y-4">
               {filteredInvoices.map((invoice) => (
-                <div key={invoice.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                <div key={invoice.id} className="bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
                   <div className="flex items-start gap-3 mb-3">
                     <input
                       type="checkbox"
@@ -434,7 +439,9 @@ export default function InvoicesPageClean() {
                   <div className="space-y-2 mb-4">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600 dark:text-gray-400">Amount:</span>
-                      <span className="font-semibold text-gray-900 dark:text-white">₹{invoice.total_amount?.toLocaleString() || '0'}</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        {formatCurrency(invoice.total_amount || 0, invoice.currency)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600 dark:text-gray-400">GST:</span>
@@ -475,7 +482,7 @@ export default function InvoicesPageClean() {
                 Showing {filteredInvoices.length} invoice{filteredInvoices.length !== 1 ? 's' : ''}
               </p>
               <div className="flex gap-2">
-                <button className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                <button className="px-4 py-2 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-950">
                   Previous
                 </button>
                 <button className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600">

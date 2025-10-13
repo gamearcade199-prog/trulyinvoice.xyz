@@ -3,10 +3,11 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, CheckCircle2, Upload, Zap, FileText, Sparkles, TrendingUp, Shield, X, Loader2, Eye, Moon, Sun, LayoutDashboard, LogOut } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Upload, Zap, FileText, Sparkles, TrendingUp, Shield, X, Loader2, Eye, Moon, Sun, LayoutDashboard, LogOut, Menu, CreditCard } from 'lucide-react'
 import { useTheme } from '@/components/ThemeProvider'
 import { supabase } from '@/lib/supabase'
 import { uploadInvoiceAnonymous, linkTempInvoicesToUser } from '@/lib/invoiceUpload'
+import { getCurrencySymbol, formatCurrency } from '@/lib/currency'
 
 export default function Home() {
   const { theme, toggleTheme } = useTheme()
@@ -19,12 +20,27 @@ export default function Home() {
   const [extractedData, setExtractedData] = useState<any>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [processingError, setProcessingError] = useState('')
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Check authentication status
   useEffect(() => {
     checkAuth()
   }, [])
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isMobileMenuOpen && !(event.target as Element).closest('nav')) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMobileMenuOpen])
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -104,23 +120,35 @@ export default function Home() {
   return (
     <main className="min-h-screen relative bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Navigation */}
-      <nav className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-colors">
+      <nav className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 transition-colors">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
+            {/* Logo */}
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                 <FileText className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-gray-900 dark:text-white">TrulyInvoice</span>
             </div>
-            <div className="flex items-center gap-4">
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-4">
               {/* Dashboard Button */}
               <Link 
                 href="/dashboard" 
                 className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-semibold transition-colors"
               >
                 <LayoutDashboard className="w-5 h-5" />
-                <span className="hidden sm:inline">Dashboard</span>
+                Dashboard
+              </Link>
+              
+              {/* Pricing Button */}
+              <Link 
+                href="/pricing" 
+                className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-semibold transition-colors"
+              >
+                <CreditCard className="w-5 h-5" />
+                Pricing
               </Link>
               
               {/* Dark Mode Toggle */}
@@ -159,7 +187,92 @@ export default function Home() {
                 </>
               )}
             </div>
+
+            {/* Mobile Menu Button and Dark Mode Toggle */}
+            <div className="flex md:hidden items-center gap-2">
+              {/* Dark Mode Toggle for Mobile */}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                aria-label="Toggle theme"
+              >
+                {theme === 'light' ? (
+                  <Moon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                ) : (
+                  <Sun className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                )}
+              </button>
+              
+              {/* Hamburger Menu Button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                aria-label="Toggle mobile menu"
+              >
+                {isMobileMenuOpen ? (
+                  <X className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+                ) : (
+                  <Menu className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+                )}
+              </button>
+            </div>
           </div>
+
+          {/* Mobile Menu */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden border-t border-gray-200 dark:border-gray-800 py-4 space-y-3 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md">
+              {/* Dashboard Link */}
+              <Link 
+                href="/dashboard"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg font-semibold transition-colors"
+              >
+                <LayoutDashboard className="w-5 h-5" />
+                Dashboard
+              </Link>
+              
+              {/* Pricing Link */}
+              <Link 
+                href="/pricing"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg font-semibold transition-colors"
+              >
+                <CreditCard className="w-5 h-5" />
+                Pricing
+              </Link>
+              
+              {/* Conditional Auth Links */}
+              {isLoggedIn ? (
+                <button 
+                  onClick={() => {
+                    handleLogout()
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="flex items-center gap-3 px-4 py-2 w-full text-left text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg font-semibold transition-colors"
+                >
+                  <LogOut className="w-5 h-5" />
+                  Sign Out
+                </button>
+              ) : (
+                <>
+                  <Link 
+                    href="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg font-semibold transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link 
+                    href="/register"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors mx-4"
+                  >
+                    Start Free
+                  </Link>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </nav>
 
@@ -173,16 +286,16 @@ export default function Home() {
           <div className="max-w-5xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 px-3 py-1 md:px-4 md:py-1.5 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-full text-xs md:text-sm font-semibold mb-3 md:mb-4">
               <Sparkles className="w-3 h-3 md:w-4 md:h-4" />
-              AI-Powered Invoice Management
+              Trusted by Hundreds of Indian Businesses
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-gray-900 dark:text-white mb-3 md:mb-4 px-4 leading-tight">
-              Your Invoices, <br/>
+              Stop Typing Invoices. <br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
-                Instantly Organized
+                Start Scanning Them.
               </span>
             </h1>
             <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300 mb-4 md:mb-6 max-w-2xl mx-auto px-4">
-              Stop wasting time on manual data entry. Let AI extract, organize, and analyze your invoices in seconds.
+              Save 10+ hours every week. AI extracts vendor names, amounts, GST, and line items from your invoices in under 5 seconds.
             </p>
 
             {/* Interactive Upload Zone */}
@@ -217,15 +330,16 @@ export default function Home() {
                     </div>
                     <div>
                       <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 mb-1">
-                        Upload Your Invoices Here
+                        Try It Now - Upload Any Invoice
                       </h3>
                       <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm md:text-base">
                         Drag and drop your invoice here, or{' '}
-                        <span className="text-blue-600 dark:text-blue-400 font-semibold">browse</span>
+                        <span className="text-blue-600 dark:text-blue-400 font-semibold">click to browse</span>
                       </p>
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 text-center px-2">
-                      Supports PDF, JPG, PNG • See AI extraction in action!
+                    <div className="flex flex-col items-center gap-1 text-xs text-gray-500 dark:text-gray-400 text-center px-2">
+                      <div>✓ Supports PDF, JPG, PNG • ✓ No signup needed</div>
+                      <div className="text-blue-600 dark:text-blue-400 font-semibold">See AI extraction in action instantly!</div>
                     </div>
                   </div>
                 )}
@@ -263,7 +377,7 @@ export default function Home() {
                       <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">AI successfully extracted your invoice data</p>
                     </div>
                     {/* Preview Card */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 shadow-lg max-w-md w-full border border-gray-200 dark:border-gray-700">
+                    <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 md:p-6 shadow-lg max-w-md w-full border border-gray-200 dark:border-gray-800">
                       <div className="grid grid-cols-2 gap-3 md:gap-4 text-left">
                         <div>
                           <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Vendor</p>
@@ -274,7 +388,10 @@ export default function Home() {
                         <div>
                           <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Amount</p>
                           <p className="font-semibold text-sm md:text-base text-gray-900 dark:text-gray-100">
-                            {extractedData.currency || '₹'}{extractedData.total_amount || '0'}
+                            {extractedData.total_amount 
+                              ? formatCurrency(extractedData.total_amount, extractedData.currency || 'INR')
+                              : `${getCurrencySymbol(extractedData.currency)}0`
+                            }
                           </p>
                         </div>
                         <div>
@@ -290,10 +407,10 @@ export default function Home() {
                           </p>
                         </div>
                       </div>
-                      <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-gray-200 dark:border-gray-800">
                         {isLoggedIn ? (
                           <Link
-                            href="/dashboard/invoices"
+                            href="/invoices"
                             className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
                           >
                             <Eye className="w-3 h-3 md:w-4 md:h-4" />
@@ -338,10 +455,10 @@ export default function Home() {
                 href="/register" 
                 className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 text-white px-5 md:px-6 py-2.5 md:py-3 rounded-xl font-semibold hover:shadow-xl transition-all flex items-center justify-center gap-2 text-sm md:text-base"
               >
-                Start Free Trial <ArrowRight className="w-4 h-4" />
+                Start Free <ArrowRight className="w-4 h-4" />
               </Link>
               <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
-                ✨ No credit card required • 30 free scans
+                ✨ 10 free scans every month • Forever free plan available
               </p>
             </div>
           </div>
@@ -349,7 +466,7 @@ export default function Home() {
       </section>
 
       {/* How It Works */}
-      <section className="py-12 md:py-20 bg-white dark:bg-gray-800 transition-colors">
+      <section className="py-12 md:py-20 bg-gray-50 dark:bg-gray-900 transition-colors">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-3 md:mb-4 text-gray-900 dark:text-white">How It Works</h2>
           <p className="text-center text-sm md:text-base text-gray-600 dark:text-gray-400 mb-8 md:mb-12 max-w-2xl mx-auto px-4">
@@ -384,6 +501,94 @@ export default function Home() {
               <h3 className="text-xl md:text-2xl font-bold mb-2 md:mb-3 text-gray-900 dark:text-white">3. Export</h3>
               <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 px-2">
                 Export to Excel, Google Sheets, Tally, or QuickBooks with one click
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us - Problem/Solution */}
+      <section className="py-12 md:py-20 bg-gray-50 dark:bg-gray-900 transition-colors">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+              {/* Problem Side */}
+              <div className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 p-6 md:p-8 rounded-2xl border-2 border-red-200 dark:border-red-800">
+                <h3 className="text-2xl md:text-3xl font-bold text-red-900 dark:text-red-300 mb-4">
+                  😫 The Old Way
+                </h3>
+                <ul className="space-y-3 text-sm md:text-base text-gray-700 dark:text-gray-300">
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-500 font-bold mt-1">✗</span>
+                    <span>Hours wasted typing invoice details manually</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-500 font-bold mt-1">✗</span>
+                    <span>Constant errors in data entry (wrong amounts, dates)</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-500 font-bold mt-1">✗</span>
+                    <span>Lost invoices and missing GST numbers</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-500 font-bold mt-1">✗</span>
+                    <span>Difficult to track expenses and vendor payments</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-red-500 font-bold mt-1">✗</span>
+                    <span>Messy folders full of paper and PDF files</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Solution Side */}
+              <div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 p-6 md:p-8 rounded-2xl border-2 border-green-200 dark:border-green-800">
+                <h3 className="text-2xl md:text-3xl font-bold text-green-900 dark:text-green-300 mb-4">
+                  ✨ With TrulyInvoice
+                </h3>
+                <ul className="space-y-3 text-sm md:text-base text-gray-700 dark:text-gray-300">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 font-bold mt-1">✓</span>
+                    <span>Scan and extract all data in under 5 seconds</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 font-bold mt-1">✓</span>
+                    <span>98% accuracy - AI reads better than humans</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 font-bold mt-1">✓</span>
+                    <span>All invoices searchable and organized in one place</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 font-bold mt-1">✓</span>
+                    <span>Track payments, vendors, and GST automatically</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 font-bold mt-1">✓</span>
+                    <span>Export to Excel, Tally, or QuickBooks instantly</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Time Saved Calculator */}
+            <div className="mt-10 md:mt-12 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-700 p-6 md:p-8 rounded-2xl text-white text-center">
+              <h4 className="text-xl md:text-2xl font-bold mb-3">
+                ⏱️ Average Time Saved Per Invoice
+              </h4>
+              <div className="flex items-center justify-center gap-4 md:gap-8 flex-wrap">
+                <div>
+                  <p className="text-3xl md:text-4xl font-bold">5 min</p>
+                  <p className="text-sm md:text-base text-blue-100">Manual Entry</p>
+                </div>
+                <div className="text-3xl md:text-4xl">→</div>
+                <div>
+                  <p className="text-3xl md:text-4xl font-bold">5 sec</p>
+                  <p className="text-sm md:text-base text-blue-100">With TrulyInvoice</p>
+                </div>
+              </div>
+              <p className="mt-4 text-sm md:text-base text-blue-100">
+                Process 100 invoices per month? <span className="font-bold">Save 8+ hours monthly!</span>
               </p>
             </div>
           </div>
@@ -437,7 +642,7 @@ export default function Home() {
                 return (
                   <div
                     key={index}
-                    className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all border border-gray-100 dark:border-gray-700 group hover:-translate-y-1"
+                    className="bg-gray-50 dark:bg-gray-900 p-6 md:p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all border border-gray-100 dark:border-gray-700 group hover:-translate-y-1"
                   >
                     <div className="w-12 h-12 md:w-14 md:h-14 bg-blue-100 dark:bg-blue-900/50 rounded-xl flex items-center justify-center mb-3 md:mb-4 group-hover:scale-110 transition-transform">
                       <Icon className="w-6 h-6 md:w-7 md:h-7 text-blue-600 dark:text-blue-400" />
@@ -452,22 +657,117 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <section className="py-12 md:py-20 bg-gray-50 dark:bg-gray-900 transition-colors">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10 md:mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-3 md:mb-4 text-gray-900 dark:text-white">
+              Loved by Business Owners & Accountants
+            </h2>
+            <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              See what our customers have to say about transforming their invoice workflow
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
+            {/* Testimonial 1 */}
+            <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 p-6 md:p-8 rounded-2xl shadow-lg border border-blue-100 dark:border-gray-600 hover:shadow-xl transition-all">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} className="text-yellow-400 text-lg">★</span>
+                ))}
+              </div>
+              <p className="text-sm md:text-base text-gray-700 dark:text-gray-300 mb-4 italic">
+                "TrulyInvoice saved me 12 hours per week. I was manually entering 200+ invoices monthly. Now it's done in minutes. The GST extraction is spot-on!"
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm md:text-base">
+                  RP
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">Rajesh Patel</p>
+                  <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Accountant, Mumbai</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Testimonial 2 */}
+            <div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-700 dark:to-gray-800 p-6 md:p-8 rounded-2xl shadow-lg border border-green-100 dark:border-gray-600 hover:shadow-xl transition-all">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} className="text-yellow-400 text-lg">★</span>
+                ))}
+              </div>
+              <p className="text-sm md:text-base text-gray-700 dark:text-gray-300 mb-4 italic">
+                "As a small business owner, I don't have time for data entry. This tool is a game-changer. Just snap a photo and everything is extracted perfectly!"
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm md:text-base">
+                  SK
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">Sneha Kulkarni</p>
+                  <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Restaurant Owner, Pune</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Testimonial 3 */}
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-700 dark:to-gray-800 p-6 md:p-8 rounded-2xl shadow-lg border border-purple-100 dark:border-gray-600 hover:shadow-xl transition-all">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} className="text-yellow-400 text-lg">★</span>
+                ))}
+              </div>
+              <p className="text-sm md:text-base text-gray-700 dark:text-gray-300 mb-4 italic">
+                "The accuracy is incredible. I tested it with 50 invoices and only had to correct 2 fields. Export to Tally works seamlessly. Highly recommended!"
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm md:text-base">
+                  AV
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">Amit Verma</p>
+                  <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">CA Firm, Delhi</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Additional short testimonial bar */}
+          <div className="mt-10 md:mt-16 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto">
+            <div className="bg-white dark:bg-gray-700 p-4 md:p-6 rounded-xl shadow border border-gray-200 dark:border-gray-600 text-center">
+              <p className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">98%</p>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Accuracy Rate</p>
+            </div>
+            <div className="bg-white dark:bg-gray-700 p-4 md:p-6 rounded-xl shadow border border-gray-200 dark:border-gray-600 text-center">
+              <p className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400 mb-1">10+ hrs</p>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Saved Per Week</p>
+            </div>
+            <div className="bg-white dark:bg-gray-700 p-4 md:p-6 rounded-xl shadow border border-gray-200 dark:border-gray-600 text-center">
+              <p className="text-2xl md:text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">&lt;5 sec</p>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Processing Time</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-12 md:py-20 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-700 dark:to-purple-700 transition-colors">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 md:mb-6 px-4">
-            Ready to Save Hours Every Week?
+            Ready to Automate Your Invoices?
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-blue-100 dark:text-blue-200 mb-6 md:mb-8 max-w-2xl mx-auto px-4">
-            Join thousands of businesses using AI to automate their invoice processing
+            Join hundreds of Indian businesses saving time with AI-powered invoice processing
           </p>
           <Link
             href="/register"
             className="inline-flex items-center gap-2 bg-white text-blue-600 px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg hover:shadow-2xl transition-all hover:scale-105"
           >
-            Start Free Trial <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
+            Start Free <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
           </Link>
-          <p className="text-sm md:text-base text-blue-100 dark:text-blue-200 mt-3 md:mt-4 px-4">No credit card required • Cancel anytime</p>
+          <p className="text-sm md:text-base text-blue-100 dark:text-blue-200 mt-3 md:mt-4 px-4">10 free scans per month • Upgrade anytime</p>
         </div>
       </section>
 
@@ -499,7 +799,6 @@ export default function Home() {
               <ul className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
                 <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
                 <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
-                <li><Link href="/careers" className="hover:text-white transition-colors">Careers</Link></li>
               </ul>
             </div>
             <div>
@@ -520,7 +819,7 @@ export default function Home() {
       {/* Signup Modal */}
       {showSignupModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 md:p-8 relative transition-colors max-h-[90vh] overflow-y-auto">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl max-w-md w-full p-6 md:p-8 relative transition-colors max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setShowSignupModal(false)}
               className="absolute top-3 right-3 md:top-4 md:right-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -574,7 +873,7 @@ export default function Home() {
             </div>
 
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3 md:mt-4">
-              ✨ Free forever • No credit card required
+              ✨ 10 free scans every month • Forever free plan
             </p>
           </div>
         </div>

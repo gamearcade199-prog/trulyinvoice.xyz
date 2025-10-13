@@ -18,13 +18,14 @@ import {
   Loader2
 } from 'lucide-react'
 import { useTheme } from '@/components/ThemeProvider'
-import { createClient } from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 export default function SettingsPage() {
   const { theme, toggleTheme } = useTheme()
   const [activeTab, setActiveTab] = useState('profile')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [updatingPassword, setUpdatingPassword] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState({
     full_name: '',
@@ -33,6 +34,10 @@ export default function SettingsPage() {
     company: '',
     address: ''
   })
+  const [passwords, setPasswords] = useState({
+    newPassword: '',
+    confirmPassword: ''
+  })
 
   useEffect(() => {
     loadUserData()
@@ -40,8 +45,6 @@ export default function SettingsPage() {
 
   async function loadUserData() {
     try {
-      const supabase = createClient()
-      
       // Get current user
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
       
@@ -50,6 +53,9 @@ export default function SettingsPage() {
         setLoading(false)
         return
       }
+
+      console.log('Loaded user:', authUser) // Debug log
+      console.log('User email:', authUser.email) // Debug log
 
       setUser(authUser)
 
@@ -60,10 +66,14 @@ export default function SettingsPage() {
         .eq('id', authUser.id)
         .single()
 
+      console.log('Profile data:', profileData) // Debug log
+
+      const userEmail = authUser.email || ''
+      
       if (profileData) {
         setProfile({
           full_name: profileData.full_name || authUser.user_metadata?.full_name || '',
-          email: authUser.email || '',
+          email: userEmail,
           phone: profileData.phone || '',
           company: profileData.company || '',
           address: profileData.address || ''
@@ -72,12 +82,14 @@ export default function SettingsPage() {
         // Use auth metadata if profile doesn't exist
         setProfile({
           full_name: authUser.user_metadata?.full_name || '',
-          email: authUser.email || '',
+          email: userEmail,
           phone: '',
           company: '',
           address: ''
         })
       }
+
+      console.log('Profile state set to:', { email: userEmail }) // Debug log
 
       setLoading(false)
     } catch (error) {
@@ -89,9 +101,12 @@ export default function SettingsPage() {
   async function handleSaveProfile() {
     try {
       setSaving(true)
-      const supabase = createClient()
 
-      if (!user) return
+      if (!user) {
+        alert('User not found. Please try logging in again.')
+        setSaving(false)
+        return
+      }
 
       // Update or insert user profile
       const { error } = await supabase
@@ -108,12 +123,12 @@ export default function SettingsPage() {
 
       if (error) {
         console.error('Error saving profile:', error)
-        alert('Failed to save profile')
+        alert('Failed to save profile: ' + error.message)
+        setSaving(false)
       } else {
         alert('Profile updated successfully!')
+        setSaving(false)
       }
-
-      setSaving(false)
     } catch (error) {
       console.error('Error saving profile:', error)
       alert('Failed to save profile')
@@ -121,9 +136,49 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleUpdatePassword() {
+    try {
+      // Validate passwords
+      if (!passwords.newPassword || !passwords.confirmPassword) {
+        alert('Please fill in both password fields')
+        return
+      }
+
+      if (passwords.newPassword.length < 6) {
+        alert('Password must be at least 6 characters long')
+        return
+      }
+
+      if (passwords.newPassword !== passwords.confirmPassword) {
+        alert('Passwords do not match')
+        return
+      }
+
+      setUpdatingPassword(true)
+
+      // Update password
+      const { error } = await supabase.auth.updateUser({
+        password: passwords.newPassword
+      })
+
+      if (error) {
+        console.error('Error updating password:', error)
+        alert('Failed to update password: ' + error.message)
+        setUpdatingPassword(false)
+      } else {
+        alert('Password updated successfully!')
+        setPasswords({ newPassword: '', confirmPassword: '' })
+        setUpdatingPassword(false)
+      }
+    } catch (error) {
+      console.error('Error updating password:', error)
+      alert('Failed to update password')
+      setUpdatingPassword(false)
+    }
+  }
+
   const tabs = [
     { id: 'profile', name: 'Profile', icon: User },
-    { id: 'notifications', name: 'Notifications', icon: Bell },
     { id: 'security', name: 'Security', icon: Shield },
     { id: 'billing', name: 'Billing', icon: CreditCard },
     { id: 'preferences', name: 'Preferences', icon: Globe },
@@ -141,7 +196,7 @@ export default function SettingsPage() {
         <div className="grid lg:grid-cols-4 gap-6">
           {/* Sidebar Tabs */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-2">
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-2">
               <nav className="space-y-1">
                 {tabs.map((tab) => {
                   const Icon = tab.icon
@@ -168,7 +223,7 @@ export default function SettingsPage() {
 
           {/* Content Area */}
           <div className="lg:col-span-3">
-            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
               {/* Loading State */}
               {loading ? (
                 <div className="flex items-center justify-center py-12">
@@ -206,8 +261,9 @@ export default function SettingsPage() {
                             <input
                               type="email"
                               value={profile.email}
+                              placeholder="your.email@example.com"
                               disabled
-                              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-400 cursor-not-allowed"
+                              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-300 cursor-not-allowed"
                               title="Email cannot be changed"
                             />
                           </div>
@@ -278,49 +334,9 @@ export default function SettingsPage() {
                       </div>
                     </div>
                   )}
-                </>
-              )}
 
-              {/* Notifications Tab */}
-              {activeTab === 'notifications' && (
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Notification Preferences</h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">Manage how you receive notifications.</p>
-                  </div>
-
-                  <div className="space-y-4">
-                    {[
-                      { title: 'Email Notifications', description: 'Receive email updates about your invoices' },
-                      { title: 'Invoice Processing', description: 'Get notified when invoices are processed' },
-                      { title: 'Monthly Reports', description: 'Receive monthly summary reports' },
-                      { title: 'Payment Reminders', description: 'Get reminders for unpaid invoices' },
-                      { title: 'New Features', description: 'Learn about new features and updates' },
-                    ].map((item, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <div>
-                          <h3 className="font-semibold text-gray-900 dark:text-white">{item.title}</h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{item.description}</p>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input type="checkbox" defaultChecked={index < 3} className="sr-only peer" />
-                          <div className="w-11 h-6 bg-gray-300 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex justify-end pt-4">
-                    <button className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors">
-                      <Save className="w-4 h-4" />
-                      Save Preferences
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Security Tab */}
-              {activeTab === 'security' && (
+                  {/* Security Tab */}
+                  {activeTab === 'security' && (
                 <div className="space-y-6">
                   <div>
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Security Settings</h2>
@@ -330,20 +346,13 @@ export default function SettingsPage() {
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                        Current Password
-                      </label>
-                      <input
-                        type="password"
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         New Password
                       </label>
                       <input
                         type="password"
+                        value={passwords.newPassword}
+                        onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
+                        placeholder="Enter new password"
                         className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors"
                       />
                     </div>
@@ -354,13 +363,27 @@ export default function SettingsPage() {
                       </label>
                       <input
                         type="password"
+                        value={passwords.confirmPassword}
+                        onChange={(e) => setPasswords({ ...passwords, confirmPassword: e.target.value })}
+                        placeholder="Re-enter new password"
                         className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-colors"
                       />
                     </div>
 
                     <div className="flex justify-end pt-4">
-                      <button className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors">
-                        Update Password
+                      <button 
+                        onClick={handleUpdatePassword}
+                        disabled={updatingPassword}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {updatingPassword ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Updating...
+                          </>
+                        ) : (
+                          'Update Password'
+                        )}
                       </button>
                     </div>
                   </div>
@@ -393,7 +416,7 @@ export default function SettingsPage() {
 
                   <div>
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Payment Methods</h3>
-                    <div className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
+                    <div className="p-4 rounded-lg border border-gray-200 dark:border-gray-800 text-center">
                       <p className="text-gray-500 dark:text-gray-400">No payment methods added</p>
                       <button className="mt-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold">
                         + Add Payment Method
@@ -413,7 +436,7 @@ export default function SettingsPage() {
 
                   <div className="space-y-4">
                     {/* Theme Toggle */}
-                    <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-800">
                       <div>
                         <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                           {theme === 'light' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -432,7 +455,7 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Language */}
-                    <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-800">
                       <div>
                         <h3 className="font-semibold text-gray-900 dark:text-white">Language</h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400">Select your preferred language</p>
@@ -446,7 +469,7 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Currency */}
-                    <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-800">
                       <div>
                         <h3 className="font-semibold text-gray-900 dark:text-white">Currency</h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400">Default currency for invoices</p>
@@ -459,7 +482,7 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Date Format */}
-                    <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-800">
                       <div>
                         <h3 className="font-semibold text-gray-900 dark:text-white">Date Format</h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400">How dates are displayed</p>
@@ -480,6 +503,8 @@ export default function SettingsPage() {
                   </div>
                 </div>
               )}
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -487,3 +512,4 @@ export default function SettingsPage() {
     </DashboardLayout>
   )
 }
+

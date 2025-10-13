@@ -2,6 +2,7 @@
 
 import { Check, Zap, Crown, Rocket, X, Sparkles } from 'lucide-react'
 import { useState } from 'react'
+import DashboardLayout from '@/components/DashboardLayout'
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly')
@@ -16,17 +17,12 @@ export default function PricingPage() {
       iconBg: 'bg-gradient-to-br from-gray-400 to-gray-500',
       borderGlow: '',
       features: [
-        '10 invoice scans per month',
+        '10 scans per month',
         'Basic AI extraction',
-        'PDF & Image support',
-        'Email support',
-        '7-day data retention',
+        '1-day storage',
+        'Upload 1 invoice at a time',
       ],
-      limitations: [
-        'Limited extraction accuracy',
-        'No bulk processing',
-        'No priority support',
-      ],
+      limitations: [],
       buttonText: 'Current Plan',
       buttonStyle: 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed border border-gray-300 dark:border-gray-600',
       popular: false,
@@ -40,14 +36,12 @@ export default function PricingPage() {
       iconBg: 'bg-gradient-to-br from-blue-500 to-cyan-500',
       borderGlow: 'hover:shadow-lg hover:shadow-blue-500/20',
       features: [
-        '100 invoice scans per month',
-        'Advanced AI extraction (95%+ accuracy)',
-        'PDF, JPG, PNG support',
-        'GST compliance checking',
+        '100 scans per month',
+        '95% AI accuracy',
+        '1-day storage',
+        'Bulk upload: 5 invoices',
+        'GST validation',
         'Export to Excel/CSV',
-        'Priority email support',
-        '30-day data retention',
-        'Basic analytics dashboard',
       ],
       limitations: [],
       buttonText: 'Upgrade to Basic',
@@ -63,17 +57,11 @@ export default function PricingPage() {
       iconBg: 'bg-gradient-to-br from-purple-500 to-pink-500',
       borderGlow: 'shadow-xl shadow-purple-500/30',
       features: [
-        '500 invoice scans per month',
-        'Premium AI extraction (98%+ accuracy)',
-        'All file formats supported',
-        'Bulk processing (up to 50 at once)',
-        'Advanced GST validation',
-        'Custom export templates',
-        'API access',
-        'Priority support (24/7)',
-        '90-day data retention',
-        'Advanced analytics & insights',
-        'Team collaboration (up to 3 users)',
+        '500 scans per month',
+        '98% AI accuracy',
+        '30-day storage',
+        'Bulk upload: 10 invoices',
+        '24/7 support',
       ],
       limitations: [],
       buttonText: 'Upgrade to Pro',
@@ -89,19 +77,10 @@ export default function PricingPage() {
       iconBg: 'bg-gradient-to-br from-orange-500 to-red-500',
       borderGlow: 'hover:shadow-xl hover:shadow-orange-500/30',
       features: [
-        '1200 invoice scans per month',
-        'Enterprise AI extraction (99%+ accuracy)',
-        'Unlimited file formats',
-        'Unlimited bulk processing',
-        'Real-time GST validation',
-        'Custom integrations',
-        'Dedicated API access',
-        'Dedicated account manager',
-        'Unlimited data retention',
-        'Custom analytics & reports',
-        'Unlimited team members',
-        'White-label options',
-        'Custom training & onboarding',
+        '1,200 scans per month',
+        '99% AI accuracy',
+        '30-day storage',
+        'Bulk upload: 50 invoices',
       ],
       limitations: [],
       buttonText: 'Upgrade to Ultra',
@@ -111,24 +90,25 @@ export default function PricingPage() {
   ]
 
   return (
-    <div className="min-h-screen -m-6 p-6 bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
-      {/* Header */}
-      <div className="mb-12 text-center">
-        <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-full text-sm font-semibold mb-4">
-          <Sparkles className="w-4 h-4" />
-          Simple & Transparent Pricing
+    <DashboardLayout>
+      <div className="max-w-7xl mx-auto bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 -m-6 p-6 rounded-xl">
+        {/* Header */}
+        <div className="mb-12 text-center">
+          <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+            <Sparkles className="w-4 h-4" />
+            Simple & Transparent Pricing
+          </div>
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-4">
+            Choose Your Plan
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Select the perfect plan for your invoice processing needs. Upgrade or downgrade anytime.
+          </p>
         </div>
-        <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-4">
-          Choose Your Plan
-        </h1>
-        <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-          Select the perfect plan for your invoice processing needs. Upgrade or downgrade anytime.
-        </p>
-      </div>
 
       {/* Billing Toggle */}
       <div className="flex justify-center mb-16">
-        <div className="bg-white dark:bg-gray-800 p-1.5 rounded-xl inline-flex shadow-lg border border-gray-200 dark:border-gray-700">
+        <div className="bg-gray-50 dark:bg-gray-900 p-1.5 rounded-xl inline-flex shadow-lg border border-gray-200 dark:border-gray-800">
           <button
             onClick={() => setBillingCycle('monthly')}
             className={`px-8 py-3 rounded-lg font-semibold transition-all ${
@@ -243,7 +223,7 @@ export default function PricingPage() {
 
               {/* Limitations (if any) */}
               {plan.limitations.length > 0 && (
-                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
                   <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
                     Limitations
                   </p>
@@ -326,6 +306,8 @@ export default function PricingPage() {
           </a>
         </div>
       </div>
-    </div>
+      </div>
+    </DashboardLayout>
   )
 }
+
