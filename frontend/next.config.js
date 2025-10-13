@@ -120,15 +120,11 @@ const nextConfig = {
   // Trailing slash (important for SEO consistency)
   trailingSlash: false,
   
-  // Output configuration
-  output: 'standalone',
-  
   // Power-ups for build performance
   swcMinify: true,
   
   // Experimental features
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: ['lucide-react'],
   },
   
