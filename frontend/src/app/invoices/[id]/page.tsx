@@ -43,10 +43,6 @@ export default function InvoiceDetailsPage() {
       setLoading(true)
       
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/login')
-        return
-      }
 
       const { data, error } = await supabase
         .from('invoices')
@@ -59,17 +55,19 @@ export default function InvoiceDetailsPage() {
           )
         `)
         .eq('id', invoiceId)
-        .eq('user_id', user.id)
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Error fetching invoice:', error)
+        throw error
+      }
       
       setInvoice(data)
       setEditedInvoice(data)
       
     } catch (error) {
       console.error('Error fetching invoice:', error)
-      alert('Failed to load invoice details')
+      alert('Failed to load invoice details. Please check the console for details.')
     } finally {
       setLoading(false)
     }
