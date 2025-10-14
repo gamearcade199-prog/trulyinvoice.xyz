@@ -118,9 +118,9 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen relative bg-gray-50 dark:bg-gray-900 transition-colors">
+    <main className="min-h-screen relative bg-gray-50 dark:bg-gray-950 transition-colors">
       {/* Navigation */}
-      <nav className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 transition-colors">
+      <nav className="bg-white/90 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-colors">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -220,7 +220,7 @@ export default function Home() {
 
           {/* Mobile Menu */}
           {isMobileMenuOpen && (
-            <div className="md:hidden border-t border-gray-200 dark:border-gray-800 py-4 space-y-3 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md">
+              <div className="md:hidden border-t border-gray-200 dark:border-gray-700 py-4 space-y-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md">
               {/* Dashboard Link */}
               <Link 
                 href="/dashboard"
@@ -277,24 +277,24 @@ export default function Home() {
       </nav>
 
       {/* Hero Section with Interactive Upload */}
-      <section className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-6 md:py-12 relative overflow-hidden transition-colors">
+      <section className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 py-6 md:py-12 relative overflow-hidden transition-colors">
         {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-48 h-48 md:w-72 md:h-72 bg-blue-200 dark:bg-blue-900/30 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-20 dark:opacity-10"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 md:w-72 md:h-72 bg-purple-200 dark:bg-purple-900/30 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-20 dark:opacity-10"></div>
+        <div className="absolute top-0 right-0 w-48 h-48 md:w-72 md:h-72 bg-blue-200 dark:bg-blue-800/40 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-20 dark:opacity-20"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 md:w-72 md:h-72 bg-purple-200 dark:bg-purple-800/40 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-20 dark:opacity-20"></div>
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-5xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 md:px-4 md:py-1.5 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-full text-xs md:text-sm font-semibold mb-3 md:mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 md:px-4 md:py-1.5 bg-blue-100 dark:bg-blue-800/60 text-blue-700 dark:text-blue-200 rounded-full text-xs md:text-sm font-semibold mb-3 md:mb-4">
               <Sparkles className="w-3 h-3 md:w-4 md:h-4" />
               Trusted by Hundreds of Indian Businesses
             </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-gray-900 dark:text-white mb-3 md:mb-4 px-4 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-gray-900 dark:text-gray-50 mb-3 md:mb-4 px-4 leading-tight">
               Stop Typing Invoices. <br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
                 Start Scanning Them.
               </span>
             </h1>
-            <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300 mb-4 md:mb-6 max-w-2xl mx-auto px-4">
+            <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-200 mb-4 md:mb-6 max-w-2xl mx-auto px-4">
               Save 10+ hours every week. AI extracts vendor names, amounts, GST, and line items from your invoices in under 5 seconds.
             </p>
 
@@ -377,7 +377,7 @@ export default function Home() {
                       <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">AI successfully extracted your invoice data</p>
                     </div>
                     {/* Preview Card */}
-                    <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 md:p-6 shadow-lg max-w-md w-full border border-gray-200 dark:border-gray-800">
+                    <div className="bg-gray-50 dark:bg-gray-900/80 rounded-xl p-4 md:p-6 shadow-lg max-w-md w-full border border-gray-200 dark:border-gray-700">
                       <div className="grid grid-cols-2 gap-3 md:gap-4 text-left">
                         <div>
                           <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Vendor</p>
