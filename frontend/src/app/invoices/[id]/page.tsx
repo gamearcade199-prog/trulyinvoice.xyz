@@ -28,6 +28,9 @@ export default function InvoiceDetailsPage() {
   const router = useRouter()
   const invoiceId = params.id as string
 
+  console.log('Invoice page loaded, ID:', invoiceId)
+  console.log('Params:', params)
+
   const [invoice, setInvoice] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
@@ -37,6 +40,29 @@ export default function InvoiceDetailsPage() {
   useEffect(() => {
     fetchInvoiceDetails()
   }, [invoiceId])
+
+  // Add early return for debugging
+  if (!invoiceId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-xl">Missing Invoice ID</h1>
+          <p>No invoice ID found in URL</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-xl">Loading Invoice...</h1>
+          <p>Invoice ID: {invoiceId}</p>
+        </div>
+      </div>
+    )
+  }
 
   const fetchInvoiceDetails = async () => {
     try {
