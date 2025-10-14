@@ -44,6 +44,7 @@ CREATE POLICY "Users can update own documents" ON documents
   );
 
 -- Policy 4: Service role has full access
+DROP POLICY IF EXISTS "Service role full access" ON documents;
 CREATE POLICY "Service role full access" ON documents
   FOR ALL
   USING (auth.role() = 'service_role')
@@ -88,6 +89,7 @@ CREATE POLICY "Users can update own invoices" ON invoices
   );
 
 -- Policy 4: Service role has full access
+DROP POLICY IF EXISTS "Service role full access" ON invoices;
 CREATE POLICY "Service role full access" ON invoices
   FOR ALL
   USING (auth.role() = 'service_role')
