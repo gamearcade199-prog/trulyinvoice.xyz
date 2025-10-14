@@ -8,8 +8,18 @@ python-multipart==0.0.6
 # Use requests instead of supabase library (no httpx conflicts!)
 requests==2.31.0
 
-# PDF processing
+# PDF processing and generation
 PyPDF2==3.0.1
+reportlab==4.0.7
 
 # Excel export with formatting
 openpyxl==3.1.2
+
+# Image processing (for PDFs with images)
+Pillow==10.1.0
+
+# Supabase client
+supabase==2.3.0
+
+# OpenAI for AI extraction
+openai==1.3.0
