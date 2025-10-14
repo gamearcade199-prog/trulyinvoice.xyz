@@ -158,7 +158,7 @@ Output: 9 fields
 
 ### Step 2: Test Intelligent Extractor (30 seconds)
 ```bash
-cd c:\Users\akib\Desktop\trulyinvoice.in
+cd c:\Users\akib\Desktop\trulyinvoice.xyz
 python backend\app\services\intelligent_extractor.py
 ```
 

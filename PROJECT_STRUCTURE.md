@@ -1,7 +1,7 @@
 # TrulyInvoice - Complete Project Structure
 
 ```
-trulyinvoice.in/
+trulyinvoice.xyz/
 │
 ├── 📄 README.md                      # Main project documentation
 ├── 📄 SETUP.md                       # Detailed setup instructions  

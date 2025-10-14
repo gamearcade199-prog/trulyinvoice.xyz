@@ -7,7 +7,7 @@ After uploading invoices, you're seeing dummy/test data instead of your real inv
 
 ### Step 1: Clean Database ⏱️ 30 seconds
 ```powershell
-cd "c:\Users\akib\Desktop\trulyinvoice.in"
+cd "c:\Users\akib\Desktop\trulyinvoice.xyz"
 python DELETE_DUMMY_INVOICES.py
 ```
 Type `yes` when prompted.

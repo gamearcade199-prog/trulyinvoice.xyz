@@ -4,7 +4,7 @@
 Node.js v22.19.0 is incompatible with Next.js 14.1.0 SWC binary on Windows, causing:
 ```
 ⚠ Attempted to load @next/swc-win32-x64-msvc, but an error occurred: 
-\?\C:\Users\akib\Desktop\trulyinvoice.in\frontend\node_modules@next\swc-win32-x64-msvc\next-swc.win32-x64-msvc.node 
+\?\C:\Users\akib\Desktop\trulyinvoice.xyz\frontend\node_modules@next\swc-win32-x64-msvc\next-swc.win32-x64-msvc.node 
 is not a valid Win32 application.
 ```
 

@@ -35,13 +35,13 @@ documents = response.json()
 ```powershell
 # If backend is running, stop it (Ctrl+C)
 # Then restart:
-cd "c:\Users\akib\Desktop\trulyinvoice.in\backend"
+cd "c:\Users\akib\Desktop\trulyinvoice.xyz\backend"
 python -m uvicorn app.main:app --reload
 ```
 
 ### Step 2: Process Pending Documents
 ```powershell
-cd "c:\Users\akib\Desktop\trulyinvoice.in"
+cd "c:\Users\akib\Desktop\trulyinvoice.xyz"
 python PROCESS_PENDING_DOCUMENTS.py
 ```
 

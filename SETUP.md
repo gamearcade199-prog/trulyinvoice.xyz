@@ -215,7 +215,7 @@ The following tables will be auto-created:
 ## Part 5: Project Structure Overview
 
 ```
-trulyinvoice.in/
+trulyinvoice.xyz/
 ├── backend/
 │   ├── app/
 │   │   ├── api/              # API endpoints

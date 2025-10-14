@@ -64,7 +64,7 @@
 
 ### Frontend (Next.js)
 ```bash
-Location: C:\Users\akib\Desktop\trulyinvoice.in\frontend
+Location: C:\Users\akib\Desktop\trulyinvoice.xyz\frontend
 Status: ✅ RUNNING on localhost:3000
 Node Version: v20.19.5
 ```
@@ -78,7 +78,7 @@ Node Version: v20.19.5
 
 ### Backend (FastAPI)
 ```bash
-Location: C:\Users\akib\Desktop\trulyinvoice.in\backend
+Location: C:\Users\akib\Desktop\trulyinvoice.xyz\backend
 Status: ✅ RUNNING on http://127.0.0.1:8000
 Python Version: 3.14
 ```

@@ -18,7 +18,7 @@
 - Storage → Create bucket → Name: `invoice-documents` → Private → Create
 
 ### 2. Start Backend
-- File Explorer → `C:\Users\akib\Desktop\trulyinvoice.in`
+- File Explorer → `C:\Users\akib\Desktop\trulyinvoice.xyz`
 - Double-click: **`start-backend.bat`**
 
 ### 3. Start Frontend  

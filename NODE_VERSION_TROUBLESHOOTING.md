@@ -28,7 +28,7 @@ npm --version   # Should show compatible npm version
 
 ### Step 4: Clean Frontend Installation
 ```powershell
-cd C:\Users\akib\Desktop\trulyinvoice.in
+cd C:\Users\akib\Desktop\trulyinvoice.xyz
 .\COMPLETE_NODE_FIX.bat
 ```
 

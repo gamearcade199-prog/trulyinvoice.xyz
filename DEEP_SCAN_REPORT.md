@@ -50,7 +50,7 @@ The second condition causes dummy/test invoices to appear for ALL users.
 
 ### Step 1: Delete Dummy Invoices from Database
 ```powershell
-cd "c:\Users\akib\Desktop\trulyinvoice.in"
+cd "c:\Users\akib\Desktop\trulyinvoice.xyz"
 python DELETE_DUMMY_INVOICES.py
 ```
 

@@ -16,7 +16,7 @@ Get TrulyInvoice running in 10 minutes!
 
 ```powershell
 # Navigate to project
-cd c:\Users\akib\Desktop\trulyinvoice.in
+cd c:\Users\akib\Desktop\trulyinvoice.xyz
 ```
 
 ---
@@ -76,7 +76,7 @@ uvicorn app.main:app --reload
 
 ```powershell
 # Navigate to frontend
-cd c:\Users\akib\Desktop\trulyinvoice.in\frontend
+cd c:\Users\akib\Desktop\trulyinvoice.xyz\frontend
 
 # Install dependencies (2-3 minutes)
 npm install
@@ -174,7 +174,7 @@ See `PROJECT_STATUS.md` for detailed roadmap!
 ## File Structure
 
 ```
-trulyinvoice.in/
+trulyinvoice.xyz/
 ├── backend/          ← FastAPI application
 ├── frontend/         ← Next.js application
 ├── README.md         ← Project overview

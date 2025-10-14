@@ -17,9 +17,22 @@ app = FastAPI(
 )
 
 # CORS Configuration
+# Allow frontend to make API calls from different domains
+allowed_origins = [
+    "http://localhost:3000",  # Local development
+    "http://localhost:3004",  # Alternative local port
+    "https://trulyinvoice.xyz",  # Production domain
+    "https://www.trulyinvoice.xyz",  # Production with www
+    "https://trulyinvoice-xyz.vercel.app",  # Vercel deployment
+]
+
+# Add any preview deployments from environment
+if os.getenv("VERCEL_URL"):
+    allowed_origins.append(f"https://{os.getenv('VERCEL_URL')}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3004"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

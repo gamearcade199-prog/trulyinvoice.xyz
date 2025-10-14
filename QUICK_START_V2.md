@@ -5,7 +5,7 @@
 Open PowerShell and run:
 
 ```powershell
-cd c:\Users\akib\Desktop\trulyinvoice.in
+cd c:\Users\akib\Desktop\trulyinvoice.xyz
 .\START_BACKEND_V2.bat
 ```
 
@@ -24,7 +24,7 @@ INFO:     Application startup complete.
 Open a **NEW** PowerShell window and run:
 
 ```powershell
-cd c:\Users\akib\Desktop\trulyinvoice.in
+cd c:\Users\akib\Desktop\trulyinvoice.xyz
 python PROCESS_ALL_DOCUMENTS.py
 ```
 
@@ -69,7 +69,7 @@ taskkill /F /IM python.exe
 
 ### ❌ "Module not found" error?
 ```powershell
-cd c:\Users\akib\Desktop\trulyinvoice.in\backend
+cd c:\Users\akib\Desktop\trulyinvoice.xyz\backend
 python -m pip install -r requirements.txt
 .\START_BACKEND_V2.bat
 ```

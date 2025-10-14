@@ -76,7 +76,7 @@ class DocumentProcessor:
         user_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Process a document with AI extraction
+        FAST document processing with AI extraction - Target: 5-10 seconds
         
         Args:
             document_id: ID of the document to process
@@ -88,28 +88,38 @@ class DocumentProcessor:
         Raises:
             DocumentProcessingError: If processing fails
         """
-        logger.info(f"Starting processing for document {document_id}")
+        import time
+        start_time = time.time()
+        logger.info(f"🚀 FAST processing started for document {document_id}")
         
         try:
-            # Step 1: Fetch document from Supabase
+            # Step 1: Fetch document from Supabase (~0.5s)
             document = await self._fetch_document(document_id, user_id)
+            step1_time = time.time() - start_time
+            print(f"   📄 Document fetched in {step1_time:.2f}s")
             
-            # Step 2: Download file from storage
+            # Step 2: Download file from storage (~1-2s)
             file_path = await self._download_file(document)
+            step2_time = time.time() - start_time
+            print(f"   📥 File downloaded in {step2_time - step1_time:.2f}s")
             
-            # Step 3: Update status to processing
+            # Step 3: Update status to processing (~0.3s)
             await self._update_document_status(document_id, "processing")
             
-            # Step 4: Extract data with AI
+            # Step 4: FAST AI extraction (~3-6s - main optimization target)
             extracted_data = await self._extract_invoice_data(
                 file_path,
                 document.get('file_type', 'pdf')
             )
+            step4_time = time.time() - start_time
+            print(f"   🤖 AI extraction completed in {step4_time - step2_time:.2f}s")
             
-            # Step 5: Save invoice data
+            # Step 5: Save invoice data (~0.5s)
             invoice = await self._save_invoice_data(document, extracted_data)
+            step5_time = time.time() - start_time
+            print(f"   💾 Data saved in {step5_time - step4_time:.2f}s")
             
-            # Step 6: Update document status
+            # Step 6: Update document status (~0.3s)
             await self._update_document_status(
                 document_id,
                 "processed",
@@ -255,27 +265,107 @@ class DocumentProcessor:
         """Save or update invoice data in Supabase"""
         logger.debug(f"Saving invoice data for document {document['id']}")
         
-        # Prepare invoice data
+        # Prepare comprehensive invoice data - ALL FIELDS SUPPORTED
         invoice_data = {
+            # Required fields
             'user_id': document.get('user_id'),
             'document_id': document['id'],
-            'vendor_name': extracted_data.get('vendor_name'),
             'invoice_number': extracted_data.get('invoice_number'),
             'invoice_date': extracted_data.get('invoice_date'),
-            'due_date': extracted_data.get('due_date'),
-            'subtotal': extracted_data.get('subtotal', 0),
-            'tax_amount': extracted_data.get('gst_amount', 0),
+            'vendor_name': extracted_data.get('vendor_name'),
             'total_amount': extracted_data.get('total_amount', 0),
+            'payment_status': extracted_data.get('payment_status', 'unpaid'),
+            
+            # Vendor Information (all optional)
+            'vendor_gstin': extracted_data.get('vendor_gstin') or extracted_data.get('gstin'),
+            'vendor_pan': extracted_data.get('vendor_pan'),
+            'vendor_tan': extracted_data.get('vendor_tan'),
+            'vendor_email': extracted_data.get('vendor_email'),
+            'vendor_phone': extracted_data.get('vendor_phone'),
+            'vendor_address': extracted_data.get('vendor_address'),
+            'vendor_state': extracted_data.get('vendor_state'),
+            'vendor_city': extracted_data.get('vendor_city'),
+            'vendor_pincode': extracted_data.get('vendor_pincode'),
+            
+            # Customer Information (optional)
+            'customer_name': extracted_data.get('customer_name'),
+            'customer_gstin': extracted_data.get('customer_gstin'),
+            'customer_pan': extracted_data.get('customer_pan'),
+            'customer_email': extracted_data.get('customer_email'),
+            'customer_phone': extracted_data.get('customer_phone'),
+            'customer_address': extracted_data.get('customer_address'),
+            'customer_state': extracted_data.get('customer_state'),
+            
+            # Dates & References
+            'due_date': extracted_data.get('due_date'),
+            'po_number': extracted_data.get('po_number'),
+            'po_date': extracted_data.get('po_date'),
+            'challan_number': extracted_data.get('challan_number'),
+            'eway_bill_number': extracted_data.get('eway_bill_number'),
+            'lr_number': extracted_data.get('lr_number'),
+            
+            # Financial Amounts
+            'subtotal': extracted_data.get('subtotal', 0),
+            'taxable_amount': extracted_data.get('taxable_amount', 0),
+            
+            # GST Taxes (Indian Tax System)
             'cgst': extracted_data.get('cgst', 0),
             'sgst': extracted_data.get('sgst', 0),
             'igst': extracted_data.get('igst', 0),
-            'gstin': extracted_data.get('gstin'),
+            'ugst': extracted_data.get('ugst', 0),
+            'cess': extracted_data.get('cess', 0),
+            'total_gst': extracted_data.get('total_gst', 0),
+            
+            # Other Tax Fields
+            'vat': extracted_data.get('vat', 0),
+            'service_tax': extracted_data.get('service_tax', 0),
+            'tds_amount': extracted_data.get('tds_amount', 0),
+            'tds_percentage': extracted_data.get('tds_percentage', 0),
+            'tcs_amount': extracted_data.get('tcs_amount', 0),
+            
+            # Deductions & Charges  
+            'discount': extracted_data.get('discount', 0),
+            'discount_percentage': extracted_data.get('discount_percentage', 0),
+            'shipping_charges': extracted_data.get('shipping_charges', 0),
+            'freight_charges': extracted_data.get('freight_charges', 0),
+            'handling_charges': extracted_data.get('handling_charges', 0),
+            'packing_charges': extracted_data.get('packing_charges', 0),
+            'insurance_charges': extracted_data.get('insurance_charges', 0),
+            'loading_charges': extracted_data.get('loading_charges', 0),
+            'other_charges': extracted_data.get('other_charges', 0),
+            'roundoff': extracted_data.get('roundoff', 0),
+            'advance_paid': extracted_data.get('advance_paid', 0),
+            
+            # Business Fields
+            'currency': extracted_data.get('currency', 'INR'),
+            'exchange_rate': extracted_data.get('exchange_rate', 1.0),
+            'hsn_code': extracted_data.get('hsn_code'),
+            'sac_code': extracted_data.get('sac_code'),
+            'place_of_supply': extracted_data.get('place_of_supply'),
+            'reverse_charge': extracted_data.get('reverse_charge'),
+            
+            # Payment Information
             'payment_method': extracted_data.get('payment_method'),
-            'payment_status': 'unpaid',
+            'payment_terms': extracted_data.get('payment_terms'),
+            'bank_name': extracted_data.get('bank_name'),
+            'account_number': extracted_data.get('account_number'),
+            'ifsc_code': extracted_data.get('ifsc_code'),
+            'upi_id': extracted_data.get('upi_id'),
+            
+            # Invoice Classification
+            'invoice_type': extracted_data.get('invoice_type', 'standard'),
+            'business_type': extracted_data.get('business_type'),
+            'supply_type': extracted_data.get('supply_type'),
+            'transaction_type': extracted_data.get('transaction_type'),
+            
+            # Data Storage
             'line_items': extracted_data.get('line_items', []),
             'raw_extracted_data': extracted_data,
             'updated_at': datetime.utcnow().isoformat()
         }
+        
+        # Remove None values to avoid database issues
+        invoice_data = {k: v for k, v in invoice_data.items() if v is not None}
         
         try:
             # Check if invoice already exists

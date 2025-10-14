@@ -68,7 +68,7 @@ Frontend: Will show ONLY real uploaded invoices
 ### Restart Your Frontend:
 ```powershell
 # In your frontend terminal (Ctrl+C to stop if running)
-cd "c:\Users\akib\Desktop\trulyinvoice.in\frontend"
+cd "c:\Users\akib\Desktop\trulyinvoice.xyz\frontend"
 npm run dev
 ```
 

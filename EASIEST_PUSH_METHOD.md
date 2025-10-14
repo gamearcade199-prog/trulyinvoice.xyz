@@ -10,7 +10,7 @@
 ### Push Your Code:
 1. Open GitHub Desktop
 2. Click **File** → **Add Local Repository**
-3. Browse to: `C:\Users\akib\Desktop\trulyinvoice.in`
+3. Browse to: `C:\Users\akib\Desktop\trulyinvoice.xyz`
 4. Click **Add Repository**
 5. Click **Publish repository** button
 6. Repository name: `trulyinvoice.xyz`

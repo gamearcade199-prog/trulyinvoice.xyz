@@ -1,6 +1,6 @@
 
 ═══════════════════════════════════════════════════════════
-🚀 ESSENTIAL FEATURES FOR TRULYINVOICE.IN
+🚀 ESSENTIAL FEATURES FOR trulyinvoice.xyz
 Current Status Analysis + Recommended Additions
 ═══════════════════════════════════════════════════════════
 

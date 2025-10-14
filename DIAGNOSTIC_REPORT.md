@@ -47,7 +47,7 @@
 ## ⚠️ CRITICAL ISSUE - Next.js SWC Binary
 
 ### Problem
-**Error**: `\\?\C:\Users\akib\Desktop\trulyinvoice.in\frontend\node_modules\@next\swc-win32-x64-msvc\next-swc.win32-x64-msvc.node is not a valid Win32 application`
+**Error**: `\\?\C:\Users\akib\Desktop\trulyinvoice.xyz\frontend\node_modules\@next\swc-win32-x64-msvc\next-swc.win32-x64-msvc.node is not a valid Win32 application`
 
 **Root Cause**:
 - Node.js v22.19.0 on Windows has compatibility issues with Next.js 14.1.0 SWC binary
@@ -68,7 +68,7 @@
 #### Option 1: Clean Reinstall (FASTEST - 2 minutes) ⭐ RECOMMENDED
 ```powershell
 # Navigate to frontend
-Set-Location C:\Users\akib\Desktop\trulyinvoice.in\frontend
+Set-Location C:\Users\akib\Desktop\trulyinvoice.xyz\frontend
 
 # Complete clean
 Remove-Item -Recurse -Force node_modules
@@ -131,7 +131,7 @@ npm run dev
 
 **To Start Backend**:
 ```powershell
-Set-Location C:\Users\akib\Desktop\trulyinvoice.in\backend
+Set-Location C:\Users\akib\Desktop\trulyinvoice.xyz\backend
 .\venv\Scripts\activate
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
@@ -187,14 +187,14 @@ INFO:     Application startup complete.
 
 4. **Start Backend Server**
    ```powershell
-   Set-Location C:\Users\akib\Desktop\trulyinvoice.in\backend
+   Set-Location C:\Users\akib\Desktop\trulyinvoice.xyz\backend
    .\venv\Scripts\activate
    uvicorn app.main:app --reload
    ```
 
 5. **Start Frontend**
    ```powershell
-   Set-Location C:\Users\akib\Desktop\trulyinvoice.in\frontend
+   Set-Location C:\Users\akib\Desktop\trulyinvoice.xyz\frontend
    npm run dev
    ```
 

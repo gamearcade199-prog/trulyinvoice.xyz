@@ -9,12 +9,12 @@ Your Supabase database schema is now fixed and ready to run.
 
 ### EASY WAY (Double-click the file):
 1. Open File Explorer
-2. Navigate to: `C:\Users\akib\Desktop\trulyinvoice.in`
+2. Navigate to: `C:\Users\akib\Desktop\trulyinvoice.xyz`
 3. **Double-click**: `start-frontend.bat`
 
 ### OR in Command Prompt/PowerShell:
 ```powershell
-cd C:\Users\akib\Desktop\trulyinvoice.in
+cd C:\Users\akib\Desktop\trulyinvoice.xyz
 start-frontend.bat
 ```
 
@@ -29,12 +29,12 @@ This will:
 
 ### EASY WAY (Double-click the file):
 1. Open File Explorer
-2. Navigate to: `C:\Users\akib\Desktop\trulyinvoice.in`
+2. Navigate to: `C:\Users\akib\Desktop\trulyinvoice.xyz`
 3. **Double-click**: `start-backend.bat`
 
 ### OR in Command Prompt/PowerShell:
 ```powershell
-cd C:\Users\akib\Desktop\trulyinvoice.in
+cd C:\Users\akib\Desktop\trulyinvoice.xyz
 start-backend.bat
 ```
 

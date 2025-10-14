@@ -57,8 +57,8 @@ START_BACKEND_V2.bat
 
 ### Method 2: Manual Command
 ```powershell
-cd c:\Users\akib\Desktop\trulyinvoice.in\backend
-$env:PYTHONPATH = "c:\Users\akib\Desktop\trulyinvoice.in\backend"
+cd c:\Users\akib\Desktop\trulyinvoice.xyz\backend
+$env:PYTHONPATH = "c:\Users\akib\Desktop\trulyinvoice.xyz\backend"
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
