@@ -66,6 +66,7 @@ export default function InvoicesPageClean() {
       }
 
       console.log('Fetched invoices:', invoicesData?.length || 0)
+      console.log('Sample invoice data:', invoicesData?.[0]) // DEBUG: See actual invoice structure
       setInvoices(invoicesData || [])
       
     } catch (error) {
@@ -381,6 +382,7 @@ export default function InvoicesPageClean() {
                             href={`/invoices/${invoice.id}`}
                             className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors group"
                             title="View Details"
+                            onClick={() => console.log('DEBUG: Navigating to invoice ID:', invoice.id, 'Full invoice:', invoice)}
                           >
                             <Eye className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                           </Link>

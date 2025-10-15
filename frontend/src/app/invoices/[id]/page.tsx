@@ -7,7 +7,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 
 interface Invoice {
   id: string;
-  filename: string;
+  file_name: string;  // FIXED: Changed from filename to file_name to match database
   extracted_data: any;
   status: string;
   created_at: string;
@@ -28,11 +28,16 @@ export default function InvoiceDetailPage() {
   useEffect(() => {
     async function fetchInvoice() {
       try {
+        console.log('DEBUG: Trying to fetch invoice with ID:', params.id);
+        console.log('DEBUG: ID type:', typeof params.id, 'ID length:', params.id?.length);
+        
         const { data, error } = await supabase
           .from('invoices')
           .select('*')
           .eq('id', params.id)
           .single();
+
+        console.log('DEBUG: Supabase query result:', { data, error });
 
         if (error) {
           console.error('Error fetching invoice:', error);
@@ -100,7 +105,7 @@ export default function InvoiceDetailPage() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Filename
                   </label>
-                  <p className="text-gray-900 dark:text-white">{invoice.filename}</p>
+                  <p className="text-gray-900 dark:text-white">{invoice.file_name}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
