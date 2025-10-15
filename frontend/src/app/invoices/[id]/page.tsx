@@ -7,11 +7,19 @@ import DashboardLayout from '@/components/DashboardLayout';
 
 interface Invoice {
   id: string;
-  file_name: string;  // FIXED: Changed from filename to file_name to match database
-  extracted_data: any;
-  status: string;
+  document_id: string;
+  invoice_number: string;
+  vendor_name: string;
+  total_amount: number;
+  payment_status: string;
+  invoice_date: string;
   created_at: string;
   user_id?: string;
+  raw_extracted_data?: any;
+  documents?: {
+    file_name: string;
+    storage_path: string;
+  };
 }
 
 export default function InvoiceDetailPage() {
@@ -33,7 +41,13 @@ export default function InvoiceDetailPage() {
         
         const { data, error } = await supabase
           .from('invoices')
-          .select('*')
+          .select(`
+            *,
+            documents:document_id (
+              file_name,
+              storage_path
+            )
+          `)
           .eq('id', params.id)
           .single();
 
@@ -98,33 +112,55 @@ export default function InvoiceDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Basic Information
+                Invoice Information
               </h2>
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Filename
+                    Invoice Number
                   </label>
-                  <p className="text-gray-900 dark:text-white">{invoice.file_name}</p>
+                  <p className="text-gray-900 dark:text-white">{invoice.invoice_number || 'N/A'}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Status
+                    Vendor Name
+                  </label>
+                  <p className="text-gray-900 dark:text-white">{invoice.vendor_name || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Total Amount
+                  </label>
+                  <p className="text-gray-900 dark:text-white font-bold">
+                    ₹{invoice.total_amount?.toLocaleString() || '0'}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Payment Status
                   </label>
                   <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    invoice.status === 'completed' 
+                    invoice.payment_status === 'paid' 
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-yellow-100 text-yellow-800'
                   }`}>
-                    {invoice.status}
+                    {invoice.payment_status || 'unpaid'}
                   </span>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Created At
+                    Invoice Date
                   </label>
                   <p className="text-gray-900 dark:text-white">
-                    {new Date(invoice.created_at).toLocaleString()}
+                    {invoice.invoice_date ? new Date(invoice.invoice_date).toLocaleDateString() : 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Document File
+                  </label>
+                  <p className="text-gray-900 dark:text-white">
+                    {invoice.documents?.file_name || 'No document attached'}
                   </p>
                 </div>
               </div>
@@ -132,12 +168,12 @@ export default function InvoiceDetailPage() {
 
             <div>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Extracted Data
+                Raw Extracted Data
               </h2>
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                <pre className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap overflow-auto">
-                  {invoice.extracted_data 
-                    ? JSON.stringify(invoice.extracted_data, null, 2)
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 max-h-96 overflow-auto">
+                <pre className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                  {invoice.raw_extracted_data 
+                    ? JSON.stringify(invoice.raw_extracted_data, null, 2)
                     : 'No extracted data available'}
                 </pre>
               </div>
