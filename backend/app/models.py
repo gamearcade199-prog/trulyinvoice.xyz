@@ -112,8 +112,8 @@ class UsageLog(Base):
     operation_type = Column(String(50), nullable=False)  # scan, export, bulk_upload, etc.
     resource_id = Column(String(255), nullable=True)  # Invoice ID, Document ID, etc.
     
-    # Metadata
-    metadata = Column(Text, nullable=True)  # JSON string for additional data
+    # Metadata (renamed from 'metadata' to avoid SQLAlchemy reserved word)
+    extra_data = Column(Text, nullable=True)  # JSON string for additional data
     
     # Timestamp
     timestamp = Column(DateTime, nullable=False, default=datetime.utcnow, server_default=func.now(), index=True)
