@@ -8,7 +8,7 @@ from pydantic import BaseModel, EmailStr
 from datetime import datetime, timedelta
 from typing import Optional
 
-from app.database import get_db
+from app.core.database import get_db
 from app.models import Subscription
 
 router = APIRouter()

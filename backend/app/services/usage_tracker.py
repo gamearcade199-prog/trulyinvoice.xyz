@@ -8,7 +8,7 @@ from typing import Dict, Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
 
-from ..models.models import User, Subscription, Document
+from ..models import Subscription, Invoice
 from ..config.plans import get_scan_limit, get_bulk_upload_limit, PLAN_LIMITS
 
 
@@ -234,10 +234,10 @@ class UsageTracker:
         start_date = datetime.utcnow() - timedelta(days=days)
         
         # Count documents uploaded in the period
-        documents = self.db.query(Document).filter(
+        documents = self.db.query(Invoice).filter(
             and_(
-                Document.user_id == user_id,
-                Document.uploaded_at >= start_date
+                Invoice.user_id == user_id,
+                Invoice.uploaded_at >= start_date
             )
         ).all()
         
@@ -278,10 +278,10 @@ class UsageTracker:
         cutoff_date = datetime.utcnow() - timedelta(days=storage_days)
         
         # Find old documents
-        old_documents = self.db.query(Document).filter(
+        old_documents = self.db.query(Invoice).filter(
             and_(
-                Document.user_id == user_id,
-                Document.uploaded_at < cutoff_date
+                Invoice.user_id == user_id,
+                Invoice.uploaded_at < cutoff_date
             )
         ).all()
         

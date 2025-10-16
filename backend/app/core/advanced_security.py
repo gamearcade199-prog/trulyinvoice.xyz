@@ -15,7 +15,7 @@ import pyotp
 from passlib.context import CryptContext
 
 from ..core.database import get_db
-from ..models.models import User
+# from ..models import User  # User model not needed with Supabase auth
 
 
 # Password context with bcrypt

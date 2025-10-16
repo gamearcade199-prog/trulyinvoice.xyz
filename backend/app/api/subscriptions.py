@@ -10,8 +10,8 @@ from pydantic import BaseModel
 from datetime import datetime
 
 from ..core.database import get_db
-from ..core.security import get_current_user
-from ..models.models import User, Subscription
+from app.auth import get_current_user
+from ..models import Subscription
 from ..config.plans import (
     get_all_plans, 
     get_plan_config, 
@@ -164,7 +164,7 @@ async def get_plan_details(tier: str):
 
 @router.get("/current", response_model=CurrentSubscriptionResponse)
 async def get_current_subscription(
-    current_user: User = Depends(get_current_user),
+    current_user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -176,7 +176,7 @@ async def get_current_subscription(
     tracker = UsageTracker(db)
     
     # Get usage stats
-    stats = await tracker.get_usage_stats(current_user.id)
+    stats = await tracker.get_usage_stats(current_user_id)
     
     # Check upgrade options
     current_tier = stats["tier"]
@@ -189,10 +189,10 @@ async def get_current_subscription(
     can_downgrade = current_tier != "free"
     
     # Get recommended upgrade
-    recommended = await tracker.get_upgrade_recommendation(current_user.id)
+    recommended = await tracker.get_upgrade_recommendation(current_user_id)
     
     return CurrentSubscriptionResponse(
-        user_id=current_user.id,
+        user_id=current_user_id,
         tier=stats["tier"],
         tier_name=stats["tier_name"],
         status="active",
@@ -211,7 +211,7 @@ async def get_current_subscription(
 
 @router.get("/usage", response_model=UsageResponse)
 async def get_usage_statistics(
-    current_user: User = Depends(get_current_user),
+    current_user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -221,10 +221,10 @@ async def get_usage_statistics(
         Usage information
     """
     tracker = UsageTracker(db)
-    stats = await tracker.get_usage_stats(current_user.id)
+    stats = await tracker.get_usage_stats(current_user_id)
     
     return UsageResponse(
-        user_id=current_user.id,
+        user_id=current_user_id,
         tier=stats["tier"],
         tier_name=stats["tier_name"],
         scans_used=stats["scans_used"],
@@ -240,7 +240,7 @@ async def get_usage_statistics(
 @router.post("/upgrade", response_model=UpgradeResponse)
 async def upgrade_subscription(
     request: UpgradeRequest,
-    current_user: User = Depends(get_current_user),
+    current_user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -258,7 +258,7 @@ async def upgrade_subscription(
     tracker = UsageTracker(db)
     
     # Get current tier
-    current_tier = await tracker.get_current_tier(current_user.id)
+    current_tier = await tracker.get_current_tier(current_user_id)
     target_tier = request.target_tier.lower()
     
     # Validate target tier
@@ -297,7 +297,7 @@ async def upgrade_subscription(
         effective_date=datetime.utcnow().isoformat()
     )
     
-    subscription = await tracker.get_user_subscription(current_user.id)
+    subscription = await tracker.get_user_subscription(current_user_id)
     
     if subscription:
         subscription.tier = target_tier
@@ -306,7 +306,7 @@ async def upgrade_subscription(
         # Create new subscription
         from datetime import datetime, timedelta
         subscription = Subscription(
-            user_id=current_user.id,
+            user_id=current_user_id,
             tier=target_tier,
             status='active',
             scans_used_this_period=0,
@@ -331,7 +331,7 @@ async def upgrade_subscription(
 @router.post("/downgrade", response_model=UpgradeResponse)
 async def downgrade_subscription(
     request: UpgradeRequest,
-    current_user: User = Depends(get_current_user),
+    current_user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -344,7 +344,7 @@ async def downgrade_subscription(
 
 @router.post("/cancel")
 async def cancel_subscription(
-    current_user: User = Depends(get_current_user),
+    current_user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -356,7 +356,7 @@ async def cancel_subscription(
     tracker = UsageTracker(db)
     
     # Get current tier
-    current_tier = await tracker.get_current_tier(current_user.id)
+    current_tier = await tracker.get_current_tier(current_user_id)
     
     if current_tier == "free":
         raise HTTPException(
@@ -365,7 +365,7 @@ async def cancel_subscription(
         )
     
     # Downgrade to free
-    subscription = await tracker.get_user_subscription(current_user.id)
+    subscription = await tracker.get_user_subscription(current_user_id)
     
     if subscription:
         subscription.tier = "free"
@@ -383,7 +383,7 @@ async def cancel_subscription(
 
 @router.get("/history")
 async def get_subscription_history(
-    current_user: User = Depends(get_current_user),
+    current_user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -396,7 +396,7 @@ async def get_subscription_history(
     # For now, return current subscription
     
     tracker = UsageTracker(db)
-    subscription = await tracker.get_user_subscription(current_user.id)
+    subscription = await tracker.get_user_subscription(current_user_id)
     
     if not subscription:
         return {"history": []}
@@ -416,7 +416,7 @@ async def get_subscription_history(
 @router.post("/check-quota")
 async def check_quota_availability(
     scans_needed: int = 1,
-    current_user: User = Depends(get_current_user),
+    current_user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -429,7 +429,7 @@ async def check_quota_availability(
         Quota availability status
     """
     tracker = UsageTracker(db)
-    has_quota, message = await tracker.check_quota(current_user.id, scans_needed)
+    has_quota, message = await tracker.check_quota(current_user_id, scans_needed)
     
     if has_quota:
         return {

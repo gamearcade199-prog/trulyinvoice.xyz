@@ -5,7 +5,7 @@ SQLAlchemy ORM models for TrulyInvoice
 from sqlalchemy import Column, String, Integer, DateTime, Boolean, Text, Float
 from sqlalchemy.sql import func
 from datetime import datetime
-from app.database import Base
+from app.core.database import Base
 
 
 class Subscription(Base):

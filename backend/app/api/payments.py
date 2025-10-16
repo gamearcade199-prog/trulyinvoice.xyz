@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 from pydantic import BaseModel
 
-from app.database import get_db
+from app.core.database import get_db
 from app.services.razorpay_service import razorpay_service
 from app.auth import get_current_user
 
