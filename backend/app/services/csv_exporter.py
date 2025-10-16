@@ -24,7 +24,7 @@ class CSVExporter:
     
     def export_invoice(self, invoice_data: Dict, filename: str = None) -> str:
         """
-        Export invoice to plain CSV format
+        Export invoice to comprehensive CSV format with ALL extracted fields
         
         Args:
             invoice_data: Invoice data dictionary
@@ -38,16 +38,127 @@ class CSVExporter:
             invoice_num = invoice_data.get('invoice_number', 'INVOICE').replace('/', '_')
             filename = f"Invoice_{invoice_num}_{datetime.now().strftime('%Y%m%d')}.csv"
         
-        # Create CSV content
+        # Create comprehensive CSV content with ALL fields
         with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile)
             
-            # ============ HEADER SECTION ============
-            writer.writerow(['Invoice Number', invoice_data.get('invoice_number', 'N/A')])
-            writer.writerow(['Invoice Date', invoice_data.get('invoice_date', 'N/A')])
-            writer.writerow(['Vendor Name', invoice_data.get('vendor_name', 'N/A')])
-            writer.writerow(['Vendor GSTIN', invoice_data.get('vendor_gstin', 'N/A')])
-            writer.writerow(['Payment Status', invoice_data.get('payment_status', 'unpaid').upper()])
+            # ============ COMPLETE INVOICE DATA ============
+            # Core Invoice Information
+            writer.writerow(['Invoice Number', invoice_data.get('invoice_number', '')])
+            writer.writerow(['Invoice Date', invoice_data.get('invoice_date', '')])
+            writer.writerow(['Due Date', invoice_data.get('due_date', '')])
+            writer.writerow(['Total Amount', invoice_data.get('total_amount', 0)])
+            writer.writerow(['Currency', invoice_data.get('currency', 'INR')])
+            
+            # Vendor Information
+            writer.writerow(['Vendor Name', invoice_data.get('vendor_name', '')])
+            writer.writerow(['Vendor GSTIN', invoice_data.get('vendor_gstin', '')])
+            writer.writerow(['Vendor PAN', invoice_data.get('vendor_pan', '')])
+            writer.writerow(['Vendor Email', invoice_data.get('vendor_email', '')])
+            writer.writerow(['Vendor Phone', invoice_data.get('vendor_phone', '')])
+            writer.writerow(['Vendor Address', invoice_data.get('vendor_address', '')])
+            writer.writerow(['Vendor State', invoice_data.get('vendor_state', '')])
+            writer.writerow(['Vendor Pincode', invoice_data.get('vendor_pincode', '')])
+            
+            # Customer Information
+            writer.writerow(['Customer Name', invoice_data.get('customer_name', '')])
+            writer.writerow(['Customer GSTIN', invoice_data.get('customer_gstin', '')])
+            writer.writerow(['Customer Address', invoice_data.get('customer_address', '')])
+            writer.writerow(['Customer State', invoice_data.get('customer_state', '')])
+            writer.writerow(['Customer Phone', invoice_data.get('customer_phone', '')])
+            
+            # Financial Breakdown
+            writer.writerow(['Subtotal', invoice_data.get('subtotal', 0)])
+            writer.writerow(['Taxable Amount', invoice_data.get('taxable_amount', 0)])
+            writer.writerow(['Discount', invoice_data.get('discount', 0)])
+            writer.writerow(['Shipping Charges', invoice_data.get('shipping_charges', 0)])
+            writer.writerow(['Other Charges', invoice_data.get('other_charges', 0)])
+            writer.writerow(['Roundoff', invoice_data.get('roundoff', 0)])
+            
+            # GST & Tax Details
+            writer.writerow(['CGST', invoice_data.get('cgst', 0)])
+            writer.writerow(['SGST', invoice_data.get('sgst', 0)])
+            writer.writerow(['IGST', invoice_data.get('igst', 0)])
+            writer.writerow(['UGST', invoice_data.get('ugst', 0)])
+            writer.writerow(['CESS', invoice_data.get('cess', 0)])
+            writer.writerow(['Total GST', invoice_data.get('total_gst', 0)])
+            writer.writerow(['HSN Code', invoice_data.get('hsn_code', '')])
+            writer.writerow(['SAC Code', invoice_data.get('sac_code', '')])
+            writer.writerow(['Place of Supply', invoice_data.get('place_of_supply', '')])
+            
+            # Banking Information
+            writer.writerow(['Bank Name', invoice_data.get('bank_name', '')])
+            writer.writerow(['Account Number', invoice_data.get('account_number', '')])
+            writer.writerow(['IFSC Code', invoice_data.get('ifsc_code', '')])
+            writer.writerow(['SWIFT Code', invoice_data.get('swift_code', '')])
+            
+            # Payment & Business Terms
+            writer.writerow(['Payment Status', invoice_data.get('payment_status', 'pending')])
+            writer.writerow(['Payment Method', invoice_data.get('payment_method', '')])
+            writer.writerow(['Payment Terms', invoice_data.get('payment_terms', '')])
+            
+            # Purchase Order Details
+            writer.writerow(['PO Number', invoice_data.get('po_number', '')])
+            writer.writerow(['PO Date', invoice_data.get('po_date', '')])
+            writer.writerow(['Invoice Type', invoice_data.get('invoice_type', '')])
+            writer.writerow(['Supply Type', invoice_data.get('supply_type', '')])
+            writer.writerow(['Reverse Charge', invoice_data.get('reverse_charge', '')])
+            
+            # Additional Taxes
+            writer.writerow(['VAT', invoice_data.get('vat', 0)])
+            writer.writerow(['Service Tax', invoice_data.get('service_tax', 0)])
+            writer.writerow(['TDS Amount', invoice_data.get('tds_amount', 0)])
+            writer.writerow(['TCS Amount', invoice_data.get('tcs_amount', 0)])
+            
+            # Import/Export Fields
+            writer.writerow(['Bill of Entry', invoice_data.get('bill_of_entry', '')])
+            writer.writerow(['Port Code', invoice_data.get('port_code', '')])
+            
+            # Industry-Specific Fields
+            # Hotel & Hospitality
+            if invoice_data.get('arrival_date') or invoice_data.get('room_number'):
+                writer.writerow(['=== HOTEL & HOSPITALITY ===', ''])
+                writer.writerow(['Arrival Date', invoice_data.get('arrival_date', '')])
+                writer.writerow(['Departure Date', invoice_data.get('departure_date', '')])
+                writer.writerow(['Room Number', invoice_data.get('room_number', '')])
+                writer.writerow(['Guest Count', invoice_data.get('guest_count', '')])
+                writer.writerow(['Booking Reference', invoice_data.get('booking_reference', '')])
+            
+            # Retail & E-commerce
+            if invoice_data.get('order_id') or invoice_data.get('tracking_number'):
+                writer.writerow(['=== RETAIL & E-COMMERCE ===', ''])
+                writer.writerow(['Order ID', invoice_data.get('order_id', '')])
+                writer.writerow(['Tracking Number', invoice_data.get('tracking_number', '')])
+                writer.writerow(['Shipping Method', invoice_data.get('shipping_method', '')])
+                writer.writerow(['Delivery Date', invoice_data.get('delivery_date', '')])
+            
+            # Manufacturing
+            if invoice_data.get('purchase_order') or invoice_data.get('batch_number'):
+                writer.writerow(['=== MANUFACTURING ===', ''])
+                writer.writerow(['Purchase Order', invoice_data.get('purchase_order', '')])
+                writer.writerow(['Batch Number', invoice_data.get('batch_number', '')])
+                writer.writerow(['Quality Certificate', invoice_data.get('quality_certificate', '')])
+                writer.writerow(['Warranty Period', invoice_data.get('warranty_period', '')])
+            
+            # Professional Services
+            if invoice_data.get('project_name') or invoice_data.get('consultant_name'):
+                writer.writerow(['=== PROFESSIONAL SERVICES ===', ''])
+                writer.writerow(['Project Name', invoice_data.get('project_name', '')])
+                writer.writerow(['Consultant Name', invoice_data.get('consultant_name', '')])
+                writer.writerow(['Hourly Rate', invoice_data.get('hourly_rate', 0)])
+                writer.writerow(['Hours Worked', invoice_data.get('hours_worked', 0)])
+            
+            # Quality & Metadata
+            writer.writerow(['=== EXTRACTION QUALITY ===', ''])
+            writer.writerow(['Processing Time (seconds)', invoice_data.get('processing_time_seconds', 0)])
+            writer.writerow(['Quality Score (%)', invoice_data.get('quality_score', 0)])
+            writer.writerow(['Extraction Version', invoice_data.get('extraction_version', 'v2.5')])
+            writer.writerow(['Data Source', invoice_data.get('data_source', 'gemini-2.5-flash')])
+            
+            # Empty row before line items
+            writer.writerow(['', ''])
+            
+            # ============ LINE ITEMS SECTION ============
             writer.writerow([])  # Blank row separator
             
             # ============ LINE ITEMS ============
@@ -134,7 +245,7 @@ class CSVExporter:
     
     def export_bulk_invoices(self, invoices: List[Dict], filename: str = None) -> str:
         """
-        Export multiple invoices to single CSV (for bulk processing)
+        Export multiple invoices to single comprehensive CSV (for bulk processing)
         
         Args:
             invoices: List of invoice data dictionaries
@@ -145,50 +256,158 @@ class CSVExporter:
         """
         
         if not filename:
-            filename = f"Invoices_Bulk_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            filename = f"Invoices_Bulk_Comprehensive_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         
         with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile)
             
-            # Headers for bulk export
+            # Comprehensive headers for bulk export (ALL fields)
             headers = [
-                'Invoice Number',
-                'Invoice Date',
-                'Vendor Name',
-                'Vendor GSTIN',
-                'Subtotal',
-                'CGST',
-                'SGST',
-                'IGST',
-                'Total Amount',
-                'Payment Status'
+                # Core Invoice Information
+                'Invoice Number', 'Invoice Date', 'Due Date', 'Total Amount', 'Currency',
+                
+                # Vendor Information
+                'Vendor Name', 'Vendor GSTIN', 'Vendor PAN', 'Vendor Email', 'Vendor Phone',
+                'Vendor Address', 'Vendor State', 'Vendor Pincode',
+                
+                # Customer Information
+                'Customer Name', 'Customer GSTIN', 'Customer Address', 'Customer State', 'Customer Phone',
+                
+                # Financial Breakdown
+                'Subtotal', 'Taxable Amount', 'Discount', 'Shipping Charges', 'Other Charges', 'Roundoff',
+                
+                # GST & Tax Details
+                'CGST', 'SGST', 'IGST', 'UGST', 'CESS', 'Total GST', 'HSN Code', 'SAC Code', 'Place of Supply',
+                
+                # Banking Information
+                'Bank Name', 'Account Number', 'IFSC Code', 'SWIFT Code',
+                
+                # Payment & Business Terms
+                'Payment Status', 'Payment Method', 'Payment Terms',
+                
+                # Purchase Order Details
+                'PO Number', 'PO Date', 'Invoice Type', 'Supply Type', 'Reverse Charge',
+                
+                # Additional Taxes
+                'VAT', 'Service Tax', 'TDS Amount', 'TCS Amount',
+                
+                # Import/Export Fields
+                'Bill of Entry', 'Port Code',
+                
+                # Industry-Specific Fields
+                'Arrival Date', 'Departure Date', 'Room Number', 'Guest Count', 'Booking Reference',
+                'Order ID', 'Tracking Number', 'Shipping Method', 'Delivery Date',
+                'Purchase Order', 'Batch Number', 'Quality Certificate', 'Warranty Period',
+                'Project Name', 'Consultant Name', 'Hourly Rate', 'Hours Worked',
+                
+                # Quality & Metadata
+                'Processing Time (seconds)', 'Quality Score (%)', 'Extraction Version', 'Data Source'
             ]
             writer.writerow(headers)
             
-            # Write each invoice as a row
+            # Write each invoice as a row with ALL fields
             for invoice in invoices:
-                # Handle None values properly
-                subtotal = invoice.get('subtotal') or 0
-                cgst = invoice.get('cgst') or 0
-                sgst = invoice.get('sgst') or 0
-                igst = invoice.get('igst') or 0
-                total_amount = invoice.get('total_amount') or 0
-                
+                # Handle None values properly and create comprehensive row
                 row = [
-                    invoice.get('invoice_number', 'N/A'),
-                    invoice.get('invoice_date', 'N/A'),
-                    invoice.get('vendor_name', 'N/A'),
-                    invoice.get('vendor_gstin', 'N/A'),
-                    f"{float(subtotal):.2f}",
-                    f"{float(cgst):.2f}",
-                    f"{float(sgst):.2f}",
-                    f"{float(igst):.2f}",
-                    f"{float(total_amount):.2f}",
-                    str(invoice.get('payment_status', 'unpaid')).upper()
+                    # Core Invoice Information
+                    invoice.get('invoice_number', ''),
+                    invoice.get('invoice_date', ''),
+                    invoice.get('due_date', ''),
+                    f"{float(invoice.get('total_amount', 0)):.2f}",
+                    invoice.get('currency', 'INR'),
+                    
+                    # Vendor Information
+                    invoice.get('vendor_name', ''),
+                    invoice.get('vendor_gstin', ''),
+                    invoice.get('vendor_pan', ''),
+                    invoice.get('vendor_email', ''),
+                    invoice.get('vendor_phone', ''),
+                    invoice.get('vendor_address', ''),
+                    invoice.get('vendor_state', ''),
+                    invoice.get('vendor_pincode', ''),
+                    
+                    # Customer Information
+                    invoice.get('customer_name', ''),
+                    invoice.get('customer_gstin', ''),
+                    invoice.get('customer_address', ''),
+                    invoice.get('customer_state', ''),
+                    invoice.get('customer_phone', ''),
+                    
+                    # Financial Breakdown
+                    f"{float(invoice.get('subtotal', 0)):.2f}",
+                    f"{float(invoice.get('taxable_amount', 0)):.2f}",
+                    f"{float(invoice.get('discount', 0)):.2f}",
+                    f"{float(invoice.get('shipping_charges', 0)):.2f}",
+                    f"{float(invoice.get('other_charges', 0)):.2f}",
+                    f"{float(invoice.get('roundoff', 0)):.2f}",
+                    
+                    # GST & Tax Details
+                    f"{float(invoice.get('cgst', 0)):.2f}",
+                    f"{float(invoice.get('sgst', 0)):.2f}",
+                    f"{float(invoice.get('igst', 0)):.2f}",
+                    f"{float(invoice.get('ugst', 0)):.2f}",
+                    f"{float(invoice.get('cess', 0)):.2f}",
+                    f"{float(invoice.get('total_gst', 0)):.2f}",
+                    invoice.get('hsn_code', ''),
+                    invoice.get('sac_code', ''),
+                    invoice.get('place_of_supply', ''),
+                    
+                    # Banking Information
+                    invoice.get('bank_name', ''),
+                    invoice.get('account_number', ''),
+                    invoice.get('ifsc_code', ''),
+                    invoice.get('swift_code', ''),
+                    
+                    # Payment & Business Terms
+                    invoice.get('payment_status', 'pending'),
+                    invoice.get('payment_method', ''),
+                    invoice.get('payment_terms', ''),
+                    
+                    # Purchase Order Details
+                    invoice.get('po_number', ''),
+                    invoice.get('po_date', ''),
+                    invoice.get('invoice_type', ''),
+                    invoice.get('supply_type', ''),
+                    invoice.get('reverse_charge', ''),
+                    
+                    # Additional Taxes
+                    f"{float(invoice.get('vat', 0)):.2f}",
+                    f"{float(invoice.get('service_tax', 0)):.2f}",
+                    f"{float(invoice.get('tds_amount', 0)):.2f}",
+                    f"{float(invoice.get('tcs_amount', 0)):.2f}",
+                    
+                    # Import/Export Fields
+                    invoice.get('bill_of_entry', ''),
+                    invoice.get('port_code', ''),
+                    
+                    # Industry-Specific Fields
+                    invoice.get('arrival_date', ''),
+                    invoice.get('departure_date', ''),
+                    invoice.get('room_number', ''),
+                    invoice.get('guest_count', ''),
+                    invoice.get('booking_reference', ''),
+                    invoice.get('order_id', ''),
+                    invoice.get('tracking_number', ''),
+                    invoice.get('shipping_method', ''),
+                    invoice.get('delivery_date', ''),
+                    invoice.get('purchase_order', ''),
+                    invoice.get('batch_number', ''),
+                    invoice.get('quality_certificate', ''),
+                    invoice.get('warranty_period', ''),
+                    invoice.get('project_name', ''),
+                    invoice.get('consultant_name', ''),
+                    f"{float(invoice.get('hourly_rate', 0)):.2f}",
+                    f"{float(invoice.get('hours_worked', 0)):.2f}",
+                    
+                    # Quality & Metadata
+                    f"{float(invoice.get('processing_time_seconds', 0)):.2f}",
+                    f"{float(invoice.get('quality_score', 0)):.1f}",
+                    invoice.get('extraction_version', 'v2.5'),
+                    invoice.get('data_source', 'gemini-2.5-flash')
                 ]
                 writer.writerow(row)
         
-        print(f"✅ Bulk CSV exported: {filename} ({len(invoices)} invoices)")
+        print(f"✅ Comprehensive Bulk CSV exported: {filename} ({len(invoices)} invoices)")
         return filename
 
 

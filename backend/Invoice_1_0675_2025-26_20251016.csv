@@ -1,0 +1,59 @@
+Invoice Number,1/0675/2025-26
+Invoice Date,2025-06-04
+Due Date,
+Total Amount,40000.0
+Currency,INR
+Vendor Name,INNOVATION
+Vendor GSTIN,
+Vendor PAN,
+Vendor Email,
+Vendor Phone,9706015009
+Vendor Address,"Janata Hotel Building, Opp Swad Sweet & Snacks Paltan Bazar, Guwahati 781008"
+Vendor State,
+Vendor Pincode,
+Customer Name,Akib Hussain
+Customer GSTIN,
+Customer Address,
+Customer State,
+Customer Phone,
+Subtotal,33898.31
+Taxable Amount,
+Discount,
+Shipping Charges,
+Other Charges,
+Roundoff,
+CGST,3050.85
+SGST,3050.85
+IGST,
+UGST,
+CESS,
+Total GST,6101.7
+HSN Code,
+SAC Code,
+Place of Supply,
+Bank Name,
+Account Number,
+IFSC Code,
+SWIFT Code,
+Payment Status,paid
+Payment Method,
+Payment Terms,
+PO Number,
+PO Date,
+Invoice Type,
+Supply Type,
+Reverse Charge,False
+VAT,
+Service Tax,
+TDS Amount,
+TCS Amount,
+Bill of Entry,
+Port Code,
+=== EXTRACTION QUALITY ===,
+Processing Time (seconds),
+Quality Score (%),
+Extraction Version,v2.5
+Data Source,gemini-2.5-flash
+,
+
+#,Description,HSN/SAC,Quantity,Rate,Amount,CGST Rate,CGST Amount,SGST Rate,SGST Amount,IGST Rate,IGST Amount,Line Total

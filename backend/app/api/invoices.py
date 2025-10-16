@@ -12,6 +12,10 @@ from app.services.professional_excel_exporter import ProfessionalInvoiceExporter
 from app.services.professional_pdf_exporter import ProfessionalPDFExporter
 from app.services.accountant_excel_exporter import AccountantExcelExporter
 from app.services.csv_exporter import CSVExporter
+# 🚀 NEW BULLETPROOF EXPORTERS - GEMINI COMPATIBLE (temporarily disabled)
+# from app.services.bulletproof_excel_exporter import BulletproofExcelExporter
+# from app.services.bulletproof_pdf_exporter import BulletproofPDFExporter
+# from app.services.bulletproof_csv_exporter import BulletproofCSVExporter
 
 router = APIRouter()
 
@@ -58,7 +62,12 @@ async def delete_invoice(invoice_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ============ NEW: PROFESSIONAL EXPORT ENDPOINTS ============
+# ============ 🚀 BULLETPROOF 10/10 EXPORT ENDPOINTS (temporarily disabled) ============
+# Will enable after fixing line continuation issues in the export files
+# These endpoints will provide 10/10 quality exports using ALL Gemini extracted data
+
+
+# ============ ORIGINAL EXPORT ENDPOINTS (LEGACY) ============
 
 @router.get("/{invoice_id}/export-pdf")
 async def export_invoice_pdf(invoice_id: str):

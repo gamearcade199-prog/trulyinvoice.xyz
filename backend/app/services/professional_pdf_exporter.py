@@ -140,6 +140,84 @@ class ProfessionalPDFExporter:
         print(f"✅ Professional PDF invoice exported: {filename}")
         return filename
     
+    def export_invoices_bulk(self, invoices: List[Dict], filename: str = None) -> str:
+        """Export multiple invoices to a single PDF file"""
+        if not filename:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"bulk_invoices_professional_{timestamp}.pdf"
+        
+        # Create PDF with multiple invoices
+        pdf = SimpleDocTemplate(
+            filename,
+            pagesize=A4,
+            rightMargin=40,
+            leftMargin=40,
+            topMargin=40,
+            bottomMargin=40
+        )
+        
+        story = []
+        
+        # Title page
+        title_data = [['BULK INVOICE EXPORT']]
+        title_table = Table(title_data, colWidths=[7 * inch])
+        title_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.darkblue),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.white),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 24),
+            ('TOPPADDING', (0, 0), (-1, -1), 20),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 20),
+        ]))
+        
+        story.append(title_table)
+        story.append(Spacer(1, 0.5 * inch))
+        
+        # Summary table
+        summary_data = [['Invoice #', 'Date', 'Vendor', 'Amount', 'Status']]
+        for invoice in invoices:
+            summary_data.append([
+                invoice.get('invoice_number', 'N/A'),
+                invoice.get('invoice_date', 'N/A'),
+                invoice.get('vendor_name', 'N/A')[:20],
+                f"₹{invoice.get('total_amount', 0):,.2f}",
+                invoice.get('payment_status', 'N/A')
+            ])
+        
+        summary_table = Table(summary_data, colWidths=[1.2*inch, 1*inch, 2*inch, 1.2*inch, 1*inch])
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey])
+        ]))
+        
+        story.append(summary_table)
+        story.append(PageBreak())
+        
+        # Individual invoices (first 5 only to prevent huge files)
+        for i, invoice in enumerate(invoices[:5]):
+            if i > 0:
+                story.append(PageBreak())
+            
+            # Add invoice header
+            story.append(Paragraph(f"Invoice {i+1}/{min(len(invoices), 5)}", 
+                                 getSampleStyleSheet()['Heading2']))
+            story.append(Spacer(1, 0.2 * inch))
+            
+            # Add basic invoice details
+            story.extend(self._build_invoice_info(invoice))
+            story.extend(self._build_line_items(invoice))
+            story.extend(self._build_tax_summary(invoice))
+        
+        pdf.build(story)
+        print(f"✅ Bulk PDF exported: {filename} ({len(invoices)} invoices)")
+        return filename
+    
     def _build_header(self) -> List:
         """Build PDF header with branding"""
         elements = []
@@ -168,13 +246,13 @@ class ProfessionalPDFExporter:
         return elements
     
     def _build_vendor_section(self, data: Dict) -> List:
-        """Build vendor information section"""
+        """Build comprehensive vendor and customer information section"""
         elements = []
         
-        # Section header
-        header_data = [['VENDOR INFORMATION']]
-        header_table = Table(header_data, colWidths=[7 * inch])
-        header_table.setStyle(TableStyle([
+        # VENDOR INFORMATION Section
+        vendor_header_data = [['VENDOR INFORMATION']]
+        vendor_header_table = Table(vendor_header_data, colWidths=[7 * inch])
+        vendor_header_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, -1), self.colors['subheader']),
             ('TEXTCOLOR', (0, 0), (-1, -1), self.colors['white']),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
@@ -184,20 +262,23 @@ class ProfessionalPDFExporter:
             ('TOPPADDING', (0, 0), (-1, -1), 8),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
         ]))
-        elements.append(header_table)
+        elements.append(vendor_header_table)
         elements.append(Spacer(1, 0.1 * inch))
         
-        # Vendor details
+        # Comprehensive vendor details
         vendor_data = [
-            ['Vendor Name:', data.get('vendor_name', 'N/A')],
-            ['GSTIN:', data.get('vendor_gstin', 'N/A')],
-            ['Address:', data.get('vendor_address', 'N/A')],
+            ['Vendor Name:', data.get('vendor_name', 'N/A'), 'GSTIN:', data.get('vendor_gstin', 'N/A')],
+            ['PAN:', data.get('vendor_pan', 'N/A'), 'Email:', data.get('vendor_email', 'N/A')],
+            ['Phone:', data.get('vendor_phone', 'N/A'), 'State:', data.get('vendor_state', 'N/A')],
+            ['Address:', data.get('vendor_address', 'N/A'), 'Pincode:', data.get('vendor_pincode', 'N/A')],
         ]
         
-        vendor_table = Table(vendor_data, colWidths=[1.5 * inch, 5.5 * inch])
+        vendor_table = Table(vendor_data, colWidths=[1.2 * inch, 2.3 * inch, 1.2 * inch, 2.3 * inch])
         vendor_table.setStyle(TableStyle([
             ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
             ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+            ('FONTNAME', (3, 0), (3, -1), 'Helvetica'),
             ('FONTSIZE', (0, 0), (-1, -1), 10),
             ('LEFTPADDING', (0, 0), (-1, -1), 12),
             ('RIGHTPADDING', (0, 0), (-1, -1), 12),
@@ -205,11 +286,87 @@ class ProfessionalPDFExporter:
             ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ]))
         elements.append(vendor_table)
+        elements.append(Spacer(1, 0.2 * inch))
         
+        # CUSTOMER INFORMATION Section
+        customer_header_data = [['CUSTOMER INFORMATION']]
+        customer_header_table = Table(customer_header_data, colWidths=[7 * inch])
+        customer_header_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), self.colors['subheader']),
+            ('TEXTCOLOR', (0, 0), (-1, -1), self.colors['white']),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 12),
+            ('LEFTPADDING', (0, 0), (-1, -1), 12),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ]))
+        elements.append(customer_header_table)
+        elements.append(Spacer(1, 0.1 * inch))
+        
+        # Customer details
+        customer_data = [
+            ['Customer Name:', data.get('customer_name', 'N/A'), 'GSTIN:', data.get('customer_gstin', 'N/A')],
+            ['Phone:', data.get('customer_phone', 'N/A'), 'State:', data.get('customer_state', 'N/A')],
+            ['Address:', data.get('customer_address', 'N/A'), '', ''],
+        ]
+        
+        customer_table = Table(customer_data, colWidths=[1.2 * inch, 2.3 * inch, 1.2 * inch, 2.3 * inch])
+        customer_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
+            ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+            ('FONTNAME', (3, 0), (3, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('LEFTPADDING', (0, 0), (-1, -1), 12),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ]))
+        elements.append(customer_table)
+        
+        # Banking Information (if available)
+        if data.get('bank_name') or data.get('account_number') or data.get('ifsc_code'):
+            elements.append(Spacer(1, 0.2 * inch))
+            
+            bank_header_data = [['BANKING INFORMATION']]
+            bank_header_table = Table(bank_header_data, colWidths=[7 * inch])
+            bank_header_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), self.colors['subheader']),
+                ('TEXTCOLOR', (0, 0), (-1, -1), self.colors['white']),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, -1), 12),
+                ('LEFTPADDING', (0, 0), (-1, -1), 12),
+                ('TOPPADDING', (0, 0), (-1, -1), 8),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ]))
+            elements.append(bank_header_table)
+            elements.append(Spacer(1, 0.1 * inch))
+            
+            bank_data = [
+                ['Bank Name:', data.get('bank_name', 'N/A'), 'Account Number:', data.get('account_number', 'N/A')],
+                ['IFSC Code:', data.get('ifsc_code', 'N/A'), 'SWIFT Code:', data.get('swift_code', 'N/A')],
+            ]
+            
+            bank_table = Table(bank_data, colWidths=[1.2 * inch, 2.3 * inch, 1.2 * inch, 2.3 * inch])
+            bank_table.setStyle(TableStyle([
+                ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+                ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
+                ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+                ('FONTNAME', (3, 0), (3, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ('LEFTPADDING', (0, 0), (-1, -1), 12),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ]))
+            elements.append(bank_table)
+
         return elements
     
     def _build_invoice_details(self, data: Dict) -> List:
-        """Build invoice details section"""
+        """Build comprehensive invoice details section"""
         elements = []
         
         # Section header
@@ -232,12 +389,26 @@ class ProfessionalPDFExporter:
         payment_status = data.get('payment_status', 'unpaid').upper()
         status_color = self.colors['success'] if 'PAID' in payment_status else self.colors['warning']
         
-        # Invoice details (two columns)
+        # Core invoice details (enhanced)
         details_data = [
             ['Invoice Number:', data.get('invoice_number', 'N/A'), 'Payment Status:', payment_status],
-            ['Invoice Date:', data.get('invoice_date', 'N/A'), 'Currency:', data.get('currency', 'INR')],
-            ['Due Date:', data.get('due_date', 'N/A'), 'Created At:', data.get('created_at', 'N/A')[:10] if data.get('created_at') else 'N/A'],
+            ['Invoice Date:', data.get('invoice_date', 'N/A'), 'Due Date:', data.get('due_date', 'N/A')],
+            ['Currency:', data.get('currency', 'INR'), 'Invoice Type:', data.get('invoice_type', 'Standard')],
+            ['Payment Method:', data.get('payment_method', 'N/A'), 'Payment Terms:', data.get('payment_terms', 'N/A')],
         ]
+        
+        # Add PO information if available
+        if data.get('po_number') or data.get('po_date'):
+            details_data.extend([
+                ['PO Number:', data.get('po_number', 'N/A'), 'PO Date:', data.get('po_date', 'N/A')],
+            ])
+        
+        # Add GST information
+        if data.get('place_of_supply') or data.get('hsn_code') or data.get('sac_code'):
+            details_data.extend([
+                ['Place of Supply:', data.get('place_of_supply', 'N/A'), 'Supply Type:', data.get('supply_type', 'N/A')],
+                ['HSN Code:', data.get('hsn_code', 'N/A'), 'SAC Code:', data.get('sac_code', 'N/A')],
+            ])
         
         details_table = Table(details_data, colWidths=[1.3 * inch, 2 * inch, 1.3 * inch, 2.4 * inch])
         
@@ -251,8 +422,85 @@ class ProfessionalPDFExporter:
             ('RIGHTPADDING', (0, 0), (-1, -1), 12),
             ('TOPPADDING', (0, 0), (-1, -1), 4),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-            ('BACKGROUND', (3, 0), (3, 0), status_color),  # Payment status background
         ]
+        
+        # Highlight payment status
+        for i, row in enumerate(details_data):
+            if 'Payment Status:' in row:
+                style_list.append(('BACKGROUND', (3, i), (3, i), status_color))
+                style_list.append(('FONTNAME', (3, i), (3, i), 'Helvetica-Bold'))
+        
+        details_table.setStyle(TableStyle(style_list))
+        elements.append(details_table)
+        
+        # Industry-specific information section
+        industry_data = []
+        
+        # Hotel & Hospitality
+        if data.get('arrival_date') or data.get('room_number') or data.get('booking_reference'):
+            industry_data.extend([
+                ['=== HOSPITALITY DETAILS ===', '', '', ''],
+                ['Arrival Date:', data.get('arrival_date', 'N/A'), 'Departure Date:', data.get('departure_date', 'N/A')],
+                ['Room Number:', data.get('room_number', 'N/A'), 'Guest Count:', data.get('guest_count', 'N/A')],
+                ['Booking Reference:', data.get('booking_reference', 'N/A'), '', ''],
+            ])
+        
+        # E-commerce & Retail
+        if data.get('order_id') or data.get('tracking_number'):
+            industry_data.extend([
+                ['=== E-COMMERCE DETAILS ===', '', '', ''],
+                ['Order ID:', data.get('order_id', 'N/A'), 'Tracking Number:', data.get('tracking_number', 'N/A')],
+                ['Shipping Method:', data.get('shipping_method', 'N/A'), 'Delivery Date:', data.get('delivery_date', 'N/A')],
+            ])
+        
+        # Manufacturing
+        if data.get('batch_number') or data.get('quality_certificate'):
+            industry_data.extend([
+                ['=== MANUFACTURING DETAILS ===', '', '', ''],
+                ['Batch Number:', data.get('batch_number', 'N/A'), 'Quality Certificate:', data.get('quality_certificate', 'N/A')],
+                ['Warranty Period:', data.get('warranty_period', 'N/A'), '', ''],
+            ])
+        
+        # Professional Services
+        if data.get('project_name') or data.get('consultant_name'):
+            industry_data.extend([
+                ['=== PROFESSIONAL SERVICES ===', '', '', ''],
+                ['Project Name:', data.get('project_name', 'N/A'), 'Consultant Name:', data.get('consultant_name', 'N/A')],
+                ['Hourly Rate:', f"₹{data.get('hourly_rate', 0):.2f}" if data.get('hourly_rate') else 'N/A', 
+                 'Hours Worked:', f"{data.get('hours_worked', 0):.1f}" if data.get('hours_worked') else 'N/A'],
+            ])
+        
+        # Add industry-specific section if data exists
+        if industry_data:
+            elements.append(Spacer(1, 0.15 * inch))
+            
+            industry_table = Table(industry_data, colWidths=[1.3 * inch, 2 * inch, 1.3 * inch, 2.4 * inch])
+            industry_style = [
+                ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+                ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
+                ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+                ('FONTNAME', (3, 0), (3, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 0), (-1, -1), 9),
+                ('LEFTPADDING', (0, 0), (-1, -1), 12),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+                ('TOPPADDING', (0, 0), (-1, -1), 3),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+            ]
+            
+            # Style section headers
+            for i, row in enumerate(industry_data):
+                if '===' in str(row[0]):
+                    industry_style.extend([
+                        ('SPAN', (0, i), (3, i)),
+                        ('BACKGROUND', (0, i), (3, i), colors.lightgrey),
+                        ('FONTNAME', (0, i), (3, i), 'Helvetica-Bold'),
+                        ('ALIGN', (0, i), (3, i), 'CENTER'),
+                    ])
+            
+            industry_table.setStyle(TableStyle(industry_style))
+            elements.append(industry_table)
+        
+        return elements
         
         details_table.setStyle(TableStyle(style_list))
         elements.append(details_table)
@@ -333,11 +581,11 @@ class ProfessionalPDFExporter:
         return elements
     
     def _build_tax_summary(self, data: Dict) -> List:
-        """Build tax summary and totals section"""
+        """Build comprehensive tax summary and totals section"""
         elements = []
         
         # Section header
-        header_data = [['TAX SUMMARY & TOTALS']]
+        header_data = [['COMPREHENSIVE TAX SUMMARY & FINANCIAL BREAKDOWN']]
         header_table = Table(header_data, colWidths=[7 * inch])
         header_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, -1), self.colors['subheader']),
@@ -352,54 +600,140 @@ class ProfessionalPDFExporter:
         elements.append(header_table)
         elements.append(Spacer(1, 0.1 * inch))
         
-        # Build summary data (right-aligned)
+        # Build comprehensive financial summary
         summary_data = []
         
-        # Add amounts (handle None values properly)
-        subtotal = data.get('subtotal') or 0
-        cgst = data.get('cgst') or 0
-        sgst = data.get('sgst') or 0
-        igst = data.get('igst') or 0
-        total_amount = data.get('total_amount') or 0
+        # Handle None values properly for all financial fields
+        subtotal = float(data.get('subtotal', 0))
+        taxable_amount = float(data.get('taxable_amount', 0))
+        discount = float(data.get('discount', 0))
+        shipping_charges = float(data.get('shipping_charges', 0))
+        other_charges = float(data.get('other_charges', 0))
+        roundoff = float(data.get('roundoff', 0))
         
-        if float(subtotal) > 0:
-            summary_data.append(['', 'Subtotal:', f"₹{float(subtotal):,.2f}"])
+        # GST & Tax amounts
+        cgst = float(data.get('cgst', 0))
+        sgst = float(data.get('sgst', 0))
+        igst = float(data.get('igst', 0))
+        ugst = float(data.get('ugst', 0))
+        cess = float(data.get('cess', 0))
+        total_gst = float(data.get('total_gst', 0))
         
-        if float(cgst) > 0:
-            summary_data.append(['', 'CGST:', f"₹{float(cgst):,.2f}"])
+        # Additional taxes
+        vat = float(data.get('vat', 0))
+        service_tax = float(data.get('service_tax', 0))
+        tds_amount = float(data.get('tds_amount', 0))
+        tcs_amount = float(data.get('tcs_amount', 0))
         
-        if float(sgst) > 0:
-            summary_data.append(['', 'SGST:', f"₹{float(sgst):,.2f}"])
+        total_amount = float(data.get('total_amount', 0))
         
-        if float(igst) > 0:
-            summary_data.append(['', 'IGST:', f"₹{float(igst):,.2f}"])
+        # Financial Breakdown Section
+        if subtotal > 0 or taxable_amount > 0:
+            summary_data.append(['', 'AMOUNT BREAKDOWN', ''])
+            if subtotal > 0:
+                summary_data.append(['', 'Subtotal:', f"₹{subtotal:,.2f}"])
+            if taxable_amount > 0 and taxable_amount != subtotal:
+                summary_data.append(['', 'Taxable Amount:', f"₹{taxable_amount:,.2f}"])
+            if discount > 0:
+                summary_data.append(['', 'Discount:', f"-₹{discount:,.2f}"])
+            if shipping_charges > 0:
+                summary_data.append(['', 'Shipping Charges:', f"₹{shipping_charges:,.2f}"])
+            if other_charges > 0:
+                summary_data.append(['', 'Other Charges:', f"₹{other_charges:,.2f}"])
+            if roundoff != 0:
+                summary_data.append(['', 'Round Off:', f"₹{roundoff:,.2f}"])
+            summary_data.append(['', '', ''])  # Separator
         
-        # Total (highlighted)
-        summary_data.append(['', 'TOTAL AMOUNT:', f"₹{float(total_amount):,.2f}"])
+        # GST Section
+        gst_total = cgst + sgst + igst + ugst + cess
+        if gst_total > 0:
+            summary_data.append(['', 'GST BREAKDOWN', ''])
+            if cgst > 0:
+                summary_data.append(['', 'CGST:', f"₹{cgst:,.2f}"])
+            if sgst > 0:
+                summary_data.append(['', 'SGST:', f"₹{sgst:,.2f}"])
+            if igst > 0:
+                summary_data.append(['', 'IGST:', f"₹{igst:,.2f}"])
+            if ugst > 0:
+                summary_data.append(['', 'UGST:', f"₹{ugst:,.2f}"])
+            if cess > 0:
+                summary_data.append(['', 'CESS:', f"₹{cess:,.2f}"])
+            if total_gst > 0:
+                summary_data.append(['', 'Total GST:', f"₹{total_gst:,.2f}"])
+            summary_data.append(['', '', ''])  # Separator
+        
+        # Additional Taxes Section
+        other_tax_total = vat + service_tax
+        if other_tax_total > 0:
+            summary_data.append(['', 'OTHER TAXES', ''])
+            if vat > 0:
+                summary_data.append(['', 'VAT:', f"₹{vat:,.2f}"])
+            if service_tax > 0:
+                summary_data.append(['', 'Service Tax:', f"₹{service_tax:,.2f}"])
+            summary_data.append(['', '', ''])  # Separator
+        
+        # TDS/TCS Section
+        if tds_amount > 0 or tcs_amount > 0:
+            summary_data.append(['', 'TAX DEDUCTIONS', ''])
+            if tds_amount > 0:
+                summary_data.append(['', 'TDS Amount:', f"-₹{tds_amount:,.2f}"])
+            if tcs_amount > 0:
+                summary_data.append(['', 'TCS Amount:', f"₹{tcs_amount:,.2f}"])
+            summary_data.append(['', '', ''])  # Separator
+        
+        # Final Total (highlighted)
+        summary_data.append(['', 'FINAL TOTAL AMOUNT:', f"₹{total_amount:,.2f}"])
+        
+        # Quality metadata (if available)
+        if data.get('quality_score') or data.get('extraction_version'):
+            summary_data.append(['', '', ''])  # Separator
+            summary_data.append(['', 'EXTRACTION QUALITY', ''])
+            if data.get('quality_score'):
+                summary_data.append(['', 'Quality Score:', f"{float(data.get('quality_score', 0)):.1f}%"])
+            if data.get('extraction_version'):
+                summary_data.append(['', 'Version:', data.get('extraction_version', 'v2.5')])
+            if data.get('data_source'):
+                summary_data.append(['', 'Source:', data.get('data_source', 'gemini-2.5-flash')])
         
         # Create table
-        summary_table = Table(summary_data, colWidths=[3.5 * inch, 2 * inch, 1.5 * inch])
+        summary_table = Table(summary_data, colWidths=[2.5 * inch, 2.5 * inch, 2 * inch])
         
         # Styling
         style_list = [
-            ('FONTNAME', (1, 0), (1, -2), 'Helvetica'),
-            ('FONTNAME', (2, 0), (2, -2), 'Helvetica'),
-            ('FONTSIZE', (1, 0), (2, -2), 10),
+            ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+            ('FONTNAME', (2, 0), (2, -1), 'Helvetica'),
+            ('FONTSIZE', (1, 0), (2, -1), 10),
             ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
             ('ALIGN', (2, 0), (2, -1), 'RIGHT'),
             
-            # Total row (last row)
-            ('FONTNAME', (1, -1), (2, -1), 'Helvetica-Bold'),
-            ('FONTSIZE', (1, -1), (2, -1), 11),
-            ('BACKGROUND', (1, -1), (2, -1), self.colors['total_bg']),
-            ('LINEABOVE', (1, -1), (2, -1), 2, colors.black),
-            ('LINEBELOW', (1, -1), (2, -1), 2, colors.black),
-            
             # Padding
-            ('TOPPADDING', (1, 0), (2, -1), 5),
-            ('BOTTOMPADDING', (1, 0), (2, -1), 5),
+            ('TOPPADDING', (1, 0), (2, -1), 4),
+            ('BOTTOMPADDING', (1, 0), (2, -1), 4),
             ('RIGHTPADDING', (2, 0), (2, -1), 12),
         ]
+        
+        # Style section headers and final total
+        for i, row in enumerate(summary_data):
+            if len(row) >= 2:
+                # Section headers (BREAKDOWN, GST BREAKDOWN, etc.)
+                if 'BREAKDOWN' in str(row[1]) or 'TAXES' in str(row[1]) or 'DEDUCTIONS' in str(row[1]) or 'QUALITY' in str(row[1]):
+                    style_list.extend([
+                        ('SPAN', (1, i), (2, i)),
+                        ('FONTNAME', (1, i), (2, i), 'Helvetica-Bold'),
+                        ('FONTSIZE', (1, i), (2, i), 11),
+                        ('BACKGROUND', (1, i), (2, i), colors.lightgrey),
+                        ('ALIGN', (1, i), (2, i), 'CENTER'),
+                    ])
+                
+                # Final total row
+                elif 'FINAL TOTAL' in str(row[1]):
+                    style_list.extend([
+                        ('FONTNAME', (1, i), (2, i), 'Helvetica-Bold'),
+                        ('FONTSIZE', (1, i), (2, i), 12),
+                        ('BACKGROUND', (1, i), (2, i), self.colors['total_bg']),
+                        ('LINEABOVE', (1, i), (2, i), 2, colors.black),
+                        ('LINEBELOW', (1, i), (2, i), 2, colors.black),
+                    ])
         
         summary_table.setStyle(TableStyle(style_list))
         elements.append(summary_table)

@@ -8,7 +8,10 @@ from dotenv import load_dotenv
 import os
 
 # Load environment variables
-load_dotenv()
+import pathlib
+backend_dir = pathlib.Path(__file__).parent.parent
+env_path = backend_dir / ".env"
+load_dotenv(env_path)
 
 app = FastAPI(
     title="TrulyInvoice API",
@@ -39,12 +42,18 @@ app.add_middleware(
 )
 
 # Import routers
-from app.api import documents, invoices, health
+from app.api import documents, invoices, health, exports, payments, subscriptions, auth
 
 # Register routes
 app.include_router(health.router, tags=["Health"])
 app.include_router(documents.router, prefix="/api/documents", tags=["Documents"])
 app.include_router(invoices.router, prefix="/api/invoices", tags=["Invoices"])
+app.include_router(exports.router, prefix="/api/bulk", tags=["Bulk Exports"])
+app.include_router(payments.router, prefix="/api/payments", tags=["Payments"])
+app.include_router(subscriptions.router, prefix="/api/subscriptions", tags=["Subscriptions"])
+app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+
+# Note: Bulk export endpoints moved to separate router to avoid circular imports
 
 @app.get("/")
 def root():

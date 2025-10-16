@@ -91,6 +91,80 @@ class AccountantExcelExporter:
         print(f"✅ Accountant-friendly Excel exported: {filename}")
         return filename
     
+    def export_invoices_bulk(self, invoices: List[Dict], filename: str = None) -> str:
+        """Export multiple invoices to a single Excel file with separate sheets"""
+        if not filename:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"bulk_invoices_accountant_{timestamp}.xlsx"
+        
+        wb = Workbook()
+        
+        # Remove default sheet
+        wb.remove(wb.active)
+        
+        # Create summary sheet first
+        ws_summary = wb.create_sheet("Summary")
+        self._build_bulk_summary_sheet(ws_summary, invoices)
+        
+        # Create individual sheets for each invoice
+        for i, invoice in enumerate(invoices[:10]):  # Limit to 10 invoices per file
+            sheet_name = f"Invoice_{i+1}"
+            if invoice.get('invoice_number'):
+                # Clean sheet name (remove invalid characters)
+                clean_name = str(invoice['invoice_number'])[:20].replace('/', '_').replace('\\', '_')
+                sheet_name = f"INV_{clean_name}"
+            
+            ws = wb.create_sheet(sheet_name)
+            self._build_data_sheet(ws, invoice)
+        
+        wb.save(filename)
+        print(f"✅ Bulk Excel exported: {filename} ({len(invoices)} invoices)")
+        return filename
+    
+    def _build_bulk_summary_sheet(self, ws, invoices: List[Dict]):
+        """Build summary sheet for bulk export"""
+        # Header
+        ws['A1'] = 'INVOICE SUMMARY REPORT'
+        ws['A1'].font = Font(name='Arial', size=14, bold=True)
+        
+        # Column headers
+        headers = ['S.No', 'Invoice Number', 'Date', 'Vendor', 'Amount', 'Status', 'GST']
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=3, column=col, value=header)
+            cell.font = self.header_font
+            cell.fill = self.header_fill
+        
+        # Data rows
+        total_amount = 0
+        for row, invoice in enumerate(invoices, 4):
+            ws.cell(row=row, column=1, value=row-3)
+            ws.cell(row=row, column=2, value=invoice.get('invoice_number', 'N/A'))
+            ws.cell(row=row, column=3, value=invoice.get('invoice_date', 'N/A'))
+            ws.cell(row=row, column=4, value=invoice.get('vendor_name', 'N/A'))
+            
+            amount = invoice.get('total_amount', 0) or 0
+            ws.cell(row=row, column=5, value=amount)
+            total_amount += amount
+            
+            ws.cell(row=row, column=6, value=invoice.get('payment_status', 'N/A'))
+            
+            gst_total = (invoice.get('cgst', 0) or 0) + (invoice.get('sgst', 0) or 0) + (invoice.get('igst', 0) or 0)
+            ws.cell(row=row, column=7, value=gst_total)
+        
+        # Total row
+        total_row = len(invoices) + 5
+        ws.cell(row=total_row, column=4, value='TOTAL:').font = self.total_font
+        ws.cell(row=total_row, column=5, value=total_amount).font = self.total_font
+        
+        # Auto-adjust column widths
+        for column in ws.columns:
+            max_length = 0
+            column_letter = get_column_letter(column[0].column)
+            for cell in column:
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
+            ws.column_dimensions[column_letter].width = min(max_length + 2, 30)
+    
     def _build_data_sheet(self, ws, data: Dict):
         """Build main data sheet with invoice details"""
         

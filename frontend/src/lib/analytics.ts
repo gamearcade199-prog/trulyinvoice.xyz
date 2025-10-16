@@ -128,9 +128,10 @@ export const events = {
 function getPlanValue(plan: string): number {
   const values: { [key: string]: number } = {
     'free': 0,
-    'basic': 99,
-    'pro': 399,
-    'ultra': 999,
+    'basic': 149,
+    'pro': 299,
+    'ultra': 599,
+    'max': 999,
   }
   return values[plan.toLowerCase()] || 0
 }

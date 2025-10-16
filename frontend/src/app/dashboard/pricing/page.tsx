@@ -1,11 +1,101 @@
 'use client'
 
-import { Check, Zap, Crown, Rocket, X, Sparkles } from 'lucide-react'
+import { Check, Zap, Crown, Rocket, X, Sparkles, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
+import RazorpayCheckout, { useRazorpay } from '@/components/RazorpayCheckout'
+import { supabase } from '@/lib/supabase'
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly')
+  const [processingPlan, setProcessingPlan] = useState<string | null>(null)
+  const [showPayment, setShowPayment] = useState(false)
+  const [paymentData, setPaymentData] = useState<any>(null)
+  const [userEmail, setUserEmail] = useState('')
+  const [userName, setUserName] = useState('')
+  
+  const { createOrder, verifyPayment, getRazorpayConfig } = useRazorpay()
+  
+  // Get user data on mount
+  useState(() => {
+    const getUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setUserEmail(user.email || '')
+        setUserName(user.user_metadata?.full_name || user.email || '')
+      }
+    }
+    getUserData()
+  })
+  
+  const handleUpgrade = async (planTier: string, planName: string) => {
+    if (planTier === 'free') return // Can't upgrade to free
+    
+    setProcessingPlan(planTier)
+    
+    try {
+      // Step 1: Create payment order
+      const orderData = await createOrder(planTier, billingCycle)
+      
+      // Step 2: Get Razorpay config
+      const config = await getRazorpayConfig()
+      
+      // Step 3: Prepare payment data
+      setPaymentData({
+        orderId: orderData.order_id,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        razorpayKeyId: config.key_id,
+        planName: planName,
+        planTier: planTier
+      })
+      
+      // Step 4: Show Razorpay checkout
+      setShowPayment(true)
+      setProcessingPlan(null)
+    } catch (error: any) {
+      console.error('Error creating order:', error)
+      alert(error.message || 'Failed to initiate payment. Please try again.')
+      setProcessingPlan(null)
+    }
+  }
+  
+  const handlePaymentSuccess = async (response: any) => {
+    setShowPayment(false)
+    setProcessingPlan('verifying')
+    
+    try {
+      // Verify payment with backend
+      const verificationResult = await verifyPayment(
+        response.razorpay_order_id,
+        response.razorpay_payment_id,
+        response.razorpay_signature
+      )
+      
+      // Show success message
+      alert(`Payment successful! Your ${verificationResult.subscription.tier} plan is now active.`)
+      
+      // Reload page to show updated plan
+      window.location.reload()
+    } catch (error: any) {
+      console.error('Payment verification failed:', error)
+      alert('Payment verification failed. Please contact support.')
+    } finally {
+      setProcessingPlan(null)
+    }
+  }
+  
+  const handlePaymentFailure = (error: any) => {
+    setShowPayment(false)
+    setProcessingPlan(null)
+    console.error('Payment failed:', error)
+    alert(error.description || 'Payment failed. Please try again.')
+  }
+  
+  const handlePaymentDismiss = () => {
+    setShowPayment(false)
+    setProcessingPlan(null)
+  }
 
   const plans = [
     {
@@ -19,8 +109,10 @@ export default function PricingPage() {
       features: [
         '10 scans per month',
         'Basic AI extraction',
+        'PDF & Image support',
+        'Bulk upload (1 invoice)',
         '1-day storage',
-        'Upload 1 invoice at a time',
+        'Email support',
       ],
       limitations: [],
       buttonText: 'Current Plan',
@@ -29,19 +121,20 @@ export default function PricingPage() {
     },
     {
       name: 'Basic',
-      price: '₹99',
-      scans: '100 scans',
+      price: '₹149',
+      scans: '80 scans',
       period: 'per month',
       icon: Check,
       iconBg: 'bg-gradient-to-br from-blue-500 to-cyan-500',
       borderGlow: 'hover:shadow-lg hover:shadow-blue-500/20',
       features: [
-        '100 scans per month',
+        '80 scans per month',
         '95% AI accuracy',
-        '1-day storage',
-        'Bulk upload: 5 invoices',
         'GST validation',
+        'Bulk upload (5 invoices)',
         'Export to Excel/CSV',
+        '7-day storage',
+        'Priority support',
       ],
       limitations: [],
       buttonText: 'Upgrade to Basic',
@@ -50,18 +143,19 @@ export default function PricingPage() {
     },
     {
       name: 'Pro',
-      price: '₹399',
-      scans: '500 scans',
+      price: '₹299',
+      scans: '200 scans',
       period: 'per month',
       icon: Crown,
       iconBg: 'bg-gradient-to-br from-purple-500 to-pink-500',
       borderGlow: 'shadow-xl shadow-purple-500/30',
       features: [
-        '500 scans per month',
+        '200 scans per month',
         '98% AI accuracy',
+        'Bulk upload (10 invoices)',
+        'Custom export templates',
         '30-day storage',
-        'Bulk upload: 10 invoices',
-        '24/7 support',
+        '24/7 priority support',
       ],
       limitations: [],
       buttonText: 'Upgrade to Pro',
@@ -70,21 +164,44 @@ export default function PricingPage() {
     },
     {
       name: 'Ultra',
-      price: '₹999',
-      scans: '1200 scans',
+      price: '₹599',
+      scans: '500 scans',
       period: 'per month',
       icon: Rocket,
       iconBg: 'bg-gradient-to-br from-orange-500 to-red-500',
       borderGlow: 'hover:shadow-xl hover:shadow-orange-500/30',
       features: [
-        '1,200 scans per month',
+        '500 scans per month',
         '99% AI accuracy',
-        '30-day storage',
-        'Bulk upload: 50 invoices',
+        'Bulk upload (50 invoices)',
+        'Advanced GST compliance',
+        '60-day storage',
+        'Dedicated support',
       ],
       limitations: [],
       buttonText: 'Upgrade to Ultra',
       buttonStyle: 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg hover:shadow-xl transition-all',
+      popular: false,
+    },
+    {
+      name: 'Max',
+      price: '₹999',
+      scans: '1000 scans',
+      period: 'per month',
+      icon: Sparkles,
+      iconBg: 'bg-gradient-to-br from-emerald-500 to-green-500',
+      borderGlow: 'hover:shadow-xl hover:shadow-emerald-500/30',
+      features: [
+        '1,000 scans per month',
+        '99.5% AI accuracy',
+        'Bulk upload (100 invoices)',
+        'Custom integrations',
+        '90-day storage',
+        '24/7 priority support',
+      ],
+      limitations: [],
+      buttonText: 'Upgrade to Max',
+      buttonStyle: 'bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-lg hover:shadow-xl transition-all',
       popular: false,
     },
   ]
@@ -196,10 +313,18 @@ export default function PricingPage() {
 
               {/* CTA Button */}
               <button
-                className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-200 mb-8 ${plan.buttonStyle}`}
-                disabled={plan.name === 'Free'}
+                className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-200 mb-8 ${plan.buttonStyle} flex items-center justify-center gap-2`}
+                disabled={plan.name === 'Free' || processingPlan !== null}
+                onClick={() => handleUpgrade(plan.name.toLowerCase(), plan.name)}
               >
-                {plan.buttonText}
+                {processingPlan === plan.name.toLowerCase() ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  plan.buttonText
+                )}
               </button>
 
               {/* Features */}
@@ -307,6 +432,25 @@ export default function PricingPage() {
         </div>
       </div>
       </div>
+      
+      {/* Razorpay Checkout */}
+      {showPayment && paymentData && (
+        <RazorpayCheckout
+          amount={paymentData.amount}
+          currency={paymentData.currency}
+          planName={paymentData.planName}
+          planTier={paymentData.planTier}
+          billingCycle={billingCycle}
+          orderId={paymentData.orderId}
+          razorpayKeyId={paymentData.razorpayKeyId}
+          userEmail={userEmail}
+          userName={userName}
+          onSuccess={handlePaymentSuccess}
+          onFailure={handlePaymentFailure}
+          onDismiss={handlePaymentDismiss}
+          autoOpen={true}
+        />
+      )}
     </DashboardLayout>
   )
 }

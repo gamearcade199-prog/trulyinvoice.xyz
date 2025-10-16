@@ -17,10 +17,10 @@ from app.services.supabase_helper import supabase
 
 # Try to import AI extractor and PDF processing
 try:
-    from app.services.intelligent_extractor import IntelligentAIExtractor
+    from app.services.vision_flash_lite_extractor import VisionFlashLiteExtractor
     import PyPDF2
     AI_AVAILABLE = True
-    print("✅ INTELLIGENT AI extraction ENABLED (flexible fields, PDF + Images)")
+    print("✅ VISION + FLASH-LITE extraction ENABLED - 99% cost reduction target")
 except ImportError as e:
     AI_AVAILABLE = False
     print(f"⚠️ AI extraction DISABLED: {e}")
@@ -73,23 +73,26 @@ async def process_document(document_id: str):
                 file_response.raise_for_status()
                 
                 file_content = file_response.content
-                api_key = os.getenv('OPENAI_API_KEY')
                 
-                if not api_key:
-                    print("  ⚠️ No OpenAI API key found")
-                    raise ValueError("OpenAI API key not configured")
+                # Check for Gemini API key
+                gemini_key = os.getenv('GOOGLE_AI_API_KEY')
                 
-                extractor = IntelligentAIExtractor(api_key)
+                if not gemini_key:
+                    print("  ⚠️ No Gemini API key found")
+                    raise ValueError("Gemini API key not configured")
+                
+                extractor = VisionFlashLiteExtractor()
                 ai_result = None
                 
                 # Check file type and extract accordingly
                 file_ext = file_name.lower().split('.')[-1]
                 
-                # IMAGES: JPG, JPEG, PNG - Use Vision OCR
+                # IMAGES: JPG, JPEG, PNG - Use Vision API + Flash-Lite
                 if file_ext in ['jpg', 'jpeg', 'png']:
-                    print(f"  📸 Image detected - using OCR...")
-                    mime_type = f"image/{file_ext}" if file_ext != 'jpg' else "image/jpeg"
-                    ai_result = extractor.extract_from_image(file_content, mime_type)
+                    print(f"  📸 Image detected - using Vision API + Flash-Lite...")
+                    
+                    # Use raw bytes directly for our new extractor
+                    ai_result = await extractor.extract_invoice_data(file_content, file_name)
                 
                 # PDFs: Extract text then use AI
                 elif file_ext == 'pdf':
@@ -105,8 +108,8 @@ async def process_document(document_id: str):
                             print(f"     Page {page_num + 1}: {len(text)} chars")
                         
                         if extracted_text.strip():
-                            print(f"  🤖 Extracted {len(extracted_text)} chars - sending to AI...")
-                            ai_result = extractor.extract_from_text(extracted_text)
+                            print(f"  🤖 Extracted {len(extracted_text)} chars - sending to Flash-Lite...")
+                            ai_result = extractor.flash_lite_formatter.format_text_to_json(extracted_text)
                         else:
                             print(f"  ⚠️ No text found in PDF - might be scanned image")
                     except Exception as e:
@@ -126,12 +129,35 @@ async def process_document(document_id: str):
                         "document_id": document_id  # Always required
                     }
                     
-                    # Add all extracted fields (intelligent extractor only returns fields that exist)
-                    invoice_data.update(ai_result)
+                    # Add extracted fields, but exclude internal metadata, confidence scores, and error fields
+                    # Error fields: 'error', 'error_message', '_extraction_metadata' don't exist in database schema
+                    excluded_fields = {'error', 'error_message', '_extraction_metadata'}
+                    for key, value in ai_result.items():
+                        if key not in excluded_fields and not key.startswith('_') and not key.endswith('_confidence'):
+                            invoice_data[key] = value
                     
-                    # Ensure payment_status defaults to unpaid if not extracted
-                    if 'payment_status' not in invoice_data:
-                        invoice_data['payment_status'] = 'unpaid'
+                    # Validate payment_status - MUST match ENHANCED_SCHEMA_50_PLUS_FIELDS.sql
+                    # Database allows: 'pending', 'paid', 'overdue', 'cancelled', 'refunded', 'partial', 'processing', 'failed'
+                    valid_payment_statuses = {'pending', 'paid', 'overdue', 'cancelled', 'refunded', 'partial', 'processing', 'failed'}
+                    
+                    # Map additional invalid values to valid ones
+                    payment_status_mapping = {
+                        'unpaid': 'pending',          # unpaid → pending (unpaid not valid!)
+                        'draft': 'pending',           # draft → pending
+                        'unknown': 'pending',         # unknown → pending
+                        'na': 'pending',              # n/a → pending
+                        'n/a': 'pending',
+                    }
+                    
+                    payment_status = invoice_data.get('payment_status', '').strip().lower() if invoice_data.get('payment_status') else ''
+                    
+                    # Use mapping if exists, otherwise validate
+                    if payment_status in payment_status_mapping:
+                        invoice_data['payment_status'] = payment_status_mapping[payment_status]
+                    elif payment_status in valid_payment_statuses:
+                        invoice_data['payment_status'] = payment_status
+                    else:
+                        invoice_data['payment_status'] = 'pending'  # Default to pending if invalid or empty
                     
                 else:
                     print(f"  ⚠️ AI extraction returned None - falling back")
@@ -178,7 +204,7 @@ async def process_document(document_id: str):
                 "sgst": 0.0,
                 "igst": 0.0,
                 "total_amount": 0.0,  # User will see 0 and know to check manually
-                "payment_status": "unpaid"
+                "payment_status": "pending"  # Must be valid: pending, paid, overdue, cancelled, refunded, partial, processing, failed
             }
             print(f"  ⚠️ Fallback values used - amounts set to 0 (user should verify)")
         

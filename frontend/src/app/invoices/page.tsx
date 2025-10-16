@@ -6,14 +6,15 @@ import Link from 'next/link'
 import { 
   Search, 
   Filter, 
-  Download,
   Eye,
   Trash2,
-  Plus
+  Plus,
+  ChevronDown
 } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 import { exportInvoicesToCSV } from '@/lib/invoiceUtils'
 import { formatCurrency } from '@/lib/currency'
+import ConfidenceIndicator from '@/components/ConfidenceIndicator'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,10 +27,35 @@ export default function InvoicesPageClean() {
   const [invoices, setInvoices] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedInvoices, setSelectedInvoices] = useState<Set<number>>(new Set())
+  const [showMainExportDropdown, setShowMainExportDropdown] = useState(false)
+  const [showBulkExportDropdown, setShowBulkExportDropdown] = useState(false)
+  const [showRowExportDropdown, setShowRowExportDropdown] = useState<{[key: string]: boolean}>({})
+  const [showMobileExportDropdown, setShowMobileExportDropdown] = useState<{[key: string]: boolean}>({})
 
   useEffect(() => {
     fetchInvoices()
     // Auto-refresh removed - was annoying. User can manually refresh if needed.
+  }, [])
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      
+      // Check if click is inside any dropdown or dropdown button
+      const isInsideDropdown = target.closest('.export-dropdown') || 
+                              target.closest('[data-dropdown-button]')
+      
+      if (!isInsideDropdown) {
+        setShowMainExportDropdown(false)
+        setShowBulkExportDropdown(false)
+        setShowRowExportDropdown({})
+        setShowMobileExportDropdown({})
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
   }, [])
 
   const fetchInvoices = async () => {
@@ -95,6 +121,134 @@ export default function InvoicesPageClean() {
     }
   }
 
+  const exportSingleInvoiceToPDF = async (invoice: any) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bulk/export-pdf`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          invoice_ids: [invoice.id]
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `invoice_${invoice.invoice_number || invoice.id}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('PDF Export error:', error)
+      alert('Failed to export PDF. Please try again.')
+    }
+  }
+
+  const handlePDFExport = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bulk/export-pdf`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          invoice_ids: invoices.map(inv => inv.id)
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `all_invoices_${new Date().toISOString().split('T')[0]}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('PDF Export error:', error)
+      alert('Failed to export PDF. Please try again.')
+    }
+  }
+
+  const handleExcelExport = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bulk/export-excel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          invoice_ids: invoices.map(inv => inv.id)
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `all_invoices_${new Date().toISOString().split('T')[0]}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Excel Export error:', error)
+      alert('Failed to export Excel. Please try again.')
+    }
+  }
+
+  const exportSingleInvoiceToExcel = async (invoice: any) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bulk/export-excel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          invoice_ids: [invoice.id]
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `invoice_${invoice.invoice_number || invoice.id}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Excel Export error:', error)
+      alert('Failed to export Excel. Please try again.')
+    }
+  }
+
   // Checkbox handlers
   const toggleSelectInvoice = (invoiceId: number) => {
     const newSelected = new Set(selectedInvoices)
@@ -125,6 +279,158 @@ export default function InvoicesPageClean() {
     } catch (error) {
       console.error('Export error:', error)
       alert('Failed to export selected invoices')
+    }
+  }
+
+  const exportSelectedInvoicesExcel = async () => {
+    const selected = invoices.filter(inv => selectedInvoices.has(inv.id))
+    if (selected.length === 0) {
+      alert('Please select invoices to export')
+      return
+    }
+    
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bulk/export-excel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          invoice_ids: selected.map(inv => inv.id)
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `selected_invoices_${new Date().toISOString().split('T')[0]}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Excel Export error:', error)
+      alert('Failed to export Excel. Please try again.')
+    }
+  }
+
+  const exportSelectedInvoicesPDF = async () => {
+    const selected = invoices.filter(inv => selectedInvoices.has(inv.id))
+    if (selected.length === 0) {
+      alert('Please select invoices to export')
+      return
+    }
+    
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bulk/export-pdf`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          invoice_ids: selected.map(inv => inv.id)
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `selected_invoices_${new Date().toISOString().split('T')[0]}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('PDF Export error:', error)
+      alert('Failed to export PDF. Please try again.')
+    }
+  }
+
+  // Dropdown helper functions
+  const toggleRowExportDropdown = (invoiceId: string) => {
+    setShowRowExportDropdown(prev => ({
+      ...prev,
+      [invoiceId]: !prev[invoiceId]
+    }))
+  }
+
+  const toggleMobileExportDropdown = (invoiceId: string) => {
+    setShowMobileExportDropdown(prev => ({
+      ...prev,
+      [invoiceId]: !prev[invoiceId]
+    }))
+  }
+
+  const handleMainExport = (format: 'excel' | 'csv' | 'pdf') => {
+    console.log('Export format selected:', format)
+    setShowMainExportDropdown(false)
+    switch(format) {
+      case 'excel':
+        handleExcelExport()
+        break
+      case 'csv':
+        handleExport()
+        break
+      case 'pdf':
+        handlePDFExport()
+        break
+    }
+  }
+
+  const handleBulkExport = (format: 'excel' | 'csv' | 'pdf') => {
+    setShowBulkExportDropdown(false)
+    switch(format) {
+      case 'excel':
+        exportSelectedInvoicesExcel()
+        break
+      case 'csv':
+        exportSelectedInvoices()
+        break
+      case 'pdf':
+        exportSelectedInvoicesPDF()
+        break
+    }
+  }
+
+  const handleRowExport = (invoice: any, format: 'excel' | 'csv' | 'pdf') => {
+    setShowRowExportDropdown({})
+    switch(format) {
+      case 'excel':
+        exportSingleInvoiceToExcel(invoice)
+        break
+      case 'csv':
+        exportSingleInvoice(invoice)
+        break
+      case 'pdf':
+        exportSingleInvoiceToPDF(invoice)
+        break
+    }
+  }
+
+  const handleMobileExport = (invoice: any, format: 'excel' | 'csv' | 'pdf') => {
+    setShowMobileExportDropdown({})
+    switch(format) {
+      case 'excel':
+        exportSingleInvoiceToExcel(invoice)
+        break
+      case 'csv':
+        exportSingleInvoice(invoice)
+        break
+      case 'pdf':
+        exportSingleInvoiceToPDF(invoice)
+        break
     }
   }
 
@@ -266,15 +572,44 @@ export default function InvoicesPageClean() {
               <option value="overdue">Overdue</option>
             </select>
             
-            {/* Export Button */}
+            {/* Export Dropdown */}
             {invoices.length > 0 && (
-              <button
-                onClick={handleExport}
-                className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors flex items-center gap-2 font-semibold"
-              >
-                <Download className="w-4 h-4" />
-                Export All
-              </button>
+              <div className="relative export-dropdown">
+                <button
+                  data-dropdown-button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    console.log('Main export dropdown clicked, current state:', showMainExportDropdown)
+                    setShowMainExportDropdown(!showMainExportDropdown)
+                  }}
+                  className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors flex items-center gap-2 font-semibold"
+                >
+                  Export
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                {showMainExportDropdown && (
+                  <div className="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                    <button
+                      onClick={() => handleMainExport('excel')}
+                      className="w-full text-left px-4 py-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-t-lg font-semibold"
+                    >
+                      Excel
+                    </button>
+                    <button
+                      onClick={() => handleMainExport('csv')}
+                      className="w-full text-left px-4 py-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
+                    >
+                      CSV
+                    </button>
+                    <button
+                      onClick={() => handleMainExport('pdf')}
+                      className="w-full text-left px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-b-lg"
+                    >
+                      PDF
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -286,16 +621,44 @@ export default function InvoicesPageClean() {
               {selectedInvoices.size} invoice(s) selected
             </span>
             <div className="flex gap-2">
-              <button
-                onClick={exportSelectedInvoices}
-                className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors flex items-center gap-2 text-sm font-semibold"
-              >
-                <Download className="w-4 h-4" />
-                Export Selected
-              </button>
+              <div className="relative export-dropdown">
+                <button
+                  data-dropdown-button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowBulkExportDropdown(!showBulkExportDropdown)
+                  }}
+                  className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors flex items-center gap-2 text-sm font-semibold"
+                >
+                  Export
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                {showBulkExportDropdown && (
+                  <div className="absolute left-0 mt-2 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                    <button
+                      onClick={() => handleBulkExport('excel')}
+                      className="w-full text-left px-4 py-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-t-lg font-semibold"
+                    >
+                      Excel
+                    </button>
+                    <button
+                      onClick={() => handleBulkExport('csv')}
+                      className="w-full text-left px-4 py-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
+                    >
+                      CSV
+                    </button>
+                    <button
+                      onClick={() => handleBulkExport('pdf')}
+                      className="w-full text-left px-4 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-b-lg"
+                    >
+                      PDF
+                    </button>
+                  </div>
+                )}
+              </div>
               <button
                 onClick={deleteSelectedInvoices}
-                className="px-4 py-2 bg-red-600 dark:bg-red-500 text-white rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors flex items-center gap-2 text-sm font-semibold"
+                className="px-4 py-2 bg-gray-600 dark:bg-gray-500 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors flex items-center gap-2 text-sm font-semibold"
               >
                 <Trash2 className="w-4 h-4" />
                 Delete Selected
@@ -319,11 +682,11 @@ export default function InvoicesPageClean() {
         ) : (
           <>
             {/* Desktop Table */}
-            <div className="hidden md:block bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-              <table className="w-full">
+            <div className="hidden sm:block bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+                <table className="w-full table-fixed min-w-full">
                 <thead className="bg-gray-100 dark:bg-gray-950">
                   <tr>
-                    <th className="px-6 py-4">
+                    <th className="px-4 py-4 w-12">
                       <input
                         type="checkbox"
                         checked={selectedInvoices.size === filteredInvoices.length && filteredInvoices.length > 0}
@@ -331,20 +694,21 @@ export default function InvoicesPageClean() {
                         className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 cursor-pointer"
                       />
                     </th>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-900 dark:text-gray-300">VENDOR</th>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-900 dark:text-gray-300">INVOICE #</th>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-900 dark:text-gray-300">DATE</th>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-900 dark:text-gray-300">DUE DATE</th>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-900 dark:text-gray-300">AMOUNT</th>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-900 dark:text-gray-300">GST</th>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-900 dark:text-gray-300">STATUS</th>
-                    <th className="text-left px-6 py-4 font-semibold text-gray-900 dark:text-gray-300">ACTIONS</th>
+                    <th className="text-left px-5 py-4 font-semibold text-gray-900 dark:text-gray-300 w-[18%]">VENDOR</th>
+                    <th className="text-left px-5 py-4 font-semibold text-gray-900 dark:text-gray-300 w-[10%]">INVOICE #</th>
+                    <th className="text-left px-5 py-4 font-semibold text-gray-900 dark:text-gray-300 w-[9%]">DATE</th>
+                    <th className="text-left px-5 py-4 font-semibold text-gray-900 dark:text-gray-300 w-[9%] hidden lg:table-cell">DUE DATE</th>
+                    <th className="text-left px-5 py-4 font-semibold text-gray-900 dark:text-gray-300 w-[11%]">AMOUNT</th>
+                    <th className="text-left px-5 py-4 font-semibold text-gray-900 dark:text-gray-300 w-[8%] hidden xl:table-cell">GST</th>
+                    <th className="text-left px-5 py-4 font-semibold text-gray-900 dark:text-gray-300 w-[9%]">STATUS</th>
+                    <th className="text-left px-5 py-4 font-semibold text-gray-900 dark:text-gray-300 w-[10%] hidden lg:table-cell">CONFIDENCE</th>
+                    <th className="text-left px-5 py-4 font-semibold text-gray-900 dark:text-gray-300 w-[16%]">ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                   {filteredInvoices.map((invoice) => (
-                    <tr key={invoice.id} className="hover:bg-gray-100 dark:hover:bg-gray-950/50">
-                      <td className="px-6 py-4">
+                    <tr key={invoice.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                      <td className="px-4 py-4">
                         <input
                           type="checkbox"
                           checked={selectedInvoices.has(invoice.id)}
@@ -352,65 +716,107 @@ export default function InvoicesPageClean() {
                           className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 cursor-pointer"
                         />
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-gray-900 dark:text-white">{invoice.vendor_name || 'Unknown Vendor'}</div>
+                      <td className="px-5 py-4">
+                        <div className="font-medium text-gray-900 dark:text-white truncate" title={invoice.vendor_name || 'Unknown Vendor'}>
+                          {invoice.vendor_name || 'Unknown Vendor'}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{invoice.invoice_number || 'N/A'}</td>
-                      <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{invoice.invoice_date || 'N/A'}</td>
-                      <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{invoice.due_date || 'N/A'}</td>
-                      <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
+                      <td className="px-5 py-4 text-gray-600 dark:text-gray-400 truncate" title={invoice.invoice_number || 'N/A'}>
+                        {invoice.invoice_number || 'N/A'}
+                      </td>
+                      <td className="px-5 py-4 text-gray-600 dark:text-gray-400 text-sm">
+                        {invoice.invoice_date ? new Date(invoice.invoice_date).toLocaleDateString() : 'N/A'}
+                      </td>
+                      <td className="px-5 py-4 text-gray-600 dark:text-gray-400 text-sm hidden lg:table-cell">
+                        {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : 'N/A'}
+                      </td>
+                      <td className="px-5 py-4 font-semibold text-gray-900 dark:text-white">
                         {formatCurrency(invoice.total_amount || 0, invoice.currency)}
                       </td>
-                      <td className="px-6 py-4 text-gray-600 dark:text-gray-400">
+                      <td className="px-5 py-4 text-gray-600 dark:text-gray-400 hidden xl:table-cell">
                         {formatCurrency((invoice.cgst + invoice.sgst + invoice.igst || 0), invoice.currency)}
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      <td className="px-5 py-4">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                           invoice.payment_status === 'paid' 
                             ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300'
                             : invoice.payment_status === 'overdue'
                             ? 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300'
                             : 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300'
                         }`}>
-                          {(invoice.payment_status || 'unpaid').charAt(0).toUpperCase() + (invoice.payment_status || 'unpaid').slice(1)}
+                          {(invoice.payment_status || 'pending').charAt(0).toUpperCase() + (invoice.payment_status || 'pending').slice(1)}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
+                      <td className="px-5 py-4 hidden lg:table-cell">
+                        <ConfidenceIndicator 
+                          confidence={invoice.confidence_score || 0}
+                          size="sm"
+                        />
+                      </td>
+                      <td className="px-3 py-4">
+                        <div className="flex items-center gap-1 justify-start">
                           {/* View Details button */}
                           <Link
                             href={`/invoices/${invoice.id}`}
-                            className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors group"
+                            className="p-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-colors group"
                             title="View Details"
-                            onClick={() => console.log('DEBUG: Navigating to invoice ID:', invoice.id, 'Full invoice:', invoice)}
                           >
-                            <Eye className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
+                            <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                           </Link>
-                          {/* Export button for each invoice */}
-                          <button
-                            onClick={() => exportSingleInvoice(invoice)}
-                            className="p-2 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors group"
-                            title="Export to Excel"
-                          >
-                            <Download className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400" />
-                          </button>
+                          {/* Export Dropdown */}
+                          <div className="relative export-dropdown">
+                            <button
+                              data-dropdown-button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                toggleRowExportDropdown(invoice.id)
+                              }}
+                              className="px-1.5 py-1 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-colors group flex items-center gap-1 text-xs"
+                              title="Export Options"
+                            >
+                              <span className="text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 text-xs">Export</span>
+                              <ChevronDown className="w-3 h-3 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
+                            </button>
+                            {showRowExportDropdown[invoice.id] && (
+                              <div className="absolute right-0 mt-1 w-24 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                                <button
+                                  onClick={() => handleRowExport(invoice, 'excel')}
+                                  className="w-full text-left px-3 py-2 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-t-lg font-semibold"
+                                >
+                                  Excel
+                                </button>
+                                <button
+                                  onClick={() => handleRowExport(invoice, 'csv')}
+                                  className="w-full text-left px-3 py-2 text-xs text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
+                                >
+                                  CSV
+                                </button>
+                                <button
+                                  onClick={() => handleRowExport(invoice, 'pdf')}
+                                  className="w-full text-left px-3 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-b-lg"
+                                >
+                                  PDF
+                                </button>
+                              </div>
+                            )}
+                          </div>
                           <button
                             onClick={() => deleteDocument(invoice.id)}
-                            className="p-2 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors group"
-                            title="Delete Invoice"
+                            className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors group ml-1"
+                            title="Delete"
                           >
-                            <Trash2 className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-red-600 dark:group-hover:text-red-400" />
+                            <Trash2 className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-red-600 dark:group-hover:text-red-400" />
                           </button>
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
-              </table>
+                </table>
             </div>
 
             {/* Mobile Cards */}
-            <div className="md:hidden space-y-4">
+            <div className="sm:hidden space-y-4">
               {filteredInvoices.map((invoice) => (
                 <div key={invoice.id} className="bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
                   <div className="flex items-start gap-3 mb-3">
@@ -426,15 +832,21 @@ export default function InvoicesPageClean() {
                           <h3 className="font-semibold text-gray-900 dark:text-white">{invoice.vendor_name || 'Unknown Vendor'}</h3>
                           <p className="text-sm text-gray-600 dark:text-gray-400">{invoice.invoice_number || 'N/A'}</p>
                         </div>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          invoice.payment_status === 'paid' 
-                            ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300'
-                            : invoice.payment_status === 'overdue'
-                            ? 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300'
-                            : 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300'
-                        }`}>
-                          {(invoice.payment_status || 'unpaid').charAt(0).toUpperCase() + (invoice.payment_status || 'unpaid').slice(1)}
-                        </span>
+                        <div className="flex flex-col items-end gap-1">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            invoice.payment_status === 'paid' 
+                              ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300'
+                              : invoice.payment_status === 'overdue'
+                              ? 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300'
+                              : 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300'
+                          }`}>
+                            {(invoice.payment_status || 'unpaid').charAt(0).toUpperCase() + (invoice.payment_status || 'unpaid').slice(1)}
+                          </span>
+                          <ConfidenceIndicator 
+                            confidence={invoice.confidence_score || 0}
+                            size="sm"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -461,12 +873,40 @@ export default function InvoicesPageClean() {
                     >
                       Details
                     </Link>
-                    <button
-                      onClick={() => exportSingleInvoice(invoice)}
-                      className="flex-1 py-2 px-3 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors text-sm font-medium"
-                    >
-                      Export
-                    </button>
+                    <div className="relative flex-1 export-dropdown">
+                      <button
+                        data-dropdown-button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleMobileExportDropdown(invoice.id)
+                        }}
+                        className="w-full py-2 px-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-sm font-medium flex items-center justify-center gap-1"
+                      >
+                        Export <ChevronDown className="w-3 h-3" />
+                      </button>
+                      {showMobileExportDropdown[invoice.id] && (
+                        <div className="absolute bottom-full left-0 right-0 mb-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                          <button
+                            onClick={() => handleMobileExport(invoice, 'excel')}
+                            className="w-full text-left px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-t-lg font-semibold"
+                          >
+                            Excel
+                          </button>
+                          <button
+                            onClick={() => handleMobileExport(invoice, 'csv')}
+                            className="w-full text-left px-3 py-2 text-sm text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
+                          >
+                            CSV
+                          </button>
+                          <button
+                            onClick={() => handleMobileExport(invoice, 'pdf')}
+                            className="w-full text-left px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-b-lg"
+                          >
+                            PDF
+                          </button>
+                        </div>
+                      )}
+                    </div>
                     <button
                       onClick={() => deleteDocument(invoice.id)}
                       className="py-2 px-3 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors text-sm"

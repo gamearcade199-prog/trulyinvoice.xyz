@@ -257,6 +257,96 @@ class DocumentProcessor:
             f"AI extraction failed after {self.max_retries} attempts: {str(last_error)}"
         )
     
+    def _clean_string_field(self, value: Any) -> Optional[str]:
+        """
+        Clean string fields: convert empty strings to None, strip whitespace
+        """
+        if not value:
+            return None
+        
+        cleaned = str(value).strip()
+        return cleaned if cleaned else None
+
+    def _validate_payment_status(self, value: Any) -> str:
+        """
+        Validate and sanitize payment_status field.
+        MUST match ENHANCED_SCHEMA_50_PLUS_FIELDS.sql constraint:
+        CHECK (payment_status IN ('pending', 'paid', 'overdue', 'cancelled', 'refunded', 'partial', 'processing', 'failed'))
+        """
+        # Database constraint from ENHANCED_SCHEMA_50_PLUS_FIELDS.sql
+        valid_statuses = {'pending', 'paid', 'overdue', 'cancelled', 'refunded', 'partial', 'processing', 'failed'}
+        
+        # Convert to string and clean up
+        if not value:
+            return 'pending'  # Default to 'pending' (valid in ENHANCED schema)
+        
+        status_str = str(value).strip().lower()
+        
+        # Map additional variations to valid values
+        status_mapping = {
+            'unpaid': 'pending',          # unpaid → pending (unpaid not allowed!)
+            'unknown': 'pending',         # unknown → pending
+            'na': 'pending',              # n/a → pending
+            'n/a': 'pending',
+            'draft': 'pending',           # draft → pending
+            # These are already valid in the schema:
+            'pending': 'pending',         # pending is valid
+            'paid': 'paid',               # paid is valid  
+            'overdue': 'overdue',         # overdue is valid
+            'cancelled': 'cancelled',     # cancelled is valid
+            'refunded': 'refunded',       # refunded is valid
+            'partial': 'partial',         # partial is valid
+            'processing': 'processing',   # processing is valid
+            'failed': 'failed',           # failed is valid
+        }
+        
+        # Use mapping if exists
+        if status_str in status_mapping:
+            return status_mapping[status_str]
+        
+        # Return if valid, otherwise default to 'pending'
+        return status_str if status_str in valid_statuses else 'pending'
+    
+    def _calculate_overall_confidence(self, data: Dict[str, Any]) -> float:
+        """Calculate overall confidence score based on extracted data quality"""
+        scores = []
+        
+        # Vendor confidence
+        vendor_score = 0.85
+        if data.get('vendor_name') and len(str(data['vendor_name'])) > 3:
+            vendor_score = 0.90
+        elif not data.get('vendor_name'):
+            vendor_score = 0.60
+        scores.append(vendor_score)
+        
+        # Amount confidence
+        amount_score = 0.85
+        if data.get('total_amount') and data['total_amount'] > 0:
+            amount_score = 0.92
+        elif not data.get('total_amount'):
+            amount_score = 0.55
+        scores.append(amount_score)
+        
+        # Date confidence
+        date_score = 0.85
+        if data.get('invoice_date'):
+            date_score = 0.88
+        elif not data.get('invoice_date'):
+            date_score = 0.60
+        scores.append(date_score)
+        
+        # Invoice number confidence
+        invoice_num_score = 0.80
+        if data.get('invoice_number') and len(str(data['invoice_number'])) > 2:
+            invoice_num_score = 0.85
+        elif not data.get('invoice_number'):
+            invoice_num_score = 0.50
+        scores.append(invoice_num_score)
+        
+        # Calculate weighted average
+        overall = sum(scores) / len(scores)
+        return round(overall, 2)
+    
     async def _save_invoice_data(
         self,
         document: Dict[str, Any],
@@ -265,103 +355,115 @@ class DocumentProcessor:
         """Save or update invoice data in Supabase"""
         logger.debug(f"Saving invoice data for document {document['id']}")
         
+        # Create a copy to avoid modifying the original extracted_data
+        # Remove fields that don't exist in the database schema
+        safe_data = {k: v for k, v in extracted_data.items() 
+                     if k not in ('error', 'error_message', '_extraction_metadata')}
+        
         # Prepare comprehensive invoice data - ALL FIELDS SUPPORTED
         invoice_data = {
             # Required fields
             'user_id': document.get('user_id'),
             'document_id': document['id'],
-            'invoice_number': extracted_data.get('invoice_number'),
-            'invoice_date': extracted_data.get('invoice_date'),
-            'vendor_name': extracted_data.get('vendor_name'),
-            'total_amount': extracted_data.get('total_amount', 0),
-            'payment_status': extracted_data.get('payment_status', 'unpaid'),
+            'invoice_number': self._clean_string_field(safe_data.get('invoice_number')),
+            'invoice_date': safe_data.get('invoice_date'),
+            'vendor_name': self._clean_string_field(safe_data.get('vendor_name')) or 'Unknown Vendor',  # NOT NULL in some schemas
+            'total_amount': safe_data.get('total_amount', 0),
+            'payment_status': self._validate_payment_status(safe_data.get('payment_status')),
             
             # Vendor Information (all optional)
-            'vendor_gstin': extracted_data.get('vendor_gstin') or extracted_data.get('gstin'),
-            'vendor_pan': extracted_data.get('vendor_pan'),
-            'vendor_tan': extracted_data.get('vendor_tan'),
-            'vendor_email': extracted_data.get('vendor_email'),
-            'vendor_phone': extracted_data.get('vendor_phone'),
-            'vendor_address': extracted_data.get('vendor_address'),
-            'vendor_state': extracted_data.get('vendor_state'),
-            'vendor_city': extracted_data.get('vendor_city'),
-            'vendor_pincode': extracted_data.get('vendor_pincode'),
+            'vendor_gstin': self._clean_string_field(safe_data.get('vendor_gstin') or safe_data.get('gstin')),
+            'vendor_pan': self._clean_string_field(safe_data.get('vendor_pan')),
+            'vendor_tan': self._clean_string_field(safe_data.get('vendor_tan')),
+            'vendor_email': self._clean_string_field(safe_data.get('vendor_email')),
+            'vendor_phone': self._clean_string_field(safe_data.get('vendor_phone')),
+            'vendor_address': self._clean_string_field(safe_data.get('vendor_address')),
+            'vendor_state': self._clean_string_field(safe_data.get('vendor_state')),
+            'vendor_city': self._clean_string_field(safe_data.get('vendor_city')),
+            'vendor_pincode': self._clean_string_field(safe_data.get('vendor_pincode')),
             
             # Customer Information (optional)
-            'customer_name': extracted_data.get('customer_name'),
-            'customer_gstin': extracted_data.get('customer_gstin'),
-            'customer_pan': extracted_data.get('customer_pan'),
-            'customer_email': extracted_data.get('customer_email'),
-            'customer_phone': extracted_data.get('customer_phone'),
-            'customer_address': extracted_data.get('customer_address'),
-            'customer_state': extracted_data.get('customer_state'),
+            'customer_name': self._clean_string_field(safe_data.get('customer_name')),
+            'customer_gstin': self._clean_string_field(safe_data.get('customer_gstin')),
+            'customer_pan': self._clean_string_field(safe_data.get('customer_pan')),
+            'customer_email': self._clean_string_field(safe_data.get('customer_email')),
+            'customer_phone': self._clean_string_field(safe_data.get('customer_phone')),
+            'customer_address': self._clean_string_field(safe_data.get('customer_address')),
+            'customer_state': self._clean_string_field(safe_data.get('customer_state')),
             
             # Dates & References
-            'due_date': extracted_data.get('due_date'),
-            'po_number': extracted_data.get('po_number'),
-            'po_date': extracted_data.get('po_date'),
-            'challan_number': extracted_data.get('challan_number'),
-            'eway_bill_number': extracted_data.get('eway_bill_number'),
-            'lr_number': extracted_data.get('lr_number'),
+            'due_date': safe_data.get('due_date'),
+            'po_number': self._clean_string_field(safe_data.get('po_number')),
+            'po_date': safe_data.get('po_date'),
+            'challan_number': self._clean_string_field(safe_data.get('challan_number')),
+            'eway_bill_number': self._clean_string_field(safe_data.get('eway_bill_number')),
+            'lr_number': self._clean_string_field(safe_data.get('lr_number')),
             
             # Financial Amounts
-            'subtotal': extracted_data.get('subtotal', 0),
-            'taxable_amount': extracted_data.get('taxable_amount', 0),
+            'subtotal': safe_data.get('subtotal', 0),
+            'taxable_amount': safe_data.get('taxable_amount', 0),
             
             # GST Taxes (Indian Tax System)
-            'cgst': extracted_data.get('cgst', 0),
-            'sgst': extracted_data.get('sgst', 0),
-            'igst': extracted_data.get('igst', 0),
-            'ugst': extracted_data.get('ugst', 0),
-            'cess': extracted_data.get('cess', 0),
-            'total_gst': extracted_data.get('total_gst', 0),
+            'cgst': safe_data.get('cgst', 0),
+            'sgst': safe_data.get('sgst', 0),
+            'igst': safe_data.get('igst', 0),
+            'ugst': safe_data.get('ugst', 0),
+            'cess': safe_data.get('cess', 0),
+            'total_gst': safe_data.get('total_gst', 0),
             
             # Other Tax Fields
-            'vat': extracted_data.get('vat', 0),
-            'service_tax': extracted_data.get('service_tax', 0),
-            'tds_amount': extracted_data.get('tds_amount', 0),
-            'tds_percentage': extracted_data.get('tds_percentage', 0),
-            'tcs_amount': extracted_data.get('tcs_amount', 0),
+            'vat': safe_data.get('vat', 0),
+            'service_tax': safe_data.get('service_tax', 0),
+            'tds_amount': safe_data.get('tds_amount', 0),
+            'tds_percentage': safe_data.get('tds_percentage', 0),
+            'tcs_amount': safe_data.get('tcs_amount', 0),
             
             # Deductions & Charges  
-            'discount': extracted_data.get('discount', 0),
-            'discount_percentage': extracted_data.get('discount_percentage', 0),
-            'shipping_charges': extracted_data.get('shipping_charges', 0),
-            'freight_charges': extracted_data.get('freight_charges', 0),
-            'handling_charges': extracted_data.get('handling_charges', 0),
-            'packing_charges': extracted_data.get('packing_charges', 0),
-            'insurance_charges': extracted_data.get('insurance_charges', 0),
-            'loading_charges': extracted_data.get('loading_charges', 0),
-            'other_charges': extracted_data.get('other_charges', 0),
-            'roundoff': extracted_data.get('roundoff', 0),
-            'advance_paid': extracted_data.get('advance_paid', 0),
+            'discount': safe_data.get('discount', 0),
+            'discount_percentage': safe_data.get('discount_percentage', 0),
+            'shipping_charges': safe_data.get('shipping_charges', 0),
+            'freight_charges': safe_data.get('freight_charges', 0),
+            'handling_charges': safe_data.get('handling_charges', 0),
+            'packing_charges': safe_data.get('packing_charges', 0),
+            'insurance_charges': safe_data.get('insurance_charges', 0),
+            'loading_charges': safe_data.get('loading_charges', 0),
+            'other_charges': safe_data.get('other_charges', 0),
+            'roundoff': safe_data.get('roundoff', 0),
+            'advance_paid': safe_data.get('advance_paid', 0),
             
             # Business Fields
-            'currency': extracted_data.get('currency', 'INR'),
-            'exchange_rate': extracted_data.get('exchange_rate', 1.0),
-            'hsn_code': extracted_data.get('hsn_code'),
-            'sac_code': extracted_data.get('sac_code'),
-            'place_of_supply': extracted_data.get('place_of_supply'),
-            'reverse_charge': extracted_data.get('reverse_charge'),
+            'currency': self._clean_string_field(safe_data.get('currency')) or 'INR',
+            'exchange_rate': safe_data.get('exchange_rate', 1.0),
+            'hsn_code': self._clean_string_field(safe_data.get('hsn_code')),
+            'sac_code': self._clean_string_field(safe_data.get('sac_code')),
+            'place_of_supply': self._clean_string_field(safe_data.get('place_of_supply')),
+            'reverse_charge': safe_data.get('reverse_charge'),
             
             # Payment Information
-            'payment_method': extracted_data.get('payment_method'),
-            'payment_terms': extracted_data.get('payment_terms'),
-            'bank_name': extracted_data.get('bank_name'),
-            'account_number': extracted_data.get('account_number'),
-            'ifsc_code': extracted_data.get('ifsc_code'),
-            'upi_id': extracted_data.get('upi_id'),
+            'payment_method': self._clean_string_field(safe_data.get('payment_method')),
+            'payment_terms': self._clean_string_field(safe_data.get('payment_terms')),
+            'bank_name': self._clean_string_field(safe_data.get('bank_name')),
+            'account_number': self._clean_string_field(safe_data.get('account_number')),
+            'ifsc_code': self._clean_string_field(safe_data.get('ifsc_code')),
+            'upi_id': self._clean_string_field(safe_data.get('upi_id')),
             
             # Invoice Classification
-            'invoice_type': extracted_data.get('invoice_type', 'standard'),
-            'business_type': extracted_data.get('business_type'),
-            'supply_type': extracted_data.get('supply_type'),
-            'transaction_type': extracted_data.get('transaction_type'),
+            'invoice_type': self._clean_string_field(safe_data.get('invoice_type')) or 'standard',
+            'business_type': self._clean_string_field(safe_data.get('business_type')),
+            'supply_type': self._clean_string_field(safe_data.get('supply_type')),
+            'transaction_type': self._clean_string_field(safe_data.get('transaction_type')),
             
             # Data Storage
-            'line_items': extracted_data.get('line_items', []),
-            'raw_extracted_data': extracted_data,
-            'updated_at': datetime.utcnow().isoformat()
+            'line_items': safe_data.get('line_items', []),
+            'raw_extracted_data': safe_data,
+            'updated_at': datetime.utcnow().isoformat(),
+            
+            # AI Confidence Scores
+            'confidence_score': self._calculate_overall_confidence(safe_data),
+            'vendor_confidence': safe_data.get('vendor_confidence', 0.85),
+            'amount_confidence': safe_data.get('amount_confidence', 0.88),
+            'date_confidence': safe_data.get('date_confidence', 0.85),
+            'invoice_number_confidence': safe_data.get('invoice_number_confidence', 0.80)
         }
         
         # Remove None values to avoid database issues

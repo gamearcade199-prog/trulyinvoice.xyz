@@ -154,26 +154,62 @@ class ExcelExporter:
             ws.column_dimensions[column].width = 20
     
     def _create_details_sheet(self, wb: Workbook, invoices: List[Dict]):
-        """Create Details sheet with all invoice data"""
-        ws = wb.create_sheet("Invoice Details")
+        """Create Details sheet with ALL extracted fields - COMPREHENSIVE VIEW"""
+        ws = wb.create_sheet("Complete Invoice Data")
         
-        # Define headers
+        # Define ALL possible headers (50+ fields)
         headers = [
-            'Invoice Number',
-            'Vendor Name',
-            'Invoice Date',
-            'Due Date',
-            'Subtotal',
-            'CGST',
-            'SGST',
-            'IGST',
-            'Total GST',
-            'Total Amount',
-            'Payment Status',
-            'Created At'
+            # Core Invoice Fields
+            'Invoice Number', 'Invoice Date', 'Due Date', 'Vendor Name', 'Total Amount', 'Currency',
+            
+            # Vendor Information
+            'Vendor GSTIN', 'Vendor PAN', 'Vendor Email', 'Vendor Phone', 
+            'Vendor Address', 'Vendor State', 'Vendor Pincode',
+            
+            # Customer Information  
+            'Customer Name', 'Customer GSTIN', 'Customer Address', 
+            'Customer State', 'Customer Phone',
+            
+            # Financial Breakdown
+            'Subtotal', 'Taxable Amount', 'Discount', 'Shipping Charges', 
+            'Other Charges', 'Roundoff',
+            
+            # GST & Tax Details
+            'CGST', 'SGST', 'IGST', 'UGST', 'CESS', 'Total GST', 
+            'HSN Code', 'SAC Code', 'Place of Supply',
+            
+            # Banking Information
+            'Bank Name', 'Account Number', 'IFSC Code', 'SWIFT Code',
+            
+            # Payment & Business Terms
+            'Payment Status', 'Payment Method', 'Payment Terms',
+            
+            # Purchase Order Details
+            'PO Number', 'PO Date', 'Invoice Type', 'Supply Type', 'Reverse Charge',
+            
+            # Additional Taxes
+            'VAT', 'Service Tax', 'TDS Amount', 'TCS Amount',
+            
+            # Import/Export Fields
+            'Bill of Entry', 'Port Code',
+            
+            # Hotel & Hospitality
+            'Arrival Date', 'Departure Date', 'Room Number', 'Guest Count', 'Booking Reference',
+            
+            # Retail & E-commerce
+            'Order ID', 'Tracking Number', 'Shipping Method', 'Delivery Date',
+            
+            # Manufacturing
+            'Purchase Order', 'Batch Number', 'Quality Certificate', 'Warranty Period',
+            
+            # Professional Services
+            'Project Name', 'Consultant Name', 'Hourly Rate', 'Hours Worked',
+            
+            # Quality & Metadata
+            'Processing Time (sec)', 'Quality Score (%)', 'Extraction Version', 'Created At'
         ]
         
-        # Add headers
+        # Add headers with formatting
         for col_num, header in enumerate(headers, 1):
             cell = ws.cell(row=1, column=col_num)
             cell.value = header
@@ -182,96 +218,141 @@ class ExcelExporter:
             cell.border = self.border_style
             cell.alignment = Alignment(horizontal='center', vertical='center')
         
-        # Add data rows
+        # Add data rows with ALL extracted information
         for row_num, invoice in enumerate(invoices, 2):
-            # Invoice Number
-            ws.cell(row=row_num, column=1).value = invoice.get('invoice_number', 'N/A')
+            data_values = [
+                # Core Invoice Fields
+                invoice.get('invoice_number', ''),
+                invoice.get('invoice_date', ''),
+                invoice.get('due_date', ''),
+                invoice.get('vendor_name', ''),
+                invoice.get('total_amount', 0),
+                invoice.get('currency', 'INR'),
+                
+                # Vendor Information
+                invoice.get('vendor_gstin', ''),
+                invoice.get('vendor_pan', ''),
+                invoice.get('vendor_email', ''),
+                invoice.get('vendor_phone', ''),
+                invoice.get('vendor_address', ''),
+                invoice.get('vendor_state', ''),
+                invoice.get('vendor_pincode', ''),
+                
+                # Customer Information
+                invoice.get('customer_name', ''),
+                invoice.get('customer_gstin', ''),
+                invoice.get('customer_address', ''),
+                invoice.get('customer_state', ''),
+                invoice.get('customer_phone', ''),
+                
+                # Financial Breakdown
+                invoice.get('subtotal', 0),
+                invoice.get('taxable_amount', 0),
+                invoice.get('discount', 0),
+                invoice.get('shipping_charges', 0),
+                invoice.get('other_charges', 0),
+                invoice.get('roundoff', 0),
+                
+                # GST & Tax Details
+                invoice.get('cgst', 0),
+                invoice.get('sgst', 0),
+                invoice.get('igst', 0),
+                invoice.get('ugst', 0),
+                invoice.get('cess', 0),
+                invoice.get('total_gst', 0),
+                invoice.get('hsn_code', ''),
+                invoice.get('sac_code', ''),
+                invoice.get('place_of_supply', ''),
+                
+                # Banking Information
+                invoice.get('bank_name', ''),
+                invoice.get('account_number', ''),
+                invoice.get('ifsc_code', ''),
+                invoice.get('swift_code', ''),
+                
+                # Payment & Business Terms
+                invoice.get('payment_status', ''),
+                invoice.get('payment_method', ''),
+                invoice.get('payment_terms', ''),
+                
+                # Purchase Order Details
+                invoice.get('po_number', ''),
+                invoice.get('po_date', ''),
+                invoice.get('invoice_type', ''),
+                invoice.get('supply_type', ''),
+                invoice.get('reverse_charge', ''),
+                
+                # Additional Taxes
+                invoice.get('vat', 0),
+                invoice.get('service_tax', 0),
+                invoice.get('tds_amount', 0),
+                invoice.get('tcs_amount', 0),
+                
+                # Import/Export Fields
+                invoice.get('bill_of_entry', ''),
+                invoice.get('port_code', ''),
+                
+                # Hotel & Hospitality
+                invoice.get('arrival_date', ''),
+                invoice.get('departure_date', ''),
+                invoice.get('room_number', ''),
+                invoice.get('guest_count', ''),
+                invoice.get('booking_reference', ''),
+                
+                # Retail & E-commerce
+                invoice.get('order_id', ''),
+                invoice.get('tracking_number', ''),
+                invoice.get('shipping_method', ''),
+                invoice.get('delivery_date', ''),
+                
+                # Manufacturing
+                invoice.get('purchase_order', ''),
+                invoice.get('batch_number', ''),
+                invoice.get('quality_certificate', ''),
+                invoice.get('warranty_period', ''),
+                
+                # Professional Services
+                invoice.get('project_name', ''),
+                invoice.get('consultant_name', ''),
+                invoice.get('hourly_rate', 0),
+                invoice.get('hours_worked', 0),
+                
+                # Quality & Metadata
+                invoice.get('processing_time_seconds', 0),
+                invoice.get('quality_score', 0),
+                invoice.get('extraction_version', 'v2.5'),
+                invoice.get('created_at', '')
+            ]
             
-            # Vendor Name
-            ws.cell(row=row_num, column=2).value = invoice.get('vendor_name', 'N/A')
+            # Currency columns (amounts)
+            currency_columns = [5, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 47, 48, 49, 50, 67, 68]
             
-            # Invoice Date
-            ws.cell(row=row_num, column=3).value = invoice.get('invoice_date', 'N/A')
-            
-            # Due Date
-            ws.cell(row=row_num, column=4).value = invoice.get('due_date', 'N/A')
-            
-            # Subtotal
-            cell = ws.cell(row=row_num, column=5)
-            cell.value = invoice.get('subtotal', 0)
-            cell.number_format = '₹#,##0.00'
-            
-            # CGST
-            cell = ws.cell(row=row_num, column=6)
-            cell.value = invoice.get('cgst', 0)
-            cell.number_format = '₹#,##0.00'
-            
-            # SGST
-            cell = ws.cell(row=row_num, column=7)
-            cell.value = invoice.get('sgst', 0)
-            cell.number_format = '₹#,##0.00'
-            
-            # IGST
-            cell = ws.cell(row=row_num, column=8)
-            cell.value = invoice.get('igst', 0)
-            cell.number_format = '₹#,##0.00'
-            
-            # Total GST (Formula)
-            cell = ws.cell(row=row_num, column=9)
-            cell.value = f"=F{row_num}+G{row_num}+H{row_num}"
-            cell.number_format = '₹#,##0.00'
-            
-            # Total Amount
-            cell = ws.cell(row=row_num, column=10)
-            cell.value = invoice.get('total_amount', 0)
-            cell.number_format = '₹#,##0.00'
-            cell.font = Font(bold=True)
-            
-            # Payment Status
-            status = invoice.get('payment_status', 'Unpaid')
-            cell = ws.cell(row=row_num, column=11)
-            cell.value = status
-            if status.lower() == 'paid':
-                cell.fill = PatternFill(start_color="C6EFCE", fill_type="solid")  # Light green
-            else:
-                cell.fill = PatternFill(start_color="FFC7CE", fill_type="solid")  # Light red
-            
-            # Created At
-            ws.cell(row=row_num, column=12).value = invoice.get('created_at', 'N/A')
-            
-            # Apply borders to all cells in row
-            for col_num in range(1, len(headers) + 1):
-                ws.cell(row=row_num, column=col_num).border = self.border_style
+            for col_num, value in enumerate(data_values, 1):
+                cell = ws.cell(row=row_num, column=col_num)
+                cell.value = value
+                cell.border = self.border_style
+                
+                # Format currency columns
+                if col_num in currency_columns and isinstance(value, (int, float)) and value > 0:
+                    cell.number_format = '₹#,##0.00'
+                
+                # Color code payment status
+                if col_num == 39 and value:  # Payment Status column
+                    if str(value).lower() in ['paid', 'completed']:
+                        cell.fill = PatternFill(start_color="C6EFCE", fill_type="solid")  # Green
+                    elif str(value).lower() in ['pending', 'unpaid']:
+                        cell.fill = PatternFill(start_color="FFC7CE", fill_type="solid")  # Red
         
-        # Add total row
-        total_row = len(invoices) + 2
-        ws.cell(row=total_row, column=1).value = "TOTAL"
-        ws.cell(row=total_row, column=1).font = Font(bold=True, size=12)
-        
-        # Total formulas
-        for col_num, col_letter in [(5, 'E'), (6, 'F'), (7, 'G'), (8, 'H'), (9, 'I'), (10, 'J')]:
-            cell = ws.cell(row=total_row, column=col_num)
-            cell.value = f"=SUM({col_letter}2:{col_letter}{total_row - 1})"
-            cell.number_format = '₹#,##0.00'
-            cell.font = Font(bold=True)
-            cell.fill = PatternFill(start_color="D9D9D9", fill_type="solid")  # Light gray
-            cell.border = self.border_style
-        
-        # Auto-width columns
+        # Auto-adjust column widths (optimized for readability)
         for col_num in range(1, len(headers) + 1):
             column_letter = get_column_letter(col_num)
-            max_length = len(headers[col_num - 1])
-            
-            # Check data length
-            for row in ws.iter_rows(min_row=2, max_row=len(invoices) + 1, min_col=col_num, max_col=col_num):
-                for cell in row:
-                    if cell.value:
-                        max_length = max(max_length, len(str(cell.value)))
-            
-            ws.column_dimensions[column_letter].width = min(max_length + 2, 50)
+            header_length = len(headers[col_num - 1])
+            ws.column_dimensions[column_letter].width = min(max(header_length + 2, 12), 25)
         
-        # Freeze header row
+        # Freeze header row for easy scrolling
         ws.freeze_panes = 'A2'
+        
+        print(f"✅ Excel export includes {len(headers)} comprehensive fields per invoice!")
 
 
 # Example usage
