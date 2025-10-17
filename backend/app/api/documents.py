@@ -210,15 +210,30 @@ async def process_document(document_id: str):
         
         # 3. Create invoice in Supabase (with user_id for RLS)
         print(f"  💾 Creating invoice for user {user_id}...")
-        created_invoice = supabase.insert("invoices", invoice_data)
-        
-        if not created_invoice:
-            raise HTTPException(status_code=500, detail="Failed to create invoice")
+        print(f"  📋 Invoice data keys: {list(invoice_data.keys())}")
+        try:
+            created_invoice = supabase.insert("invoices", invoice_data)
+            
+            if not created_invoice:
+                print(f"  ❌ Supabase returned empty response!")
+                raise HTTPException(status_code=500, detail="Failed to create invoice - Supabase returned empty")
+            
+            invoice_id = created_invoice.get('id')
+            print(f"  ✅ Invoice created: {invoice_id}")
+            
+            # Verify invoice was created
+            print(f"  🔍 Verifying invoice exists...")
+            verify = supabase.select("invoices", filters={"id": invoice_id})
+            if verify:
+                print(f"  ✅ Verification successful - invoice found in database")
+            else:
+                print(f"  ⚠️ Invoice created but not found in database!")
+        except Exception as e:
+            print(f"  ❌ Error creating invoice: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to create invoice: {str(e)}")
         
         # 4. Update document status to 'completed'
         supabase.update("documents", filters={"id": document_id}, data={"status": "completed"})
-        
-        print(f"  ✅ Invoice created: {created_invoice['id']}")
         
         return ProcessResponse(
             success=True,

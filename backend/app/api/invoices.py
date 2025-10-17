@@ -38,15 +38,23 @@ async def get_invoices(user_id: str = None, limit: int = 100):
 @router.get("/{invoice_id}")
 async def get_invoice(invoice_id: str):
     """Get single invoice by ID"""
+    print(f"🔍 GET /api/invoices/{invoice_id}")
     try:
+        print(f"  📊 Querying Supabase for invoice...")
         invoices = supabase.select("invoices", filters={"id": invoice_id})
+        print(f"  📊 Query result: {len(invoices) if invoices else 0} rows")
         
         if not invoices:
-            raise HTTPException(status_code=404, detail="Invoice not found")
+            print(f"  ❌ Invoice not found in database")
+            raise HTTPException(status_code=404, detail=f"Invoice {invoice_id} not found")
         
+        print(f"  ✅ Invoice found: {invoices[0].get('vendor_name', 'Unknown')}")
         return invoices[0]
         
+    except HTTPException:
+        raise
     except Exception as e:
+        print(f"  ❌ Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
