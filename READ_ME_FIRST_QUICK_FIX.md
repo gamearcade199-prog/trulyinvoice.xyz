@@ -23,7 +23,7 @@ Go to: **https://dashboard.render.com** → Your backend service → **Environme
 
 ```env
 # CRITICAL - AI extraction won't work without this!
-GOOGLE_AI_API_KEY=AIzaSyBEnD60M9_JkSzUz_ZiBolN9pe5fDodPSE
+GOOGLE_AI_API_KEY=YOUR_API_KEY_HERE
 
 # CRITICAL - Database connection
 DATABASE_URL=postgresql://postgres.xxx:password@xxx.supabase.co:5432/postgres

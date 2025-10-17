@@ -43,8 +43,8 @@ These scripts automatically set the environment variables BEFORE starting Python
 ### Option 2: Manual Environment Variables (PowerShell)
 
 ```powershell
-$env:GOOGLE_AI_API_KEY = "AIzaSyBEnD60M9_JkSzUz_ZiBolN9pe5fDodPSE"
-$env:GEMINI_API_KEY = "AIzaSyBEnD60M9_JkSzUz_ZiBolN9pe5fDodPSE"
+$env:GOOGLE_AI_API_KEY = "YOUR_API_KEY_HERE"
+$env:GEMINI_API_KEY = "YOUR_API_KEY_HERE"
 
 cd backend
 .\venv\Scripts\Activate.ps1
@@ -59,7 +59,7 @@ Set these in Windows permanently:
 3. Click "Environment Variables" button
 4. Add new variables:
    - Name: `GOOGLE_AI_API_KEY`
-   - Value: `AIzaSyBEnD60M9_JkSzUz_ZiBolN9pe5fDodPSE`
+   - Value: `YOUR_API_KEY_HERE`
 5. Click OK and restart PowerShell
 
 ---

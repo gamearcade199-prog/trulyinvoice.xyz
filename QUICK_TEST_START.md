@@ -37,7 +37,7 @@ http://localhost:3000/dashboard
 **Now:** Backend starts with API keys exported in PowerShell first
 
 ```powershell
-$env:GOOGLE_AI_API_KEY="AIzaSyBEnD60M9_JkSzUz_ZiBolN9pe5fDodPSE"
+$env:GOOGLE_AI_API_KEY="YOUR_API_KEY_HERE"
 python -m uvicorn app.main:app --reload --port 8000
 ```
 

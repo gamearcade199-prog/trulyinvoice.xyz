@@ -3,9 +3,9 @@
 
 Set-Location $PSScriptRoot
 
-# Set API Keys (set them in current session)
-$env:GOOGLE_AI_API_KEY = "AIzaSyBEnD60M9_JkSzUz_ZiBolN9pe5fDodPSE"
-$env:GEMINI_API_KEY = "AIzaSyBEnD60M9_JkSzUz_ZiBolN9pe5fDodPSE"
+# Set API Keys (replace with your actual keys)
+$env:GOOGLE_AI_API_KEY = "YOUR_GOOGLE_AI_API_KEY_HERE"
+$env:GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE"
 
 # Also set other important vars
 $env:SUPABASE_URL = "https://ldvwxqluaheuhbycdpwn.supabase.co"

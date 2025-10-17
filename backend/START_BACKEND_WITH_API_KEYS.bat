@@ -4,9 +4,9 @@ REM This ensures environment variables are loaded before Python starts
 
 cd %~dp0backend
 
-REM Set API Keys
-set GOOGLE_AI_API_KEY=AIzaSyBEnD60M9_JkSzUz_ZiBolN9pe5fDodPSE
-set GEMINI_API_KEY=AIzaSyBEnD60M9_JkSzUz_ZiBolN9pe5fDodPSE
+REM Set API Keys (replace with your actual keys)
+set GOOGLE_AI_API_KEY=YOUR_GOOGLE_AI_API_KEY_HERE
+set GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE
 
 REM Activate venv and start backend
 call venv\Scripts\activate.bat

@@ -106,7 +106,7 @@ python -c "from app.core.config import settings; print('Settings loaded:', setti
 # Check Render environment variables
 # Dashboard → Web Service → Environment → Environment Variables
 # Required:
-GOOGLE_AI_API_KEY=AIzaSyBEnD60M9_JkSzUz_ZiBolN9pe5fDodPSE
+GOOGLE_AI_API_KEY=YOUR_API_KEY_HERE
 SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 DATABASE_URL=postgresql://...
 ```
@@ -186,7 +186,7 @@ Navigate to: **Render Dashboard → trulyinvoice-backend → Environment → Env
 **Required Variables** (copy from local `.env`):
 ```env
 # AI Services (CRITICAL for extraction)
-GOOGLE_AI_API_KEY=AIzaSyBEnD60M9_JkSzUz_ZiBolN9pe5fDodPSE
+GOOGLE_AI_API_KEY=YOUR_API_KEY_HERE
 
 # Database (CRITICAL)
 DATABASE_URL=postgresql://postgres.xxx:xxx@xxx.supabase.co:5432/postgres

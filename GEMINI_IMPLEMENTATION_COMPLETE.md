@@ -15,7 +15,7 @@
 
 ### **2. Added API Key to .env**
 ```env
-✅ GOOGLE_AI_API_KEY=AIzaSyBEnD60M9_JkSzUz_ZiBolN9pe5fDodPSE
+✅ GOOGLE_AI_API_KEY=YOUR_API_KEY_HERE
 ✅ GEMINI_MODEL=gemini-2.0-flash-exp
 ```
 
@@ -135,7 +135,7 @@ Fields Extracted: 18
 ### **1. backend/.env**
 ```env
 # ADDED:
-GOOGLE_AI_API_KEY=AIzaSyBEnD60M9_JkSzUz_ZiBolN9pe5fDodPSE
+GOOGLE_AI_API_KEY=YOUR_API_KEY_HERE
 GEMINI_MODEL=gemini-2.0-flash-exp
 ```
 

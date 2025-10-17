@@ -67,8 +67,8 @@ The `.env` file existed but PowerShell wasn't loading it automatically. The back
 ### The Solution:
 I manually exported the API keys before starting:
 ```powershell
-$env:GOOGLE_AI_API_KEY="AIzaSyBEnD60M9_JkSzUz_ZiBolN9pe5fDodPSE"
-$env:GEMINI_API_KEY="AIzaSyBEnD60M9_JkSzUz_ZiBolN9pe5fDodPSE"
+$env:GOOGLE_AI_API_KEY="YOUR_API_KEY_HERE"
+$env:GEMINI_API_KEY="YOUR_API_KEY_HERE"
 ```
 
 ### Why This Works:
