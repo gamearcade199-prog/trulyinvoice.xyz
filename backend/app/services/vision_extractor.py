@@ -7,14 +7,23 @@ import os
 import base64
 import json
 from typing import Dict, Any, Optional
-from google.cloud import vision
-import google.auth
-from google.oauth2 import service_account
+
+# Google Cloud Vision API (optional - will fall back to Gemini if not available)
+try:
+    from google.cloud import vision
+    import google.auth
+    from google.oauth2 import service_account
+    VISION_AVAILABLE = True
+except ImportError:
+    VISION_AVAILABLE = False
 
 
 class VisionExtractor:
     def __init__(self):
         """Initialize Google Vision API client"""
+        if not VISION_AVAILABLE:
+            raise ImportError("google-cloud-vision library not installed. Will use Gemini-only fallback.")
+        
         # Use the same API key as Gemini
         api_key = os.getenv('GOOGLE_AI_API_KEY')
         if not api_key:

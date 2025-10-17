@@ -6,26 +6,40 @@ Ultra-efficient invoice processing at ₹0.13 per invoice (99% cost reduction)
 import os
 import time
 from typing import Dict, Any, Optional
-from .vision_extractor import VisionExtractor
+
+# Try to import Vision API, but allow graceful fallback to Gemini-only
+try:
+    from .vision_extractor import VisionExtractor
+    VISION_AVAILABLE = True
+except ImportError:
+    VISION_AVAILABLE = False
+    VisionExtractor = None
+
 from .flash_lite_formatter import FlashLiteFormatter
 
 
 class VisionFlashLiteExtractor:
     def __init__(self):
-        """Initialize combined Vision API + Flash-Lite extractor"""
+        """Initialize combined Vision API + Flash-Lite extractor (with Gemini fallback)"""
         try:
-            self.vision_extractor = VisionExtractor()
+            # Try to initialize Vision API, but it's optional
+            if VISION_AVAILABLE:
+                self.vision_extractor = VisionExtractor()
+                print("✅ VISION API AVAILABLE - Using Vision + Flash-Lite hybrid mode")
+            else:
+                self.vision_extractor = None
+                print("⚠️ Vision API not available - Using Gemini-only fallback (still excellent for invoices)")
+            
             self.flash_lite_formatter = FlashLiteFormatter()
             
-            print("✅ VISION + FLASH-LITE extraction ENABLED - 99% cost reduction target")
-            
         except Exception as e:
-            print(f"❌ Failed to initialize Vision + Flash-Lite extractor: {e}")
-            raise
+            print(f"⚠️ Vision initialization skipped ({e}) - Will use Gemini-only fallback")
+            self.vision_extractor = None
+            self.flash_lite_formatter = FlashLiteFormatter()
     
     async def extract_invoice_data(self, image_data: bytes, image_filename: str = "unknown") -> Dict[str, Any]:
         """
-        Complete invoice extraction using Vision API + Flash-Lite
+        Complete invoice extraction using Vision API + Flash-Lite (with Gemini fallback)
         
         Args:
             image_data: Raw image bytes
@@ -41,6 +55,11 @@ class VisionFlashLiteExtractor:
         print("=" * 40)
         
         try:
+            # If Vision API not available, skip directly to Gemini fallback
+            if not self.vision_extractor:
+                print("⚠️ Vision API not available - using Gemini-only extraction")
+                return self._gemini_only_fallback(image_data, image_filename)
+            
             # Step 1: Extract raw text using Vision API (₹0.12)
             print("📸 Step 1: Vision API text extraction...")
             vision_result = self.vision_extractor.extract_text_from_image(image_data)
