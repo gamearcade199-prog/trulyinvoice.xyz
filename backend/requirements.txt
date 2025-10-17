@@ -1,10 +1,10 @@
-# ULTRA-SIMPLE REQUIREMENTS - 100% Compatible with Python 3.11 (Render-friendly)
-# Using Pydantic 2.1.x (stable wheels, works on Python 3.11)
+# ULTRA-SIMPLE REQUIREMENTS - Compatible with Python 3.11+
+# Using Pydantic 2.1.1 (latest 2.1.x, not 2.1.3 which doesn't exist)
 fastapi==0.100.1
 uvicorn[standard]==0.24.0
 python-dotenv==1.0.0
-pydantic==2.1.3
-pydantic[email]==2.1.3
+pydantic==2.1.1
+pydantic[email]==2.1.1
 pydantic-settings==2.0.3
 email-validator==2.1.0
 python-multipart==0.0.6
