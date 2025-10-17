@@ -1,12 +1,12 @@
 # ULTRA-SIMPLE REQUIREMENTS - 100% Compatible with Python 3.11 (Render-friendly)
-fastapi==0.109.0
-uvicorn[standard]==0.27.0
+# Using Pydantic 1.10.x (pure Python, NO RUST COMPILATION)
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
 python-dotenv==1.0.0
-pydantic==2.6.0
-pydantic[email]==2.6.0
+pydantic==1.10.14
+pydantic[email]==1.10.14
 email-validator==2.1.0
 python-multipart==0.0.6
-pydantic-settings==2.1.0
 
 # Use requests instead of supabase library (no httpx conflicts!)
 requests==2.31.0
@@ -43,4 +43,4 @@ pyotp==2.9.0
 slowapi==0.1.9
 
 # Settings management
-pydantic-settings==2.1.0
+# (pydantic 1.10 has BaseSettings built-in, no separate pydantic-settings needed)
