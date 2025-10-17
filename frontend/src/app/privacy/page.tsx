@@ -217,7 +217,7 @@ export default function PrivacyPage() {
                   </p>
                   <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-400">
                     <li><strong>Supabase:</strong> Database and authentication</li>
-                    <li><strong>OpenAI:</strong> AI-powered invoice extraction</li>
+                    <li><strong>Google Gemini:</strong> AI-powered invoice extraction</li>
                     <li><strong>Payment Processors:</strong> Secure payment handling</li>
                   </ul>
                   <p className="text-gray-600 dark:text-gray-400 mt-4">
