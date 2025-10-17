@@ -43,32 +43,38 @@ export default function InvoiceDetailsPage() {
     try {
       setLoading(true)
       
-      const { data: { user } } = await supabase.auth.getUser()
-
-      const { data, error } = await supabase
-        .from('invoices')
-        .select(`
-          *,
-          documents:document_id (
-            storage_path,
-            file_url,
-            file_name
-          )
-        `)
-        .eq('id', invoiceId)
-        .single()
-
-      if (error) {
-        console.error('Error fetching invoice:', error)
-        throw error
+      // Use backend API instead of client-side Supabase query (avoids RLS issues)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/invoices/${invoiceId}`)
+      
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Invoice not found')
+        }
+        throw new Error(`Failed to fetch invoice: ${response.statusText}`)
       }
       
+      const data = await response.json()
       setInvoice(data)
       setEditedInvoice(data)
       
     } catch (error) {
       console.error('Error fetching invoice:', error)
       alert('Failed to load invoice details. Please check the console for details.')
+      // Fallback: try to fetch from Supabase in case API is down
+      try {
+        const { data, error } = await supabase
+          .from('invoices')
+          .select('*')
+          .eq('id', invoiceId)
+          .single()
+
+        if (error) throw error
+        
+        setInvoice(data)
+        setEditedInvoice(data)
+      } catch (fallbackError) {
+        console.error('Fallback Supabase fetch also failed:', fallbackError)
+      }
     } finally {
       setLoading(false)
     }
