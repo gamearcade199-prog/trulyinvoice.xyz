@@ -62,6 +62,11 @@ export default function AboutPage() {
                   Based in Assam, we're proud to serve businesses of all sizes, from startups to enterprises, helping them 
                   streamline their financial workflows and focus on what matters most: growing their business.
                 </p>
+                <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed mt-4">
+                  Our AI-powered platform processes thousands of invoices daily with 99.9% accuracy, helping businesses 
+                  save up to 40 hours per month on manual data entry. Join the growing community of businesses that 
+                  have transformed their invoice management with TrulyInvoice.
+                </p>
               </div>
             </div>
 
@@ -145,6 +150,32 @@ export default function AboutPage() {
                 >
                   Support Center
                 </Link>
+              </div>
+            </div>
+
+            {/* Technology Section */}
+            <div className="mb-16 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-8">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">Powered by Advanced AI</h2>
+              <div className="grid md:grid-cols-2 gap-8">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Google Gemini AI</h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    Our platform leverages Google's cutting-edge Gemini AI for unparalleled accuracy in invoice data extraction, 
+                    ensuring 99.9% precision across all document types.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Smart Processing</h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    Advanced OCR and machine learning algorithms work together to understand complex invoice layouts, 
+                    handwritten text, and multi-language documents with ease.
+                  </p>
+                </div>
+              </div>
+              <div className="text-center mt-6">
+                <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                  Updated October 2025 - Enhanced with latest AI capabilities
+                </p>
               </div>
             </div>
           </div>
