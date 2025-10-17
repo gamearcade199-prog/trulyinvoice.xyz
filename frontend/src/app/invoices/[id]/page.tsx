@@ -1,5 +1,9 @@
 'use client'
 
+// Invoice Detail Page - Uses Backend API to fetch invoice data
+// This avoids RLS policy issues and Supabase junction table problems
+// Force Vercel redeploy (commit 9327073)
+
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
