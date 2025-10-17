@@ -24,10 +24,10 @@ class VisionExtractor:
         if not VISION_AVAILABLE:
             raise ImportError("google-cloud-vision library not installed. Will use Gemini-only fallback.")
         
-        # Use the same API key as Gemini
-        api_key = os.getenv('GOOGLE_AI_API_KEY')
+        # Use the same API key as Gemini - check both names
+        api_key = os.getenv('GOOGLE_AI_API_KEY') or os.getenv('GEMINI_API_KEY')
         if not api_key:
-            raise ValueError("GOOGLE_AI_API_KEY environment variable not set")
+            raise ValueError("GOOGLE_AI_API_KEY or GEMINI_API_KEY environment variable not set")
         
         # Initialize Vision client
         # Note: Vision API can use the same API key through REST API

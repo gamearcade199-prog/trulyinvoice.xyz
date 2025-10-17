@@ -17,10 +17,10 @@ import google.generativeai as genai
 class GeminiExtractor:
     def __init__(self):
         """Initialize bulletproof Gemini 2.5 Flash extractor"""
-        # Issue #1: Missing API key
-        api_key = os.getenv('GOOGLE_AI_API_KEY')
+        # Issue #1: Missing API key - check both possible names
+        api_key = os.getenv('GOOGLE_AI_API_KEY') or os.getenv('GEMINI_API_KEY')
         if not api_key:
-            raise ValueError("GOOGLE_AI_API_KEY environment variable not set")
+            raise ValueError("GOOGLE_AI_API_KEY or GEMINI_API_KEY environment variable not set")
         
         # Issue #2: Invalid API key format
         if not api_key.startswith('AIza'):
