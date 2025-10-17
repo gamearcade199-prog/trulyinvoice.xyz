@@ -37,6 +37,9 @@ export default function AboutPage() {
             <p className="text-xl text-gray-600 dark:text-gray-400">
               Transforming invoice management with AI-powered automation
             </p>
+            <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+              Last updated: October 17, 2025 - Production deployment active
+            </p>
           </div>
         </div>
       </section>
