@@ -33,10 +33,40 @@ class Settings(BaseSettings):
     # AI Services
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     GOOGLE_VISION_API_KEY: str = os.getenv("GOOGLE_VISION_API_KEY", "")
+    GOOGLE_AI_API_KEY: str = os.getenv("GOOGLE_AI_API_KEY", "")  # Alternative AI key
+    
+    # Vision & OCR Configuration (Optional)
+    VISION_API_ENABLED: str = os.getenv("VISION_API_ENABLED", "true")
+    USE_GEMINI_FOR_OCR: str = os.getenv("USE_GEMINI_FOR_OCR", "false")
+    GEMINI_OCR_MODEL: str = os.getenv("GEMINI_OCR_MODEL", "gemini-2.5-flash")
+    GEMINI_FLASH_LITE_MODEL: str = os.getenv("GEMINI_FLASH_LITE_MODEL", "gemini-2.5-flash-lite")
+    CONFIDENCE_THRESHOLD: float = float(os.getenv("CONFIDENCE_THRESHOLD", "0.85"))
+    USE_VISION_FLASH_LITE_PIPELINE: str = os.getenv("USE_VISION_FLASH_LITE_PIPELINE", "false")
+    USE_GEMINI_DUAL_PIPELINE: str = os.getenv("USE_GEMINI_DUAL_PIPELINE", "true")
+    MAX_GEMINI_COST_PER_REQUEST: float = float(os.getenv("MAX_GEMINI_COST_PER_REQUEST", "0.10"))
     
     # Storage
     SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
     SUPABASE_KEY: str = os.getenv("SUPABASE_KEY", "")
+    SUPABASE_SERVICE_KEY: str = os.getenv("SUPABASE_SERVICE_KEY", "")  # For backend operations
+    
+    # Environment & Debug
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    DEBUG: str = os.getenv("DEBUG", "true")
+    
+    # Upload Configuration
+    MAX_UPLOAD_SIZE: int = int(os.getenv("MAX_UPLOAD_SIZE", "10485760"))  # 10MB default
+    ALLOWED_FILE_TYPES: str = os.getenv("ALLOWED_FILE_TYPES", '["pdf","jpg","jpeg","png"]')
+    
+    # Plan Limits
+    STARTER_SCANS_LIMIT: int = int(os.getenv("STARTER_SCANS_LIMIT", "30"))
+    PRO_SCANS_LIMIT: int = int(os.getenv("PRO_SCANS_LIMIT", "200"))
+    BUSINESS_SCANS_LIMIT: int = int(os.getenv("BUSINESS_SCANS_LIMIT", "750"))
+    
+    # Data Retention
+    STARTER_DATA_RETENTION_DAYS: int = int(os.getenv("STARTER_DATA_RETENTION_DAYS", "60"))
+    PRO_DATA_RETENTION_DAYS: int = int(os.getenv("PRO_DATA_RETENTION_DAYS", "365"))
+    BUSINESS_DATA_RETENTION_DAYS: int = int(os.getenv("BUSINESS_DATA_RETENTION_DAYS", "-1"))  # -1 = unlimited
     
     # CORS
     ALLOWED_ORIGINS: list = ["http://localhost:3000", "http://localhost:3001", "https://trulyinvoice.xyz"]
@@ -44,6 +74,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "ignore"  # Allow extra fields from .env without validation errors
 
 
 settings = Settings()
