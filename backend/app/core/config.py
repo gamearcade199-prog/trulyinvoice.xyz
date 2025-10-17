@@ -1,18 +1,13 @@
 """
-Application Configuration - Compatible with Pydantic 1.10+ and 2.x
+Application Configuration - Pydantic 2.1.x Compatible
 """
 
 import os
-
-# Handle both Pydantic 1.10 and 2.x imports
-try:
-    from pydantic import BaseSettings
-except ImportError:
-    from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    """Application settings - Pydantic 1.10+ and 2.x compatible"""
+    """Application settings - Pydantic 2.1.x compatible"""
     
     # App Info
     APP_NAME: str = "TrulyInvoice"
@@ -79,9 +74,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
-        # Pydantic 1.10 and 2.x compatibility
-        extra = "ignore"  # Also works in 1.10
-        validate_by_name = True  # Pydantic 2.x name for allow_population_by_field_name
+        extra = "ignore"
 
 
 settings = Settings()
