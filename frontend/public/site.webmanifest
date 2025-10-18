@@ -1,7 +1,7 @@
 {
   "name": "TrulyInvoice - AI Invoice Management India",
   "short_name": "TrulyInvoice",
-  "description": "AI-powered invoice management software for Indian businesses. GST compliant, 99% accuracy, Excel export. Free plan available.",
+  "description": "AI-powered invoice management software for Indian businesses",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -10,100 +10,14 @@
   "scope": "/",
   "lang": "en-IN",
   "dir": "ltr",
-  "categories": ["business", "finance", "productivity", "utilities"],
+  "categories": ["business", "finance"],
   "icons": [
     {
-      "src": "/icon-72x72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-96x96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-144x144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/screenshot-wide.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "TrulyInvoice Dashboard"
-    },
-    {
-      "src": "/screenshot-narrow.png",
-      "sizes": "750x1334",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "TrulyInvoice Mobile"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Upload Invoice",
-      "short_name": "Upload",
-      "description": "Upload and process new invoice",
-      "url": "/upload",
-      "icons": [
-        {
-          "src": "/icon-upload.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "View Invoices",
-      "short_name": "Invoices",
-      "description": "View all processed invoices",
-      "url": "/invoices",
-      "icons": [
-        {
-          "src": "/icon-invoices.png",
-          "sizes": "96x96"
-        }
-      ]
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
     }
   ],
   "prefer_related_applications": false,
-  "related_applications": [],
-  "iarc_rating_id": ""
+  "related_applications": []
 }
