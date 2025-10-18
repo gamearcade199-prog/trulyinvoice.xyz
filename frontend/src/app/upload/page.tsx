@@ -79,25 +79,59 @@ export default function UploadPageRobust() {
             const formData = new FormData()
             formData.append('file', file)
             
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-            const response = await fetch(`${apiUrl}/api/documents/process-anonymous`, {
-              method: 'POST',
-              body: formData
-            })
+            // Try multiple API URLs for better reliability
+            const apiUrls = [
+              'http://localhost:8000', // Local development
+              process.env.NEXT_PUBLIC_API_URL || 'https://trulyinvoice-backend.onrender.com', // Production
+              'https://trulyinvoice-backend.onrender.com' // Fallback
+            ]
             
-            setUploadProgress(75)
+            let processed = false
+            let lastError = null
             
-            if (!response.ok) {
-              const errorData = await response.json()
-              throw new Error(errorData.detail || 'Anonymous processing failed')
+            for (const apiUrl of apiUrls) {
+              if (processed) break
+              
+              try {
+                console.log(`🔄 Trying API endpoint: ${apiUrl}`)
+                setProcessingStatus(`🔄 Connecting to AI service...`)
+                
+                const response = await fetch(`${apiUrl}/api/documents/process-anonymous`, {
+                  method: 'POST',
+                  body: formData,
+                  // Remove Content-Type header to let browser set it with boundary for FormData
+                })
+                
+                setUploadProgress(75)
+                
+                if (!response.ok) {
+                  const errorText = await response.text()
+                  throw new Error(`API Error ${response.status}: ${errorText}`)
+                }
+                
+                const result = await response.json()
+                console.log('✅ Anonymous processing completed:', result)
+                setUploadProgress(100)
+                
+                // Show preview popup with extracted data
+                showAnonymousPreview(result, file.name)
+                processed = true
+                
+              } catch (apiError: any) {
+                console.warn(`⚠️ API endpoint ${apiUrl} failed:`, apiError.message)
+                lastError = apiError
+                
+                // If this is not the last URL, continue to next
+                if (apiUrl !== apiUrls[apiUrls.length - 1]) {
+                  continue
+                }
+              }
             }
             
-            const result = await response.json()
-            console.log('✅ Anonymous processing completed:', result)
-            setUploadProgress(100)
-            
-            // Show preview popup with extracted data
-            showAnonymousPreview(result, file.name)
+            if (!processed) {
+              // All API endpoints failed, show user-friendly error
+              throw new Error(`Unable to process invoice. Please try again later. (${lastError?.message || 'Service unavailable'})`)
+            }
             
           } else {
             // Authenticated user flow - existing logic
