@@ -5,6 +5,7 @@ NO httpx/httpcore dependency conflicts!
 import os
 import requests
 from typing import Dict, Any, List, Optional
+from urllib.parse import quote
 
 class SupabaseClient:
     """Simple Supabase client using REST API"""
@@ -56,11 +57,16 @@ class SupabaseClient:
         
         if filters:
             for key, value in filters.items():
-                url += f"&{key}=eq.{value}"
+                # URL encode the value to handle UUIDs and special characters properly
+                encoded_value = quote(str(value), safe='')
+                url += f"&{key}=eq.{encoded_value}"
+        
+        print(f"  🔗 Supabase URL: {url[:100]}..." if len(url) > 100 else f"  🔗 Supabase URL: {url}")
         
         response = requests.get(url, headers=self.headers)
         
         if response.status_code >= 400:
+            print(f"  ⚠️ Supabase error: {response.status_code}")
             raise Exception(f"Supabase error: {response.status_code} - {response.text}")
         
         return response.json()
