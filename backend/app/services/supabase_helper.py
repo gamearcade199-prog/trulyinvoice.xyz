@@ -31,7 +31,9 @@ class SupabaseClient:
                 if value is None:
                     params.append(f"{key}=is.null")
                 else:
-                    params.append(f"{key}=eq.{value}")
+                    # Preserve hyphens in UUIDs - don't over-encode
+                    encoded_value = quote(str(value), safe='-')
+                    params.append(f"{key}=eq.{encoded_value}")
             url += "?" + "&".join(params)
         
         # Execute request
