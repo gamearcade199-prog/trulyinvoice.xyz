@@ -1,5 +1,8 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 import { useState, useEffect } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
 import Link from 'next/link'
