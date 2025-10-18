@@ -58,11 +58,11 @@ async def process_document(document_id: str):
         file_url = document.get("file_url")
         storage_path = document.get("storage_path")
         
-        # CRITICAL: Ensure user_id is set (for multi-user support)
+        # Allow anonymous uploads (user_id can be None)
         if not user_id:
-            raise HTTPException(status_code=400, detail="Document missing user_id - cannot process")
-        
-        print(f"📄 Processing: {file_name} for user {user_id}")
+            print("👤 Anonymous upload detected")
+        else:
+            print(f"� Authenticated user: {user_id}")
         
         # Try AI extraction first
         invoice_data = None
