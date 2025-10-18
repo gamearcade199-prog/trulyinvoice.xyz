@@ -759,7 +759,7 @@ export default function InvoicesPageClean() {
                         <div className="flex items-center gap-2 justify-start">
                           {/* View Details Button */}
                           <Link
-                            href={`/invoices/${invoice.id}`}
+                            href={`/invoices/details?id=${invoice.id}`}
                             className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
                           >
                             View
@@ -869,7 +869,7 @@ export default function InvoicesPageClean() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Link
-                      href={`/invoices/${invoice.id}`}
+                      href={`/invoices/details?id=${invoice.id}`}
                       className="flex-1 py-2 px-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors text-sm font-medium text-center"
                     >
                       Details
