@@ -57,8 +57,9 @@ class SupabaseClient:
         
         if filters:
             for key, value in filters.items():
-                # URL encode the value to handle UUIDs and special characters properly
-                encoded_value = quote(str(value), safe='')
+                # DON'T encode UUIDs - Supabase REST API expects raw format with hyphens
+                # Only encode spaces and special characters
+                encoded_value = quote(str(value), safe='-')
                 url += f"&{key}=eq.{encoded_value}"
         
         print(f"  🔗 Supabase URL: {url[:100]}..." if len(url) > 100 else f"  🔗 Supabase URL: {url}")
