@@ -9,7 +9,6 @@ import Link from 'next/link'
 import { 
   Search, 
   Filter, 
-  Eye,
   Trash2,
   Plus,
   ChevronDown
@@ -757,14 +756,13 @@ export default function InvoicesPageClean() {
                         />
                       </td>
                       <td className="px-3 py-4">
-                        <div className="flex items-center gap-1 justify-start">
-                          {/* View Details button */}
+                        <div className="flex items-center gap-2 justify-start">
+                          {/* View Details Button */}
                           <Link
                             href={`/invoices/${invoice.id}`}
-                            className="p-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-colors group"
-                            title="View Details"
+                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
                           >
-                            <Eye className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
+                            View
                           </Link>
                           {/* Export Dropdown */}
                           <div className="relative export-dropdown">
