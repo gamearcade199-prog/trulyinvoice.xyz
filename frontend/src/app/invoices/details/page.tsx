@@ -15,10 +15,16 @@ export default function InvoiceDetailsPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [editedInvoice, setEditedInvoice] = useState<any>(null)
   const [saving, setSaving] = useState(false)
+  const [exporting, setExporting] = useState<string | null>(null) // Track which export is in progress
 
   useEffect(() => {
     if (invoiceId) {
-      fetchInvoiceDetails()
+      // Wake up backend and fetch invoice details
+      const loadInvoiceData = async () => {
+        await wakeUpBackend()
+        await fetchInvoiceDetails()
+      }
+      loadInvoiceData()
     }
   }, [invoiceId])
 
@@ -27,11 +33,18 @@ export default function InvoiceDetailsPage() {
       setLoading(true)
       console.log('🔍 Fetching invoice:', invoiceId)
       
-      // Simple backend API call - no dynamic routing needed
-      const response = await fetch(`https://trulyinvoice-backend.onrender.com/api/invoices/${invoiceId}`)
+      // Use environment variable for API URL
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://trulyinvoice-backend.onrender.com'
+      const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      })
       
       if (!response.ok) {
-        throw new Error(`Invoice not found: ${response.status}`)
+        throw new Error(`Invoice not found: ${response.status} ${response.statusText}`)
       }
       
       const data = await response.json()
@@ -40,8 +53,8 @@ export default function InvoiceDetailsPage() {
       setEditedInvoice({...data}) // Initialize edit form
       
     } catch (error) {
-      console.error('❌ Error:', error)
-      alert('Could not load invoice details')
+      console.error('❌ Error loading invoice:', error)
+      alert(`Could not load invoice details: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setLoading(false)
     }
@@ -92,11 +105,38 @@ export default function InvoiceDetailsPage() {
     }))
   }
 
+  // Wake up backend function (Render free tier goes to sleep)
+  const wakeUpBackend = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://trulyinvoice-backend.onrender.com'
+      console.log('🔄 Waking up backend...')
+      await fetch(`${apiUrl}/`, { method: 'GET' })
+      console.log('✅ Backend is awake')
+    } catch (error) {
+      console.warn('⚠️ Could not wake backend:', error)
+    }
+  }
+
   // Export functions
   const exportToPDF = async () => {
     try {
-      const response = await fetch(`https://trulyinvoice-backend.onrender.com/api/invoices/${invoiceId}/export-pdf`)
-      if (!response.ok) throw new Error('Export failed')
+      setExporting('pdf')
+      console.log('🔄 Starting PDF export...')
+      
+      // Wake up backend first
+      await wakeUpBackend()
+      
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://trulyinvoice-backend.onrender.com'
+      const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}/export-pdf`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/pdf'
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.status} ${response.statusText}`)
+      }
       
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
@@ -107,16 +147,35 @@ export default function InvoiceDetailsPage() {
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
+      
+      console.log('✅ PDF export successful')
     } catch (error) {
-      console.error('PDF Export error:', error)
-      alert('Failed to export PDF')
+      console.error('❌ PDF Export error:', error)
+      alert(`Failed to export PDF: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setExporting(null)
     }
   }
 
   const exportToExcel = async () => {
     try {
-      const response = await fetch(`https://trulyinvoice-backend.onrender.com/api/invoices/${invoiceId}/export-excel`)
-      if (!response.ok) throw new Error('Export failed')
+      setExporting('excel')
+      console.log('🔄 Starting Excel export...')
+      
+      // Wake up backend first
+      await wakeUpBackend()
+      
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://trulyinvoice-backend.onrender.com'
+      const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}/export-excel`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.status} ${response.statusText}`)
+      }
       
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
@@ -127,16 +186,35 @@ export default function InvoiceDetailsPage() {
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
+      
+      console.log('✅ Excel export successful')
     } catch (error) {
-      console.error('Excel Export error:', error)
-      alert('Failed to export Excel')
+      console.error('❌ Excel Export error:', error)
+      alert(`Failed to export Excel: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setExporting(null)
     }
   }
 
   const exportToCSV = async () => {
     try {
-      const response = await fetch(`https://trulyinvoice-backend.onrender.com/api/invoices/${invoiceId}/export-csv`)
-      if (!response.ok) throw new Error('Export failed')
+      setExporting('csv')
+      console.log('🔄 Starting CSV export...')
+      
+      // Wake up backend first
+      await wakeUpBackend()
+      
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://trulyinvoice-backend.onrender.com'
+      const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}/export-csv`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'text/csv'
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.status} ${response.statusText}`)
+      }
       
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
@@ -147,9 +225,13 @@ export default function InvoiceDetailsPage() {
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
+      
+      console.log('✅ CSV export successful')
     } catch (error) {
-      console.error('CSV Export error:', error)
-      alert('Failed to export CSV')
+      console.error('❌ CSV Export error:', error)
+      alert(`Failed to export CSV: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setExporting(null)
     }
   }
 
@@ -194,27 +276,30 @@ export default function InvoiceDetailsPage() {
               <div className="flex items-center gap-2 mr-4">
                 <button
                   onClick={exportToPDF}
-                  className="flex items-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-md transition-colors"
+                  disabled={exporting === 'pdf'}
+                  className="flex items-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Export Professional PDF"
                 >
                   <FileImage className="w-4 h-4" />
-                  PDF
+                  {exporting === 'pdf' ? 'Exporting...' : 'PDF'}
                 </button>
                 <button
                   onClick={exportToExcel}
-                  className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-md transition-colors"
+                  disabled={exporting === 'excel'}
+                  className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Export Accountant-friendly Excel"
                 >
                   <FileSpreadsheet className="w-4 h-4" />
-                  Excel
+                  {exporting === 'excel' ? 'Exporting...' : 'Excel'}
                 </button>
                 <button
                   onClick={exportToCSV}
-                  className="flex items-center gap-2 px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-md transition-colors"
+                  disabled={exporting === 'csv'}
+                  className="flex items-center gap-2 px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Export Raw CSV data"
                 >
                   <Download className="w-4 h-4" />
-                  CSV
+                  {exporting === 'csv' ? 'Exporting...' : 'CSV'}
                 </button>
               </div>
             )}
@@ -252,7 +337,16 @@ export default function InvoiceDetailsPage() {
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-400">
+                Loading invoice details...
+                <br />
+                <span className="text-sm text-gray-500">
+                  (Backend may be waking up, please wait)
+                </span>
+              </p>
+            </div>
           </div>
         ) : invoice ? (
           <div className="max-w-4xl">
