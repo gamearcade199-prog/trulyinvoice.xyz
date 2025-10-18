@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
-import { ArrowLeft, Calendar, DollarSign, Building2, FileText, Edit2, Save, X } from 'lucide-react'
+import { ArrowLeft, Calendar, DollarSign, Building2, FileText, Edit2, Save, X, Download, FileSpreadsheet, FileImage } from 'lucide-react'
 
 export default function InvoiceDetailsPage() {
   const searchParams = useSearchParams()
@@ -92,6 +92,67 @@ export default function InvoiceDetailsPage() {
     }))
   }
 
+  // Export functions
+  const exportToPDF = async () => {
+    try {
+      const response = await fetch(`https://trulyinvoice-backend.onrender.com/api/invoices/${invoiceId}/export-pdf`)
+      if (!response.ok) throw new Error('Export failed')
+      
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `invoice_${invoice?.invoice_number || invoiceId}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('PDF Export error:', error)
+      alert('Failed to export PDF')
+    }
+  }
+
+  const exportToExcel = async () => {
+    try {
+      const response = await fetch(`https://trulyinvoice-backend.onrender.com/api/invoices/${invoiceId}/export-excel`)
+      if (!response.ok) throw new Error('Export failed')
+      
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `invoice_${invoice?.invoice_number || invoiceId}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Excel Export error:', error)
+      alert('Failed to export Excel')
+    }
+  }
+
+  const exportToCSV = async () => {
+    try {
+      const response = await fetch(`https://trulyinvoice-backend.onrender.com/api/invoices/${invoiceId}/export-csv`)
+      if (!response.ok) throw new Error('Export failed')
+      
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `invoice_${invoice?.invoice_number || invoiceId}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('CSV Export error:', error)
+      alert('Failed to export CSV')
+    }
+  }
+
   if (!invoiceId) {
     return (
       <DashboardLayout>
@@ -128,6 +189,36 @@ export default function InvoiceDetailsPage() {
           
           {/* Edit/Save/Cancel Buttons */}
           <div className="flex items-center gap-2">
+            {/* Export Buttons */}
+            {invoice && !isEditing && (
+              <div className="flex items-center gap-2 mr-4">
+                <button
+                  onClick={exportToPDF}
+                  className="flex items-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-md transition-colors"
+                  title="Export Professional PDF"
+                >
+                  <FileImage className="w-4 h-4" />
+                  PDF
+                </button>
+                <button
+                  onClick={exportToExcel}
+                  className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-md transition-colors"
+                  title="Export Accountant-friendly Excel"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                  Excel
+                </button>
+                <button
+                  onClick={exportToCSV}
+                  className="flex items-center gap-2 px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-md transition-colors"
+                  title="Export Raw CSV data"
+                >
+                  <Download className="w-4 h-4" />
+                  CSV
+                </button>
+              </div>
+            )}
+            
             {!isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}
