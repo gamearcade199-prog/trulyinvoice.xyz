@@ -39,13 +39,36 @@ async def get_invoices(user_id: str = None, limit: int = 100):
 async def get_invoice(invoice_id: str):
     """Get single invoice by ID"""
     print(f"🔍 GET /api/invoices/{invoice_id}")
+    print(f"  📋 Invoice ID type: {type(invoice_id)} | Value: '{invoice_id}'")
+    
     try:
         print(f"  📊 Querying Supabase for invoice...")
+        
+        # Try to convert to int if possible (for numeric IDs)
+        try:
+            numeric_id = int(invoice_id)
+            print(f"  🔢 Trying numeric ID: {numeric_id}")
+            invoices = supabase.select("invoices", filters={"id": numeric_id})
+            if invoices:
+                print(f"  ✅ Found with numeric ID! Vendor: {invoices[0].get('vendor_name', 'Unknown')}")
+                return invoices[0]
+        except (ValueError, TypeError):
+            print(f"  ℹ️ Not a numeric ID, trying as string/UUID")
+        
+        # Try as string/UUID
         invoices = supabase.select("invoices", filters={"id": invoice_id})
         print(f"  📊 Query result: {len(invoices) if invoices else 0} rows")
         
         if not invoices:
-            print(f"  ❌ Invoice not found in database")
+            print(f"  ❌ Invoice not found with ID: {invoice_id}")
+            # Debug: Get all invoice IDs to help diagnose
+            try:
+                all_invoices = supabase.select("invoices", columns="id,vendor_name,user_id")
+                print(f"  📊 Database contains {len(all_invoices)} total invoices")
+                print(f"  📋 Sample IDs in DB: {[inv['id'] for inv in all_invoices[:3]]}")
+            except Exception as debug_error:
+                print(f"  ⚠️ Could not list invoice IDs: {debug_error}")
+            
             raise HTTPException(status_code=404, detail=f"Invoice {invoice_id} not found")
         
         print(f"  ✅ Invoice found: {invoices[0].get('vendor_name', 'Unknown')}")

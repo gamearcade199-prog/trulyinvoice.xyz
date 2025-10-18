@@ -46,27 +46,38 @@ export default function InvoiceDetailsPage() {
   const fetchInvoiceDetails = async () => {
     try {
       setLoading(true)
-      console.log('📋 Fetching invoice details for ID:', invoiceId)
-      console.log('🔗 API URL:', process.env.NEXT_PUBLIC_API_URL)
+      console.log('📋 Fetching invoice details')
+      console.log('   ID Value:', invoiceId)
+      console.log('   ID Type:', typeof invoiceId)
+      console.log('🔗 API URL Env:', process.env.NEXT_PUBLIC_API_URL)
       
       // Use backend API instead of client-side Supabase query (avoids RLS issues)
       const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/invoices/${invoiceId}`
-      console.log('📡 Fetching from:', apiUrl)
+      console.log('📡 Full Request URL:', apiUrl)
+      console.log('📡 Making fetch request...')
       
       const response = await fetch(apiUrl)
       console.log('📊 Response status:', response.status)
+      console.log('📊 Response headers:', {
+        'content-type': response.headers.get('content-type'),
+        'content-length': response.headers.get('content-length')
+      })
       
       if (!response.ok) {
         const errorText = await response.text()
-        console.error('❌ API Error:', errorText)
+        console.error('❌ API Error Status:', response.status)
+        console.error('❌ Error Response:', errorText)
         if (response.status === 404) {
-          throw new Error('Invoice not found in backend')
+          throw new Error(`Invoice ${invoiceId} not found in backend`)
         }
         throw new Error(`Failed to fetch invoice: ${response.statusText}`)
       }
       
       const data = await response.json()
-      console.log('✅ Invoice loaded:', data.vendor_name)
+      console.log('✅ Invoice loaded successfully')
+      console.log('   Vendor Name:', data.vendor_name)
+      console.log('   Invoice Number:', data.invoice_number)
+      console.log('   Total Amount:', data.total_amount)
       setInvoice(data)
       setEditedInvoice(data)
       
@@ -91,6 +102,10 @@ export default function InvoiceDetailsPage() {
         setEditedInvoice(data)
       } catch (fallbackError) {
         console.error('❌ Both API and Supabase failed:', fallbackError)
+        console.error('   Full error details:', {
+          message: fallbackError instanceof Error ? fallbackError.message : String(fallbackError),
+          stack: fallbackError instanceof Error ? fallbackError.stack : undefined
+        })
         alert('Failed to load invoice details. Check browser console (F12) for details.')
       }
     } finally {
