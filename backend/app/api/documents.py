@@ -4,9 +4,10 @@ OPTIMIZED VERSION:
 - Supports ALL users (proper user_id filtering)
 - Supports IMAGES (JPG, PNG) with OCR
 - Supports PDFs with text extraction
+- Anonymous processing for previews
 - Production-ready error handling
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, File, UploadFile
 from pydantic import BaseModel
 from datetime import datetime
 import os
@@ -247,6 +248,75 @@ async def process_document(document_id: str):
         raise
     except Exception as e:
         print(f"  ❌ Processing error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/process-anonymous")
+async def process_anonymous_document(file: UploadFile = File(...)):
+    """
+    Process a document for anonymous users (preview mode)
+    - No database storage
+    - Direct AI processing
+    - Returns extracted data for preview
+    """
+    try:
+        if not AI_AVAILABLE:
+            raise HTTPException(status_code=503, detail="AI processing temporarily unavailable")
+        
+        # Validate file type
+        allowed_types = [
+            'application/pdf',
+            'image/jpeg', 'image/jpg', 'image/png',
+            'image/webp', 'image/heic', 'image/heif'
+        ]
+        
+        if file.content_type not in allowed_types:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Unsupported file type: {file.content_type}. Supported: PDF, JPG, PNG, WebP, HEIC"
+            )
+        
+        # Read file content
+        file_content = await file.read()
+        
+        # Process with AI extractor
+        extractor = VisionFlashLiteExtractor()
+        
+        if file.content_type == 'application/pdf':
+            # Extract text from PDF
+            pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_content))
+            text_content = ""
+            for page in pdf_reader.pages:
+                text_content += page.extract_text() + "\n"
+            
+            # Process with AI
+            result = extractor.extract_invoice_data_from_text(text_content)
+        else:
+            # Process image directly
+            result = extractor.extract_invoice_data_from_image(file_content)
+        
+        # Return preview data (no database storage)
+        return {
+            "success": True,
+            "message": "Invoice processed successfully (preview mode)",
+            "preview": True,
+            "vendor_name": result.get('vendor_name'),
+            "invoice_number": result.get('invoice_number'),
+            "invoice_date": result.get('invoice_date'),
+            "total_amount": result.get('total_amount'),
+            "subtotal": result.get('subtotal'),
+            "tax_amount": result.get('tax_amount'),
+            "due_date": result.get('due_date'),
+            "vendor_email": result.get('vendor_email'),
+            "vendor_phone": result.get('vendor_phone'),
+            "vendor_address": result.get('vendor_address'),
+            "extracted_fields": len([v for v in result.values() if v]),
+            "processing_time": "< 5 seconds",
+            "file_name": file.filename
+        }
+        
+    except Exception as e:
+        print(f"❌ Anonymous processing error: {e}")
         raise HTTPException(status_code=500, detail=f"Processing error: {str(e)}")
 
 

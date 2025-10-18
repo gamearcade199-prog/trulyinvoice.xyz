@@ -254,70 +254,83 @@ export default function InvoiceDetailsPage() {
   return (
     <DashboardLayout>
       <div className="p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        {/* Header - Mobile Optimized */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.push('/invoices')}
-              className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+              className="flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to Invoices
+              <span className="hidden sm:inline">Back to Invoices</span>
+              <span className="sm:hidden">Back</span>
             </button>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
               Invoice Details
             </h1>
           </div>
           
-          {/* Edit/Save/Cancel Buttons */}
-          <div className="flex items-center gap-2">
-            {/* Export Buttons */}
-            {invoice && !isEditing && (
-              <div className="flex items-center gap-2 mr-4">
+          {/* Export Buttons - Mobile First */}
+          {invoice && !isEditing && (
+            <div className="flex flex-wrap items-center gap-2 order-first lg:order-none">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <button
                   onClick={exportToPDF}
                   disabled={exporting === 'pdf'}
-                  className="flex items-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                   title="Export Professional PDF"
                 >
-                  <FileImage className="w-4 h-4" />
-                  {exporting === 'pdf' ? 'Exporting...' : 'PDF'}
+                  <FileImage className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">
+                    {exporting === 'pdf' ? 'Exporting...' : 'PDF'}
+                  </span>
+                  <span className="sm:hidden">PDF</span>
                 </button>
                 <button
                   onClick={exportToExcel}
                   disabled={exporting === 'excel'}
-                  className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                   title="Export Accountant-friendly Excel"
                 >
-                  <FileSpreadsheet className="w-4 h-4" />
-                  {exporting === 'excel' ? 'Exporting...' : 'Excel'}
+                  <FileSpreadsheet className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">
+                    {exporting === 'excel' ? 'Exporting...' : 'Excel'}
+                  </span>
+                  <span className="sm:hidden">XLS</span>
                 </button>
                 <button
                   onClick={exportToCSV}
                   disabled={exporting === 'csv'}
-                  className="flex items-center gap-2 px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-xs sm:text-sm rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
                   title="Export Raw CSV data"
                 >
-                  <Download className="w-4 h-4" />
-                  {exporting === 'csv' ? 'Exporting...' : 'CSV'}
+                  <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">
+                    {exporting === 'csv' ? 'Exporting...' : 'CSV'}
+                  </span>
+                  <span className="sm:hidden">CSV</span>
                 </button>
               </div>
-            )}
-            
+            </div>
+          )}
+          
+          {/* Edit/Save/Cancel Buttons */}
+          <div className="flex items-center gap-2">
             {!isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md transition-colors touch-manipulation"
               >
                 <Edit2 className="w-4 h-4" />
-                Edit Invoice
+                <span className="hidden sm:inline">Edit Invoice</span>
+                <span className="sm:hidden">Edit</span>
               </button>
             ) : (
               <div className="flex gap-2">
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-md transition-colors disabled:opacity-50 touch-manipulation"
                 >
                   <Save className="w-4 h-4" />
                   {saving ? 'Saving...' : 'Save'}
@@ -325,7 +338,7 @@ export default function InvoiceDetailsPage() {
                 <button
                   onClick={handleCancel}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors"
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-md transition-colors touch-manipulation"
                 >
                   <X className="w-4 h-4" />
                   Cancel

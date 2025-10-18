@@ -80,11 +80,11 @@ export default function UploadZone({
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
         className={`
-          relative border-3 border-dashed rounded-2xl p-12 text-center cursor-pointer
-          transition-all duration-300 ease-in-out
+          relative border-3 border-dashed rounded-2xl lg:rounded-3xl p-6 md:p-12 lg:p-16 text-center cursor-pointer
+          transition-all duration-300 ease-in-out hover:scale-[1.01] lg:hover:scale-[1.02]
           ${isDragging 
-            ? 'border-blue-500 bg-blue-50 scale-[1.02]' 
-            : 'border-gray-300 bg-white hover:border-blue-400 hover:bg-blue-50/50'
+            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 scale-[1.02] lg:scale-[1.03] shadow-2xl' 
+            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 hover:shadow-xl'
           }
         `}
       >
@@ -97,25 +97,28 @@ export default function UploadZone({
           className="hidden"
         />
 
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-3 md:gap-4 lg:gap-6">
           <div className={`
-            p-6 rounded-full transition-all duration-300
-            ${isDragging ? 'bg-blue-100 scale-110' : 'bg-blue-50'}
+            p-3 md:p-6 lg:p-8 rounded-full transition-all duration-300
+            ${isDragging ? 'bg-blue-100 dark:bg-blue-900/50 scale-110 lg:scale-125' : 'bg-blue-50 dark:bg-blue-900/30'}
           `}>
-            <Upload className={`w-12 h-12 ${isDragging ? 'text-blue-600' : 'text-blue-500'}`} />
+            <Upload className={`w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 ${isDragging ? 'text-blue-600 dark:text-blue-400' : 'text-blue-500 dark:text-blue-400'}`} />
           </div>
 
           <div>
-            <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+            <h3 className="text-lg md:text-2xl lg:text-3xl font-semibold text-gray-800 dark:text-white mb-1 md:mb-2 lg:mb-3">
               Upload your invoices
             </h3>
-            <p className="text-gray-600">
+            <p className="text-sm md:text-base lg:text-lg text-gray-600 dark:text-gray-400">
               Drag and drop your files here, or{' '}
-              <span className="text-blue-600 font-semibold">browse</span>
+              <span className="text-blue-600 dark:text-blue-400 font-semibold">browse</span>
             </p>
+            <div className="hidden lg:block mt-2 text-sm text-gray-500 dark:text-gray-500">
+              Multiple files supported • Instant AI processing • No account required for preview
+            </div>
           </div>
 
-          <div className="text-sm text-gray-500">
+          <div className="text-xs md:text-sm lg:text-base text-gray-500 dark:text-gray-500">
             Supports PDF, JPG, PNG • Max {maxSizeMB}MB per file
           </div>
         </div>
@@ -123,20 +126,24 @@ export default function UploadZone({
 
       {/* Selected Files */}
       {selectedFiles.length > 0 && (
-        <div className="mt-6 space-y-3">
-          <h4 className="font-semibold text-gray-700">Selected Files ({selectedFiles.length})</h4>
+        <div className="mt-4 md:mt-6 space-y-2 md:space-y-3">
+          <h4 className="font-semibold text-gray-700 dark:text-gray-300 text-sm md:text-base">
+            Selected Files ({selectedFiles.length})
+          </h4>
           {selectedFiles.map((file, index) => (
             <div
               key={index}
-              className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-300 transition-colors"
+              className="flex items-center justify-between p-3 md:p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-50 rounded-lg">
-                  <File className="w-5 h-5 text-blue-600" />
+                <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                  <File className="w-4 h-4 md:w-5 md:h-5 text-blue-600 dark:text-blue-400" />
                 </div>
-                <div>
-                  <p className="font-medium text-gray-800">{file.name}</p>
-                  <p className="text-sm text-gray-500">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-gray-800 dark:text-white text-sm md:text-base truncate">
+                    {file.name}
+                  </p>
+                  <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
                     {(file.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                 </div>
@@ -146,9 +153,9 @@ export default function UploadZone({
                   e.stopPropagation()
                   removeFile(index)
                 }}
-                className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex-shrink-0"
               >
-                <X className="w-5 h-5 text-gray-400 hover:text-red-500" />
+                <X className="w-4 h-4 md:w-5 md:h-5 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400" />
               </button>
             </div>
           ))}
