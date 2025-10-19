@@ -34,18 +34,23 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [userPlan, setUserPlan] = useState('Free Plan')
 
   useEffect(() => {
-    loadUserData()
-  }, [])
-
-  async function loadUserData() {
-    try {
+    async function checkAuthAndLoadData() {
       const { data: { user }, error } = await supabase.auth.getUser()
       
       if (error || !user) {
-        console.error('Error loading user:', error)
+        console.log('No user found, redirecting to login.')
+        router.push('/login')
         return
       }
+      
+      loadUserData(user)
+    }
+    
+    checkAuthAndLoadData()
+  }, [router])
 
+  async function loadUserData(user: any) {
+    try {
       // Try to get full name from users table
       const { data: profileData } = await supabase
         .from('users')

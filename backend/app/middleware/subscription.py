@@ -8,14 +8,14 @@ async def check_subscription(request: Request):
         raise HTTPException(status_code=401, detail="User not authenticated")
 
     # Get user's plan
-    user_plan = supabase.rpc('get_user_plan', {'user_id_in': user_id}).execute()
+    user_plan = supabase.rpc('get_user_plan', {'user_id_in': user_id})
     if not user_plan.data:
         raise HTTPException(status_code=404, detail="User plan not found")
 
     plan = user_plan.data
 
     # Get user's usage
-    usage = supabase.from('invoices').select('id', count='exact').eq('user_id', user_id).execute()
+    usage = supabase.from_('invoices').select('id', count='exact').eq('user_id', user_id)
     if usage.error:
         raise HTTPException(status_code=500, detail="Failed to get user usage")
 

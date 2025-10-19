@@ -34,7 +34,7 @@ export default function InvoiceDetailsPage() {
       console.log('🔍 Fetching invoice:', invoiceId)
       
       // Use environment variable for API URL
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://trulyinvoice-backend.onrender.com'
       const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}`, {
         method: 'GET',
         headers: {
@@ -65,7 +65,7 @@ export default function InvoiceDetailsPage() {
       setSaving(true)
       console.log('💾 Saving invoice changes:', editedInvoice)
       
-      const response = await fetch(`http://localhost:8000/api/invoices/${invoiceId}`, {
+      const response = await fetch(`https://trulyinvoice-backend.onrender.com/api/invoices/${invoiceId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -108,9 +108,9 @@ export default function InvoiceDetailsPage() {
   // Wake up backend function (Render free tier goes to sleep)
   const wakeUpBackend = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://trulyinvoice-backend.onrender.com'
       console.log('🔄 Waking up backend...')
-      await fetch(`${apiUrl}/api/health`, { method: 'GET' })
+      await fetch(`${apiUrl}/`, { method: 'GET' })
       console.log('✅ Backend is awake')
     } catch (error) {
       console.warn('⚠️ Could not wake backend:', error)
@@ -126,7 +126,7 @@ export default function InvoiceDetailsPage() {
       // Wake up backend first
       await wakeUpBackend()
       
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://trulyinvoice-backend.onrender.com'
       const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}/export-pdf`, {
         method: 'GET',
         headers: {
@@ -165,7 +165,7 @@ export default function InvoiceDetailsPage() {
       // Wake up backend first
       await wakeUpBackend()
       
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://trulyinvoice-backend.onrender.com'
       const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}/export-excel`, {
         method: 'GET',
         headers: {
@@ -204,7 +204,7 @@ export default function InvoiceDetailsPage() {
       // Wake up backend first
       await wakeUpBackend()
       
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://trulyinvoice-backend.onrender.com'
       const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}/export-csv`, {
         method: 'GET',
         headers: {
