@@ -19,11 +19,11 @@ export const metadata: Metadata = {
   
   // Basic metadata
   title: {
-    default: seoConfig.defaultTitle,
+    default: 'Invoice Management Software India | AI-Powered GST Invoicing',
     template: '%s | TrulyInvoice - GST Invoice Management India',
   },
-  description: seoConfig.defaultDescription,
-  keywords: seoConfig.keywords,
+  description: 'AI-powered invoice management for Indian businesses. 99% accuracy, GST compliant, automatic data extraction. Process 1000+ invoices/month. Free plan available.',
+  keywords: ['invoice management software india', 'gst invoice software', 'ai invoice extraction', 'invoice ocr india', 'gst compliant invoice software'],
   
   // Author and publisher
   authors: [{ name: 'TrulyInvoice Team' }],
@@ -53,16 +53,16 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_IN',
-    url: seoConfig.siteUrl,
-    siteName: seoConfig.siteName,
-    title: seoConfig.defaultTitle,
-    description: seoConfig.defaultDescription,
+    url: 'https://trulyinvoice.xyz',
+    siteName: 'TrulyInvoice',
+    title: 'Best Invoice Management Software for Indian Businesses',
+    description: 'AI-powered invoice management. 99% accuracy, GST compliant, Excel export in 1 click.',
     images: [
       {
         url: '/og-image-india.jpg',
         width: 1200,
         height: 630,
-        alt: 'TrulyInvoice - AI Invoice Management for Indian Businesses',
+        alt: 'TrulyInvoice - AI Invoice Management India',
       },
       {
         url: '/og-image-square.jpg',
@@ -76,8 +76,8 @@ export const metadata: Metadata = {
   // Twitter Card
   twitter: {
     card: 'summary_large_image',
-    title: seoConfig.defaultTitle,
-    description: seoConfig.defaultDescription,
+    title: 'AI Invoice Management for India | TrulyInvoice',
+    description: 'Process 1000+ invoices/month with 99% accuracy. GST compliant, automatic extraction.',
     creator: '@TrulyInvoice',
     images: ['/twitter-image.jpg'],
   },
@@ -121,7 +121,7 @@ export const metadata: Metadata = {
     'apple-mobile-web-app-status-bar-style': 'default',
     'apple-mobile-web-app-title': 'TrulyInvoice',
   },
-}
+};
 
 export default function RootLayout({
   children,

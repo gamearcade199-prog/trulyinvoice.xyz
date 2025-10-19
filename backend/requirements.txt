@@ -1,13 +1,15 @@
-# ULTRA-SIMPLE REQUIREMENTS - Compatible with Python 3.11+
-# Using Pydantic 2.1.1 (latest 2.1.x, not 2.1.3 which doesn't exist)
-fastapi==0.100.1
-uvicorn[standard]==0.24.0
-python-dotenv==1.0.0
-pydantic==2.1.1
-pydantic[email]==2.1.1
-pydantic-settings==2.0.3
+# ULTRA-SIMPLE REQUIREMENTS - Compatible with Python 3.14+
+setuptools>=69.0.2
+fastapi>=0.111.0
+uvicorn>=0.24.0
+h11>=0.8
+httptools>=0.5.0
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
 email-validator==2.1.0
-python-multipart==0.0.6
+python-multipart==0.0.9
 
 # Use requests instead of supabase library (no httpx conflicts!)
 requests==2.31.0
@@ -19,22 +21,23 @@ reportlab==4.0.7
 # Excel export with formatting
 openpyxl==3.1.2
 
-# Image processing (for PDFs with images) - Updated for Python 3.11+ compatibility
-Pillow==10.4.0
+# Image processing (for PDFs with images) - Updated for Python 3.14+ compatibility
+pillow>=10.1.0
+
+# Payment processing & gateway
+razorpay>=2.0.0
 
 # Supabase client
-supabase==2.3.0
+supabase>=2.5.0
 
 # AI Services for extraction
-openai==1.3.0
+openai==1.30.1
 google-generativeai>=0.8.0
 
-# Payment Gateway
-razorpay==1.4.1
-
 # Database ORM
-sqlalchemy==2.0.23
-psycopg2-binary==2.9.9
+sqlalchemy>=2.0.44
+psycopg2-binary>=2.9.9
+
 
 # Authentication & Security
 passlib[bcrypt]==1.7.4

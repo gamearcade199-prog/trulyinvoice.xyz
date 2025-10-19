@@ -3,7 +3,7 @@
 
 export const trackingConfig = {
   // Google Analytics 4
-  googleAnalyticsId: 'G-XXXXXXXXXX', // Replace with your GA4 measurement ID
+  googleAnalyticsId: 'G-1234567890', // Replace with your GA4 measurement ID
   
   // Google Tag Manager (optional)
   gtmId: 'GTM-XXXXXXX', // Replace with your GTM container ID

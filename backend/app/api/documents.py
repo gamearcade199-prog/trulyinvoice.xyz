@@ -7,7 +7,7 @@ OPTIMIZED VERSION:
 - Anonymous processing for previews
 - Production-ready error handling
 """
-from fastapi import APIRouter, HTTPException, File, UploadFile
+from fastapi import APIRouter, HTTPException, File, UploadFile, Depends, Request
 from pydantic import BaseModel
 from datetime import datetime
 import os
@@ -15,6 +15,7 @@ import re
 import requests
 import io
 from app.services.supabase_helper import supabase
+from app.middleware.subscription import check_subscription
 
 # Try to import AI extractor and PDF processing
 try:
@@ -38,49 +39,52 @@ class ProcessResponse(BaseModel):
 
 
 @router.post("/{document_id}/process", response_model=ProcessResponse)
-async def process_document(document_id: str):
+async def process_document(document_id: str, request: Request):
     """
     Process an uploaded document and create invoice
     OPTIMIZED VERSION: Supports PDFs + Images, All Users, Production-Ready
     """
     try:
-        # 1. Get document from Supabase
-        documents = supabase.select("documents", filters={"id": document_id})
-        
-        if not documents or len(documents) == 0:
+        # Get document from Supabase
+        doc_query = supabase.from_("documents").select("*").eq("id", document_id).execute()
+        if not doc_query.data:
             raise HTTPException(status_code=404, detail="Document not found")
+            
+        document = doc_query.data[0]
         
-        document = documents[0]
+        # Only check subscription for non-anonymous uploads
+        if not document.get("is_anonymous", False):
+            await check_subscription(request)
         
-        # 2. Extract invoice data using AI if available
+        # Extract invoice data using AI if available
         file_name = document.get("file_name", "Invoice")
         user_id = document.get("user_id")
-        file_url = document.get("file_url")
         storage_path = document.get("storage_path")
         
         # Allow anonymous uploads (user_id can be None)
         if not user_id:
             print("👤 Anonymous upload detected")
         else:
-            print(f"� Authenticated user: {user_id}")
+            print(f"👤 Authenticated user: {user_id}")
         
         # Try AI extraction first
         invoice_data = None
-        if AI_AVAILABLE and file_url:
+        if AI_AVAILABLE and storage_path:
             try:
                 # Download file from Supabase storage
-                print(f"  ⬇️ Downloading from: {file_url[:50]}...")
-                file_response = requests.get(file_url, timeout=30)
-                file_response.raise_for_status()
+                print(f"⬇️ Downloading from storage: {storage_path}")
+                storage_response = supabase.storage.from_("documents").download(storage_path)
+                if not storage_response:
+                    raise HTTPException(status_code=404, detail="File not found in storage")
                 
-                file_content = file_response.content
+                file_content = storage_response
                 
                 # Check for Gemini API key
                 gemini_key = os.getenv('GOOGLE_AI_API_KEY')
                 
                 if not gemini_key:
-                    print("  ⚠️ No Gemini API key found")
-                    raise ValueError("Gemini API key not configured")
+                    print("⚠️ No Gemini API key found")
+                    raise HTTPException(status_code=500, detail="AI service not configured")
                 
                 extractor = VisionFlashLiteExtractor()
                 ai_result = None
@@ -93,11 +97,17 @@ async def process_document(document_id: str):
                     print(f"  📸 Image detected - using Vision API + Flash-Lite...")
                     
                     # Use raw bytes directly for our new extractor
-                    ai_result = await extractor.extract_invoice_data(file_content, file_name)
+                if file_name.lower().endswith(('.jpg', '.jpeg', '.png')):
+                    print(f"📸 Image detected - using Vision API...")
+                    try:
+                        ai_result = await extractor.extract_invoice_data(file_content, file_name)
+                    except Exception as e:
+                        print(f"⚠️ Vision API extraction failed: {str(e)}")
+                        raise HTTPException(status_code=500, detail=f"Vision API extraction failed: {str(e)}")
                 
                 # PDFs: Extract text then use AI
-                elif file_ext == 'pdf':
-                    print(f"  📄 PDF detected - extracting text...")
+                elif file_name.lower().endswith('.pdf'):
+                    print(f"📄 PDF detected - extracting text...")
                     extracted_text = ""
                     try:
                         pdf_file = io.BytesIO(file_content)
@@ -106,15 +116,16 @@ async def process_document(document_id: str):
                         for page_num, page in enumerate(pdf_reader.pages):
                             text = page.extract_text()
                             extracted_text += text
-                            print(f"     Page {page_num + 1}: {len(text)} chars")
+                            print(f"   Page {page_num + 1}: {len(text)} chars")
                         
                         if extracted_text.strip():
-                            print(f"  🤖 Extracted {len(extracted_text)} chars - sending to Flash-Lite...")
-                            ai_result = extractor.flash_lite_formatter.format_text_to_json(extracted_text)
+                            print(f"🤖 Extracted {len(extracted_text)} chars - processing...")
+                            ai_result = await extractor.process_text(extracted_text)
                         else:
-                            print(f"  ⚠️ No text found in PDF - might be scanned image")
+                            raise HTTPException(status_code=422, detail="No text found in PDF - might be scanned image")
                     except Exception as e:
-                        print(f"  ⚠️ PDF extraction failed: {e}")
+                        print(f"⚠️ PDF extraction failed: {str(e)}")
+                        raise HTTPException(status_code=500, detail=f"PDF extraction failed: {str(e)}")
                 
                 else:
                     print(f"  ⚠️ Unsupported file type: {file_ext}")
@@ -159,19 +170,21 @@ async def process_document(document_id: str):
                         invoice_data['payment_status'] = payment_status
                     else:
                         invoice_data['payment_status'] = 'pending'  # Default to pending if invalid or empty
-                    
-                else:
-                    print(f"  ⚠️ AI extraction returned None - falling back")
+
+                if not invoice_data:
+                    print(f"⚠️ AI extraction returned no results")
+                    raise HTTPException(status_code=422, detail="AI extraction failed to extract data")
                     
             except Exception as e:
-                print(f"  ❌ AI extraction failed: {e}, falling back to filename extraction")
+                print(f"❌ AI extraction failed: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"AI extraction error: {str(e)}")
         else:
             if not AI_AVAILABLE:
-                print(f"  ⚠️ AI not available")
-            if not file_url:
-                print(f"  ⚠️ No file URL")
-        
-        # Fallback: Extract from filename if AI fails
+                print(f"⚠️ AI not available")
+                raise HTTPException(status_code=501, detail="AI extraction not available")
+            if not storage_path:
+                print(f"⚠️ No storage path")
+                raise HTTPException(status_code=422, detail="Document has no file")        # Fallback: Extract from filename if AI fails
         if not invoice_data:
             print(f"  📝 Using filename extraction fallback")
             
@@ -234,7 +247,11 @@ async def process_document(document_id: str):
             raise HTTPException(status_code=500, detail=f"Failed to create invoice: {str(e)}")
         
         # 4. Update document status to 'completed'
-        supabase.update("documents", filters={"id": document_id}, data={"status": "completed"})
+        try:
+            supabase.update("documents", filters={"id": document_id}, data={"status": "completed"})
+        except Exception as e:
+            print(f"  ⚠️ Warning: Failed to update document status: {str(e)}")
+            # Don't fail the whole process just because status update failed
         
         return ProcessResponse(
             success=True,
@@ -244,10 +261,20 @@ async def process_document(document_id: str):
             total_amount=invoice_data["total_amount"]
         )
         
-    except HTTPException:
+    except HTTPException as he:
+        # Update document status to failed on HTTP exceptions
+        try:
+            supabase.update("documents", filters={"id": document_id}, data={"status": "failed", "error": str(he.detail)})
+        except:
+            pass  # Don't let status update failure mask the original error
         raise
     except Exception as e:
         print(f"  ❌ Processing error: {str(e)}")
+        # Update document status to failed on general exceptions
+        try:
+            supabase.update("documents", filters={"id": document_id}, data={"status": "failed", "error": str(e)})
+        except:
+            pass  # Don't let status update failure mask the original error
         raise HTTPException(status_code=500, detail=str(e))
 
 

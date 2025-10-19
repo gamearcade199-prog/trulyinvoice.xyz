@@ -3,9 +3,11 @@
 import { Check, Zap, Crown, Rocket, Sparkles, ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'next/link'
+import useRazorpay from '@/hooks/useRazorpay'
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly')
+  const { processPayment, isLoaded } = useRazorpay()
 
   const plans = [
     {
@@ -235,12 +237,21 @@ export default function PricingPage() {
                 </div>
 
                 {/* CTA Button */}
-                <Link
-                  href="/register"
+                <button
+                  onClick={() => {
+                    if (plan.name === 'Free') {
+                      window.location.href = '/register';
+                    } else if (plan.name === 'Max') {
+                      window.location.href = '/contact';
+                    } else {
+                      processPayment(plan, billingCycle);
+                    }
+                  }}
+                  disabled={!isLoaded && plan.name !== 'Free' && plan.name !== 'Max'}
                   className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-200 mb-8 block text-center ${plan.buttonStyle}`}
                 >
                   {plan.buttonText}
-                </Link>
+                </button>
 
                 {/* Features */}
                 <div className="space-y-4">

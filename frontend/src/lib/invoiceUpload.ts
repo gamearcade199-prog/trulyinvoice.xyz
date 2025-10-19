@@ -132,13 +132,23 @@ export async function uploadInvoiceAnonymous(file: File) {
     console.log('✅ Anonymous document created:', docData.id)
 
     // Step 4: Process the document
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    
+    // Get the session token to authorize the request
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${apiUrl}/api/documents/${docData.id}/process`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+      headers,
+    });
 
     if (!response.ok) {
       throw new Error(`Processing failed: ${response.statusText}`)

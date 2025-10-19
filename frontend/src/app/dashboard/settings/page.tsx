@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { useTheme } from '@/components/ThemeProvider'
 import { supabase } from '@/lib/supabase'
+import BillingDashboard from '@/components/BillingDashboard'
 
 export default function SettingsPage() {
   const { theme, toggleTheme } = useTheme()
@@ -390,41 +391,12 @@ export default function SettingsPage() {
                 </div>
               )}
 
+import BillingDashboard from '@/components/BillingDashboard'
+
+// ... existing code ...
+
               {/* Billing Tab */}
-              {activeTab === 'billing' && (
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Billing & Subscription</h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">Manage your subscription and payment methods.</p>
-                  </div>
-
-                  <div className="p-6 rounded-lg bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Starter Plan</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Up to 100 invoices per month</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-3xl font-bold text-gray-900 dark:text-white">Free</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Forever</p>
-                      </div>
-                    </div>
-                    <button className="w-full mt-4 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors">
-                      Upgrade to Pro
-                    </button>
-                  </div>
-
-                  <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Payment Methods</h3>
-                    <div className="p-4 rounded-lg border border-gray-200 dark:border-gray-800 text-center">
-                      <p className="text-gray-500 dark:text-gray-400">No payment methods added</p>
-                      <button className="mt-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold">
-                        + Add Payment Method
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {activeTab === 'billing' && <BillingDashboard />}
 
               {/* Preferences Tab */}
               {activeTab === 'preferences' && (

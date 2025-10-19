@@ -17,6 +17,10 @@ DATABASE_URL = os.getenv(
     "postgresql://postgres:password@localhost:5432/trulyinvoice"
 )
 
+# Compatibility fix for Render/Heroku
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 # Create SQLAlchemy engine
 engine = create_engine(
     DATABASE_URL,

@@ -1,5 +1,9 @@
 'use client'
 
+import { Metadata } from 'next';
+
+
+
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -8,6 +12,9 @@ import { useTheme } from '@/components/ThemeProvider'
 import { supabase } from '@/lib/supabase'
 import { uploadInvoiceAnonymous, linkTempInvoicesToUser } from '@/lib/invoiceUpload'
 import { getCurrencySymbol, formatCurrency } from '@/lib/currency'
+import TrustedBy from '@/components/TrustedBy'
+import SavingsCalculator from '@/components/SavingsCalculator'
+import WhatYouGet from '@/components/WhatYouGet'
 
 export default function Home() {
   const { theme, toggleTheme } = useTheme()
@@ -56,6 +63,7 @@ export default function Home() {
     await supabase.auth.signOut()
     setIsLoggedIn(false)
     router.push('/')
+    window.location.reload()
   }
 
   const handleFileSelect = (file: File) => {
@@ -124,12 +132,14 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <FileText className="w-5 h-5 text-white" />
+            <Link href="/" aria-label="TrulyInvoice Homepage">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xl font-bold text-gray-900 dark:text-white">TrulyInvoice</span>
               </div>
-              <span className="text-xl font-bold text-gray-900 dark:text-white">TrulyInvoice</span>
-            </div>
+            </Link>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-4">
@@ -155,7 +165,7 @@ export default function Home() {
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                aria-label="Toggle theme"
+                aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
               >
                 {theme === 'light' ? (
                   <Moon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
@@ -169,6 +179,7 @@ export default function Home() {
                 <button 
                   onClick={handleLogout}
                   className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 font-semibold transition-colors"
+                  aria-label="Sign out"
                 >
                   <LogOut className="w-4 h-4" />
                   Sign Out
@@ -181,6 +192,7 @@ export default function Home() {
                   <Link 
                     href="/register" 
                     className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+                    aria-label="Start your free trial"
                   >
                     Start Free
                   </Link>
@@ -194,7 +206,7 @@ export default function Home() {
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                aria-label="Toggle theme"
+                aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
               >
                 {theme === 'light' ? (
                   <Moon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
@@ -207,7 +219,8 @@ export default function Home() {
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                aria-label="Toggle mobile menu"
+                aria-label={isMobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
+                aria-expanded={isMobileMenuOpen}
               >
                 {isMobileMenuOpen ? (
                   <X className="w-6 h-6 text-gray-700 dark:text-gray-300" />
@@ -277,193 +290,64 @@ export default function Home() {
       </nav>
 
       {/* Hero Section with Interactive Upload */}
-      <section className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 py-6 md:py-12 relative overflow-hidden transition-colors">
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-48 h-48 md:w-72 md:h-72 bg-blue-200 dark:bg-blue-800/40 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-20 dark:opacity-20"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 md:w-72 md:h-72 bg-purple-200 dark:bg-purple-800/40 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-20 dark:opacity-20"></div>
+      <section className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 py-12 md:py-20 relative overflow-hidden transition-colors">
+        <div className="absolute top-0 right-0 w-72 h-72 bg-blue-200 dark:bg-blue-800/40 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-20"></div>
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-purple-200 dark:bg-purple-800/40 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-20"></div>
         
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-5xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 md:px-4 md:py-1.5 bg-blue-100 dark:bg-blue-800/60 text-blue-700 dark:text-blue-200 rounded-full text-xs md:text-sm font-semibold mb-3 md:mb-4">
-              <Sparkles className="w-3 h-3 md:w-4 md:h-4" />
-              Trusted by Hundreds of Indian Businesses
-            </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-gray-900 dark:text-gray-50 mb-3 md:mb-4 px-4 leading-tight">
-              Stop Typing Invoices. <br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
-                Start Scanning Them.
-              </span>
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 dark:text-gray-50 mb-4 leading-tight">
+              From Invoice to Excel, Instantly.
             </h1>
-            <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-200 mb-4 md:mb-6 max-w-2xl mx-auto px-4">
-              Save 10+ hours every week. AI extracts vendor names, amounts, GST, and line items from your invoices in under 5 seconds.
+            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-200 mb-8 max-w-3xl mx-auto">
+              Our AI reads any invoice (PDF, image, or scan) and automatically extracts the data into a perfect Excel sheet. Stop manual data entry forever.
             </p>
 
             {/* Interactive Upload Zone */}
-            <div className="max-w-3xl mx-auto mb-4 md:mb-6 px-4">
-              <div
-                onDragEnter={(e) => { e.preventDefault(); setIsDragging(true) }}
-                onDragLeave={(e) => { e.preventDefault(); setIsDragging(false) }}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-                className={`
-                  relative border-3 md:border-4 border-dashed rounded-2xl md:rounded-3xl p-6 sm:p-8 md:p-12 cursor-pointer
-                  transition-all duration-300 ease-in-out transform
-                  ${isDragging || isProcessing
-                    ? 'border-blue-600 dark:border-blue-400 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 shadow-2xl scale-[1.02] ring-2 md:ring-4 ring-blue-200 dark:ring-blue-800' 
-                    : 'border-indigo-300 dark:border-indigo-700 bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800 dark:to-blue-900/10 shadow-xl hover:border-blue-600 dark:hover:border-blue-400 hover:shadow-2xl hover:scale-[1.02] hover:ring-2 md:hover:ring-4 hover:ring-blue-100 dark:hover:ring-blue-900'
-                  }
-                `}
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
-                  className="hidden"
-                />
-
-                {!isProcessing && !extractedData && (
-                  <div className="flex flex-col items-center gap-2 md:gap-3">
-                    <div className="p-3 md:p-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-500">
-                      <Upload className="w-8 h-8 md:w-12 md:h-12 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-800 dark:text-gray-100 mb-1">
-                        Try It Now - Upload Any Invoice
-                      </h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm md:text-base">
-                        Drag and drop your invoice here, or{' '}
-                        <span className="text-blue-600 dark:text-blue-400 font-semibold">click to browse</span>
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-center gap-1 text-xs text-gray-500 dark:text-gray-400 text-center px-2">
-                      <div>✓ Supports PDF, JPG, PNG • ✓ No signup needed</div>
-                      <div className="text-blue-600 dark:text-blue-400 font-semibold">See AI extraction in action instantly!</div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Processing State */}
-                {isProcessing && (
-                  <div className="flex flex-col items-center gap-4 md:gap-6">
-                    <Loader2 className="w-12 h-12 md:w-16 md:h-16 text-blue-600 dark:text-blue-400 animate-spin" />
-                    <div className="w-full max-w-md px-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-semibold text-sm sm:text-base text-gray-900 dark:text-gray-100">Processing with AI...</span>
-                        <span className="text-blue-600 dark:text-blue-400 font-bold text-sm sm:text-base">{progress}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 md:h-3 overflow-hidden">
-                        <div
-                          className="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full transition-all duration-300 ease-out"
-                          style={{ width: `${progress}%` }}
-                        />
-                      </div>
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2">Extracting vendor, amount, dates, GST...</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Extraction Complete */}
-                {extractedData && !isProcessing && (
-                  <div className="flex flex-col items-center gap-4 md:gap-6 px-4">
-                    <div className="p-3 md:p-4 bg-green-100 dark:bg-green-900/50 rounded-full">
-                      <CheckCircle2 className="w-10 h-10 md:w-12 md:h-12 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div className="text-center">
-                      <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                        ✨ Extraction Complete!
-                      </h3>
-                      <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">AI successfully extracted your invoice data</p>
-                    </div>
-                    {/* Preview Card */}
-                    <div className="bg-gray-50 dark:bg-gray-900/80 rounded-xl p-4 md:p-6 shadow-lg max-w-md w-full border border-gray-200 dark:border-gray-700">
-                      <div className="grid grid-cols-2 gap-3 md:gap-4 text-left">
-                        <div>
-                          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Vendor</p>
-                          <p className="font-semibold text-sm md:text-base text-gray-900 dark:text-gray-100 truncate">
-                            {extractedData.vendor_name || 'Not extracted'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Amount</p>
-                          <p className="font-semibold text-sm md:text-base text-gray-900 dark:text-gray-100">
-                            {extractedData.total_amount 
-                              ? formatCurrency(extractedData.total_amount, extractedData.currency || 'INR')
-                              : `${getCurrencySymbol(extractedData.currency)}0`
-                            }
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Invoice #</p>
-                          <p className="font-semibold text-sm md:text-base text-gray-900 dark:text-gray-100 truncate">
-                            {extractedData.invoice_number || 'N/A'}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Date</p>
-                          <p className="font-semibold text-sm md:text-base text-gray-900 dark:text-gray-100">
-                            {extractedData.invoice_date ? new Date(extractedData.invoice_date).toLocaleDateString() : 'N/A'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t border-gray-200 dark:border-gray-800">
-                        {isLoggedIn ? (
-                          <Link
-                            href="/invoices"
-                            className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-                          >
-                            <Eye className="w-3 h-3 md:w-4 md:h-4" />
-                            <span className="text-xs md:text-sm font-semibold">View in Dashboard</span>
-                          </Link>
-                        ) : (
-                          <div className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400">
-                            <Eye className="w-3 h-3 md:w-4 md:h-4" />
-                            <span className="text-xs md:text-sm font-semibold">Sign in to view full details</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Error State */}
-                {processingError && !isProcessing && (
-                  <div className="flex flex-col items-center gap-4 px-4">
-                    <div className="p-3 md:p-4 bg-red-100 dark:bg-red-900/50 rounded-full">
-                      <X className="w-10 h-10 md:w-12 md:h-12 text-red-600 dark:text-red-400" />
-                    </div>
-                    <div className="text-center">
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                        Processing Failed
-                      </h3>
-                      <p className="text-sm text-red-600 dark:text-red-400">{processingError}</p>
-                      <button
-                        onClick={() => { setProcessingError(''); setExtractedData(null); setSelectedFile(null); }}
-                        className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold"
-                      >
-                        Try Again
-                      </button>
-                    </div>
-                  </div>
-                )}
+            <div
+              onDragEnter={(e) => { e.preventDefault(); setIsDragging(true) }}
+              onDragLeave={(e) => { e.preventDefault(); setIsDragging(false) }}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className={`relative max-w-3xl mx-auto border-4 border-dashed rounded-3xl p-8 sm:p-12 cursor-pointer transition-all duration-300 ease-in-out transform ${
+                isDragging ? 'border-blue-600 dark:border-blue-400 bg-blue-50/50 dark:bg-blue-900/30 scale-105' : 'border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400'
+              }`}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+                className="hidden"
+              />
+              <div className="flex flex-col items-center gap-4">
+                <div className="p-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-500">
+                  <Upload className="w-12 h-12 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-1">
+                    Try It Now - Upload Any Invoice
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Drag & drop a PDF or image, or <span className="text-blue-600 dark:text-blue-400 font-semibold">click to browse</span>
+                  </p>
+                </div>
               </div>
             </div>
-
-            <div className="flex flex-col sm:flex-row gap-2 md:gap-3 justify-center items-center px-4">
-              <Link 
-                href="/register" 
-                className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 text-white px-5 md:px-6 py-2.5 md:py-3 rounded-xl font-semibold hover:shadow-xl transition-all flex items-center justify-center gap-2 text-sm md:text-base"
-              >
-                Start Free <ArrowRight className="w-4 h-4" />
-              </Link>
-              <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
-                ✨ 10 free scans every month • Forever free plan available
-              </p>
+            
+            {/* Security Guarantee */}
+            <div className="mt-6 flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <Shield className="w-4 h-4" />
+              <span>Bank-Level Security. Your data is private and secure.</span>
             </div>
           </div>
         </div>
       </section>
+
+      <SavingsCalculator />
+
+      <WhatYouGet />
 
       {/* How It Works */}
       <section className="py-12 md:py-20 bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -474,33 +358,30 @@ export default function Home() {
           </p>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 max-w-5xl mx-auto px-4">
             <div className="text-center group">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-6 group-hover:scale-110 transition-transform shadow-lg">
-                <Upload className="w-8 h-8 md:w-10 md:h-10 text-white" />
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                <Upload className="w-10 h-10 text-white" />
               </div>
-              <div className="bg-blue-50 dark:bg-blue-900/50 w-12 h-1 mx-auto mb-3 md:mb-4 rounded-full"></div>
-              <h3 className="text-xl md:text-2xl font-bold mb-2 md:mb-3 text-gray-900 dark:text-white">1. Upload</h3>
+              <h3 className="text-xl md:text-2xl font-bold mb-3 text-gray-900 dark:text-white">1. Upload Any Invoice</h3>
               <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 px-2">
-                Upload invoices via drag-and-drop, email forwarding, or WhatsApp
+                Drag & drop a PDF, JPG, or PNG. No signup needed to try.
               </p>
             </div>
             <div className="text-center group">
-              <div className="bg-gradient-to-br from-purple-500 to-purple-600 w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-6 group-hover:scale-110 transition-transform shadow-lg">
-                <Zap className="w-8 h-8 md:w-10 md:h-10 text-white" />
+              <div className="bg-gradient-to-br from-purple-500 to-purple-600 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                <Zap className="w-10 h-10 text-white" />
               </div>
-              <div className="bg-purple-50 dark:bg-purple-900/50 w-12 h-1 mx-auto mb-3 md:mb-4 rounded-full"></div>
-              <h3 className="text-xl md:text-2xl font-bold mb-2 md:mb-3 text-gray-900 dark:text-white">2. AI Extracts</h3>
+              <h3 className="text-xl md:text-2xl font-bold mb-3 text-gray-900 dark:text-white">2. AI Extracts the Data</h3>
               <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 px-2">
-                Our AI reads vendor, amount, GST, and line items automatically in seconds
+                Our AI reads vendor names, amounts, GST, and line items in seconds.
               </p>
             </div>
             <div className="text-center group sm:col-span-2 md:col-span-1">
-              <div className="bg-gradient-to-br from-green-500 to-green-600 w-16 h-16 md:w-20 md:h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-6 group-hover:scale-110 transition-transform shadow-lg">
-                <TrendingUp className="w-8 h-8 md:w-10 md:h-10 text-white" />
+              <div className="bg-gradient-to-br from-green-500 to-green-600 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                <TrendingUp className="w-10 h-10 text-white" />
               </div>
-              <div className="bg-green-50 dark:bg-green-900/50 w-12 h-1 mx-auto mb-3 md:mb-4 rounded-full"></div>
-              <h3 className="text-xl md:text-2xl font-bold mb-2 md:mb-3 text-gray-900 dark:text-white">3. Export</h3>
+              <h3 className="text-xl md:text-2xl font-bold mb-3 text-gray-900 dark:text-white">3. Export to Excel</h3>
               <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 px-2">
-                Export to Excel, Google Sheets, Tally, or QuickBooks with one click
+                Download a perfectly organized spreadsheet with one click.
               </p>
             </div>
           </div>
@@ -587,7 +468,7 @@ export default function Home() {
                   <p className="text-sm md:text-base text-blue-100">With TrulyInvoice</p>
                 </div>
               </div>
-              <p className="mt-4 text-sm md:text-base text-blue-100">
+              <p className="mt-4 text-sm md:text-base text-blue-100 dark:text-blue-200">
                 Process 100 invoices per month? <span className="font-bold">Save 8+ hours monthly!</span>
               </p>
             </div>
@@ -823,6 +704,7 @@ export default function Home() {
             <button
               onClick={() => setShowSignupModal(false)}
               className="absolute top-3 right-3 md:top-4 md:right-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              aria-label="Close signup modal"
             >
               <X className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
             </button>
@@ -861,12 +743,14 @@ export default function Home() {
               <Link
                 href="/register"
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white py-2.5 md:py-3 rounded-xl font-semibold text-sm md:text-base hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                aria-label="Create a free account to view full invoice details"
               >
                 <span className="truncate">Create Free Account to View Full Details</span> <ArrowRight className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
               </Link>
               <Link
                 href="/login"
                 className="w-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2.5 md:py-3 rounded-xl font-semibold text-sm md:text-base hover:bg-gray-50 dark:hover:bg-gray-600 transition-all flex items-center justify-center gap-2"
+                aria-label="Sign in to your existing account"
               >
                 Already have an account? Sign In
               </Link>

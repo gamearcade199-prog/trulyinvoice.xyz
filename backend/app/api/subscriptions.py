@@ -162,13 +162,13 @@ async def get_plan_details(tier: str):
         )
 
 
-@router.get("/current", response_model=CurrentSubscriptionResponse)
-async def get_current_subscription(
+@router.get("/status", response_model=CurrentSubscriptionResponse)
+async def get_subscription_status(
     current_user_id: str = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Get current user's subscription details
+    Get current user's subscription status, usage, and limits
     
     Returns:
         Current subscription information
@@ -177,19 +177,6 @@ async def get_current_subscription(
     
     # Get usage stats
     stats = await tracker.get_usage_stats(current_user_id)
-    
-    # Check upgrade options
-    current_tier = stats["tier"]
-    can_upgrade_to_basic = upgrade_allowed(current_tier, "basic")
-    can_upgrade_to_pro = upgrade_allowed(current_tier, "pro")
-    can_upgrade_to_ultra = upgrade_allowed(current_tier, "ultra")
-    can_upgrade_to_max = upgrade_allowed(current_tier, "max")
-    
-    can_upgrade = any([can_upgrade_to_basic, can_upgrade_to_pro, can_upgrade_to_ultra, can_upgrade_to_max])
-    can_downgrade = current_tier != "free"
-    
-    # Get recommended upgrade
-    recommended = await tracker.get_upgrade_recommendation(current_user_id)
     
     return CurrentSubscriptionResponse(
         user_id=current_user_id,
@@ -203,144 +190,10 @@ async def get_current_subscription(
         period_start=stats["period_start"],
         period_end=stats["period_end"],
         bulk_upload_limit=stats["bulk_upload_limit"],
-        can_upgrade=can_upgrade,
-        can_downgrade=can_downgrade,
-        recommended_upgrade=recommended
+        can_upgrade=True,
+        can_downgrade=stats["tier"] != "free",
+        recommended_upgrade=await tracker.get_upgrade_recommendation(current_user_id)
     )
-
-
-@router.get("/usage", response_model=UsageResponse)
-async def get_usage_statistics(
-    current_user_id: str = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """
-    Get current usage statistics
-    
-    Returns:
-        Usage information
-    """
-    tracker = UsageTracker(db)
-    stats = await tracker.get_usage_stats(current_user_id)
-    
-    return UsageResponse(
-        user_id=current_user_id,
-        tier=stats["tier"],
-        tier_name=stats["tier_name"],
-        scans_used=stats["scans_used"],
-        scans_limit=stats["scans_limit"],
-        scans_remaining=stats["scans_remaining"],
-        usage_percentage=stats["usage_percentage"],
-        period_start=stats["period_start"],
-        period_end=stats["period_end"],
-        bulk_upload_limit=stats["bulk_upload_limit"]
-    )
-
-
-@router.post("/upgrade", response_model=UpgradeResponse)
-async def upgrade_subscription(
-    request: UpgradeRequest,
-    current_user_id: str = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """
-    Initiate subscription upgrade
-    
-    Note: This endpoint validates the request. Frontend should call /api/payments/create-order
-    to initiate Razorpay payment, then /api/payments/verify after payment completion.
-    
-    Args:
-        request: Upgrade request with target tier
-    
-    Returns:
-        Validation confirmation - frontend should proceed with payment
-    """
-    tracker = UsageTracker(db)
-    
-    # Get current tier
-    current_tier = await tracker.get_current_tier(current_user_id)
-    target_tier = request.target_tier.lower()
-    
-    # Validate target tier
-    try:
-        target_plan = get_plan_config(target_tier)
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid plan tier: {target_tier}"
-        )
-    
-    # Check if upgrade/downgrade is allowed
-    if target_tier == current_tier:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"You are already on the {current_tier} plan"
-        )
-    
-    is_upgrade = upgrade_allowed(current_tier, target_tier)
-    is_downgrade = downgrade_allowed(current_tier, target_tier)
-    
-    if not is_upgrade and not is_downgrade:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Cannot change from {current_tier} to {target_tier}"
-        )
-    
-    # Return validation success - frontend should initiate payment
-    action = "upgrade" if is_upgrade else "downgrade"
-    
-    return UpgradeResponse(
-        success=True,
-        message=f"Ready to {action} to {target_plan['name']}. Please complete payment.",
-        old_tier=current_tier,
-        new_tier=target_tier,
-        effective_date=datetime.utcnow().isoformat()
-    )
-    
-    subscription = await tracker.get_user_subscription(current_user_id)
-    
-    if subscription:
-        subscription.tier = target_tier
-        subscription.status = 'active'
-    else:
-        # Create new subscription
-        from datetime import datetime, timedelta
-        subscription = Subscription(
-            user_id=current_user_id,
-            tier=target_tier,
-            status='active',
-            scans_used_this_period=0,
-            current_period_start=datetime.utcnow(),
-            current_period_end=datetime.utcnow() + timedelta(days=30)
-        )
-        db.add(subscription)
-    
-    db.commit()
-    
-    action = "upgraded" if is_upgrade else "downgraded"
-    
-    return UpgradeResponse(
-        success=True,
-        message=f"Successfully {action} to {target_plan['name']}",
-        old_tier=current_tier,
-        new_tier=target_tier,
-        effective_date=datetime.utcnow().isoformat()
-    )
-
-
-@router.post("/downgrade", response_model=UpgradeResponse)
-async def downgrade_subscription(
-    request: UpgradeRequest,
-    current_user_id: str = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """
-    Downgrade subscription plan
-    
-    Note: Same as upgrade endpoint, but with different semantic meaning
-    """
-    return await upgrade_subscription(request, current_user, db)
-
 
 @router.post("/cancel")
 async def cancel_subscription(
