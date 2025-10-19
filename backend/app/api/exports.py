@@ -1,6 +1,7 @@
 """
 Bulk Export API Router - Multiple invoice exports
 """
+import json
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -23,11 +24,17 @@ async def bulk_export_excel(request: BulkExportRequest):
     """Bulk export multiple invoices to Excel"""
     try:
         # Get invoices
-        invoices = []
-        for invoice_id in request.invoice_ids:
-            invoice_data = supabase.query("invoices", filters={"id": f"eq.{invoice_id}"})
-            if invoice_data and 'data' in invoice_data:
-                invoices.extend(invoice_data['data'])
+        invoice_ids = [str(inv_id) for inv_id in request.invoice_ids]
+        invoices_data = supabase.query("invoices", filters={"id": f"in.({','.join(invoice_ids)})"})
+        invoices = invoices_data.get('data', [])
+        
+        # Manually parse line_items from JSON string to list
+        for invoice in invoices:
+            if isinstance(invoice.get('line_items'), str):
+                try:
+                    invoice['line_items'] = json.loads(invoice['line_items'])
+                except json.JSONDecodeError:
+                    invoice['line_items'] = [] # Set to empty list on parsing error
         
         if not invoices:
             raise HTTPException(status_code=404, detail="No invoices found")
@@ -50,11 +57,17 @@ async def bulk_export_pdf(request: BulkExportRequest):
     """Bulk export multiple invoices to PDF"""
     try:
         # Get invoices
-        invoices = []
-        for invoice_id in request.invoice_ids:
-            invoice_data = supabase.query("invoices", filters={"id": f"eq.{invoice_id}"})
-            if invoice_data and 'data' in invoice_data:
-                invoices.extend(invoice_data['data'])
+        invoice_ids = [str(inv_id) for inv_id in request.invoice_ids]
+        invoices_data = supabase.query("invoices", filters={"id": f"in.({','.join(invoice_ids)})"})
+        invoices = invoices_data.get('data', [])
+        
+        # Manually parse line_items from JSON string to list
+        for invoice in invoices:
+            if isinstance(invoice.get('line_items'), str):
+                try:
+                    invoice['line_items'] = json.loads(invoice['line_items'])
+                except json.JSONDecodeError:
+                    invoice['line_items'] = [] # Set to empty list on parsing error
         
         if not invoices:
             raise HTTPException(status_code=404, detail="No invoices found")
@@ -77,11 +90,17 @@ async def bulk_export_csv(request: BulkExportRequest):
     """Bulk export multiple invoices to CSV"""
     try:
         # Get invoices
-        invoices = []
-        for invoice_id in request.invoice_ids:
-            invoice_data = supabase.query("invoices", filters={"id": f"eq.{invoice_id}"})
-            if invoice_data and 'data' in invoice_data:
-                invoices.extend(invoice_data['data'])
+        invoice_ids = [str(inv_id) for inv_id in request.invoice_ids]
+        invoices_data = supabase.query("invoices", filters={"id": f"in.({','.join(invoice_ids)})"})
+        invoices = invoices_data.get('data', [])
+        
+        # Manually parse line_items from JSON string to list
+        for invoice in invoices:
+            if isinstance(invoice.get('line_items'), str):
+                try:
+                    invoice['line_items'] = json.loads(invoice['line_items'])
+                except json.JSONDecodeError:
+                    invoice['line_items'] = [] # Set to empty list on parsing error
         
         if not invoices:
             raise HTTPException(status_code=404, detail="No invoices found")

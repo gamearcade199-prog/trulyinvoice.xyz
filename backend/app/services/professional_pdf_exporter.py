@@ -200,12 +200,12 @@ class ProfessionalPDFExporter:
         story.append(PageBreak())
         
         # Individual invoices (first 5 only to prevent huge files)
-        for i, invoice in enumerate(invoices[:5]):
+        for i, invoice in enumerate(invoices):
             if i > 0:
                 story.append(PageBreak())
             
             # Add invoice header
-            story.append(Paragraph(f"Invoice {i+1}/{min(len(invoices), 5)}", 
+            story.append(Paragraph(f"Invoice {i+1}/{len(invoices)}", 
                                  getSampleStyleSheet()['Heading2']))
             story.append(Spacer(1, 0.2 * inch))
             

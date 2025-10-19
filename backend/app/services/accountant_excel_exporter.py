@@ -107,7 +107,7 @@ class AccountantExcelExporter:
         self._build_bulk_summary_sheet(ws_summary, invoices)
         
         # Create individual sheets for each invoice
-        for i, invoice in enumerate(invoices[:10]):  # Limit to 10 invoices per file
+        for i, invoice in enumerate(invoices):
             sheet_name = f"Invoice_{i+1}"
             if invoice.get('invoice_number'):
                 # Clean sheet name (remove invalid characters)

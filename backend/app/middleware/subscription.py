@@ -15,11 +15,10 @@ async def check_subscription(request: Request):
     plan = user_plan.data
 
     # Get user's usage
-    usage = supabase.from_('invoices').select('id', count='exact').eq('user_id', user_id)
-    if usage.error:
-        raise HTTPException(status_code=500, detail="Failed to get user usage")
-
-    scan_count = usage.count
+    usage_response = supabase.table('invoices').select('id', count='exact').eq('user_id', user_id).execute()
+    
+    # The new client returns a list-like object, so we check its length
+    scan_count = len(usage_response.data)
 
     # Check if user has exceeded their limit
     if scan_count >= PLAN_LIMITS[plan]['scans']:

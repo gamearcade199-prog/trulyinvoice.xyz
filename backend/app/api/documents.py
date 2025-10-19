@@ -46,11 +46,11 @@ async def process_document(document_id: str, request: Request):
     """
     try:
         # Get document from Supabase
-        doc_query = supabase.from_("documents").select("*").eq("id", document_id)
-        if not doc_query.data:
+        doc_response = supabase.table("documents").select("*").eq("id", document_id).execute()
+        if not doc_response.data:
             raise HTTPException(status_code=404, detail="Document not found")
             
-        document = doc_query.data[0]
+        document = doc_response.data[0]
         
         # Only check subscription for non-anonymous uploads
         if not document.get("is_anonymous", False):

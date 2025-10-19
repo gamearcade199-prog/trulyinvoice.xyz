@@ -3,12 +3,7 @@
  * Includes bulk operations, export, validation, and more
  */
 
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
-)
+import { supabase } from './supabase'
 
 /**
  * Export invoices to CSV format
