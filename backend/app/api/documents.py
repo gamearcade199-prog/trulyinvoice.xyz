@@ -46,7 +46,7 @@ async def process_document(document_id: str, request: Request):
     """
     try:
         # Get document from Supabase
-        doc_query = supabase.table("documents").select("*").eq("id", document_id).execute()
+        doc_query = supabase.from_("documents").select("*").eq("id", document_id)
         if not doc_query.data:
             raise HTTPException(status_code=404, detail="Document not found")
             
@@ -73,7 +73,7 @@ async def process_document(document_id: str, request: Request):
             try:
                 # Download file from Supabase storage
                 print(f"⬇️ Downloading from storage: {storage_path}")
-                storage_response = supabase.storage.from_("documents").download(storage_path)
+                storage_response = await supabase.storage.from_("documents").download(storage_path)
                 if not storage_response:
                     raise HTTPException(status_code=404, detail="File not found in storage")
                 

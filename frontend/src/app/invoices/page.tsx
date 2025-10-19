@@ -1,43 +1,108 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
-import InvoicesPageClient from '@/components/InvoicesPageClient';
+'use client'
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const dynamic = 'force-dynamic'
 
-async function fetchInvoices(supabase) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return [];
+import { useState, useEffect } from 'react'
+import DashboardLayout from '@/components/DashboardLayout'
+import Link from 'next/link'
+import { 
+  Search, 
+  Filter, 
+  Trash2,
+  Plus,
+  ChevronDown
+} from 'lucide-react'
+import { createClient } from '@supabase/supabase-js'
+import { exportInvoicesToCSV } from '@/lib/invoiceUtils'
+import { formatCurrency } from '@/lib/currency'
+import ConfidenceIndicator from '@/components/ConfidenceIndicator'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
+)
+
+export default function InvoicesPageClean() {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [invoices, setInvoices] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedInvoices, setSelectedInvoices] = useState<Set<number>>(new Set())
+  const [showMainExportDropdown, setShowMainExportDropdown] = useState(false)
+  const [showBulkExportDropdown, setShowBulkExportDropdown] = useState(false)
+  const [showRowExportDropdown, setShowRowExportDropdown] = useState<{[key: string]: boolean}>({})
+  const [showMobileExportDropdown, setShowMobileExportDropdown] = useState<{[key: string]: boolean}>({})
+
+  useEffect(() => {
+    fetchInvoices()
+    // Auto-refresh removed - was annoying. User can manually refresh if needed.
+  }, [])
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      
+      // Check if click is inside any dropdown or dropdown button
+      const isInsideDropdown = target.closest('.export-dropdown') || 
+                              target.closest('[data-dropdown-button]')
+      
+      if (!isInsideDropdown) {
+        setShowMainExportDropdown(false)
+        setShowBulkExportDropdown(false)
+        setShowRowExportDropdown({})
+        setShowMobileExportDropdown({})
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [])
+
+  const fetchInvoices = async () => {
+    try {
+      setLoading(true)
+      
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        console.log('No user logged in')
+        setLoading(false)
+        return
+      }
+
+      console.log('Fetching completed invoices for user:', user.id)
+
+      // Fetch ONLY user's invoices (removed .or(user_id.is.null) to exclude dummy data)
+      const { data: invoicesData, error: invoicesError } = await supabase
+        .from('invoices')
+        .select(`
+          *,
+          documents:document_id (
+            storage_path,
+            file_url,
+            file_name
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (invoicesError) {
+        console.error('Error fetching invoices:', invoicesError)
+        setInvoices([])
+        return
+      }
+
+      console.log('Fetched invoices:', invoicesData?.length || 0)
+      console.log('Sample invoice data:', invoicesData?.[0]) // DEBUG: See actual invoice structure
+      setInvoices(invoicesData || [])
+      
+    } catch (error) {
+      console.error('Fetch error:', error)
+      setInvoices([])
+    } finally {
+      setLoading(false)
+    }
   }
-
-  const { data: invoicesData, error: invoicesError } = await supabase
-    .from('invoices')
-    .select(`
-      *,
-      documents:document_id (
-        storage_path,
-        file_url,
-        file_name
-      )
-    `)
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
-
-  if (invoicesError) {
-    console.error('Error fetching invoices:', invoicesError);
-    return [];
-  }
-
-  return invoicesData || [];
-}
-
-export default async function InvoicesPage() {
-  const supabase = createServerComponentClient({ cookies });
-  const initialInvoices = await fetchInvoices(supabase);
-
-  return <InvoicesPageClient initialInvoices={initialInvoices} />;
-}
 
   const handleExport = () => {
     try {
