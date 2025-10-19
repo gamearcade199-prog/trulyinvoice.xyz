@@ -15,7 +15,7 @@ async def check_subscription(request: Request):
     plan = user_plan.data
 
     # Get user's usage
-    usage = supabase.from_('invoices').select('id', count='exact').eq('user_id', user_id).execute()
+    usage = supabase.from('invoices').select('id', count='exact').eq('user_id', user_id).execute()
     if usage.error:
         raise HTTPException(status_code=500, detail="Failed to get user usage")
 
