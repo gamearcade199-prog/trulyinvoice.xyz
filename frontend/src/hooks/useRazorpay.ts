@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase'; // Import Supabase client
 
 declare global {
   interface Window {
@@ -29,6 +30,16 @@ const useRazorpay = () => {
       return;
     }
 
+    // Get the current user session from Supabase
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+      alert('You must be logged in to make a purchase.');
+      // Optional: redirect to login page
+      // window.location.href = '/login';
+      return;
+    }
+    const user = session.user;
+
     const amount = billingCycle === 'yearly' && plan.price !== '₹0'
       ? Math.round(parseInt(plan.price.replace('₹', '')) * 12 * 0.8)
       : parseInt(plan.price.replace('₹', ''));
@@ -42,6 +53,7 @@ const useRazorpay = () => {
         amount: amount * 100, // Amount in paise
         currency: 'INR',
         planName: plan.name,
+        userId: user.id, // Pass the user's ID to the backend
       }),
     });
 
@@ -55,32 +67,53 @@ const useRazorpay = () => {
       description: `Subscription for ${plan.name} - ${billingCycle}`,
       order_id: order.id,
       handler: async (response: any) => {
-        const verificationResponse = await fetch('/api/payments/verify-payment', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-          }),
-        });
+        // After payment, verify it and then update the user's subscription
+        try {
+          const verificationResponse = await fetch('/api/payments/verify-payment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            }),
+          });
 
-        const verificationResult = await verificationResponse.json();
-        if (verificationResult.success) {
-          alert('Payment successful!');
-        } else {
-          alert('Payment verification failed.');
+          const verificationResult = await verificationResponse.json();
+
+          if (verificationResult.success) {
+            // Payment is successful, now update the subscription in Supabase
+            const { error: functionError } = await supabase.functions.invoke('update-subscription', {
+              body: {
+                planId: plan.name.toLowerCase(), // e.g., 'pro', 'ultra'
+                billingCycle: billingCycle,
+              }
+            });
+
+            if (functionError) {
+              throw new Error(`Failed to update subscription: ${functionError.message}`);
+            }
+
+            alert('Payment successful and subscription updated!');
+            // Redirect to the dashboard or billing page
+            window.location.href = '/dashboard/settings';
+          } else {
+            alert('Payment verification failed.');
+          }
+        } catch (err) {
+          console.error('An error occurred during payment verification or subscription update:', err);
+          alert(`An error occurred: ${err instanceof Error ? err.message : 'Unknown error'}`);
         }
       },
       prefill: {
-        name: 'Test User',
-        email: 'test.user@example.com',
-        contact: '9999999999',
+        name: user.user_metadata?.full_name || 'New User',
+        email: user.email,
+        contact: user.phone || '',
       },
       notes: {
-        address: 'Test Address',
+        userId: user.id,
       },
       theme: {
         color: '#3b82f6',

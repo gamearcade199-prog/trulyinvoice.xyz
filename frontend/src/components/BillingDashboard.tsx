@@ -9,6 +9,7 @@ export default function BillingDashboard() {
   const [subscription, setSubscription] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchSubscription()
@@ -16,29 +17,62 @@ export default function BillingDashboard() {
 
   async function fetchSubscription() {
     try {
-      const { data, error } = await supabase.functions.invoke('get-subscription-status')
-      if (error) throw error
-      setSubscription(data)
+      // Get the session first
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError) throw sessionError
+      if (!session) throw new Error('No session')
+
+      // Call the function with proper auth
+      const { data, error } = await supabase.functions.invoke('get-subscription-status', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      })
+      
+      if (error) {
+        // If the function itself throws an error (e.g., network issue)
+        throw error;
+      }
+      
+      // data can be null if no subscription exists, which is a valid state.
+      // We set the subscription state to whatever is returned (data or null).
+      setSubscription(data);
+      setError(null); // Clear any previous errors
     } catch (error) {
       console.error('Error fetching subscription:', error)
+      setError(error instanceof Error ? error.message : 'Failed to load subscription')
     } finally {
       setLoading(false)
     }
   }
 
   async function handleCancel() {
-    if (window.confirm('Are you sure you want to cancel your subscription?')) {
-      try {
-        setCancelling(true)
-        const { error } = await supabase.functions.invoke('cancel-subscription')
-        if (error) throw error
-        await fetchSubscription()
-      } catch (error) {
-        console.error('Error cancelling subscription:', error)
-        alert('Failed to cancel subscription.')
-      } finally {
-        setCancelling(false)
-      }
+    if (!window.confirm('Are you sure you want to cancel your subscription?')) {
+      return
+    }
+
+    try {
+      setCancelling(true)
+      
+      // Get current session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError) throw sessionError
+      if (!session) throw new Error('No session')
+
+      const { error } = await supabase.functions.invoke('cancel-subscription', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      })
+      
+      if (error) throw error
+      
+      await fetchSubscription()
+    } catch (error) {
+      console.error('Error cancelling subscription:', error)
+      alert('Failed to cancel subscription: ' + (error instanceof Error ? error.message : 'Unknown error'))
+    } finally {
+      setCancelling(false)
     }
   }
 
@@ -47,8 +81,59 @@ export default function BillingDashboard() {
       <div className="flex items-center justify-center py-12">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600 dark:text-blue-400" />
       </div>
-    )
+    );
   }
+
+  if (error) {
+    return (
+      <div className="p-6 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+        <h3 className="text-lg font-bold text-red-900 dark:text-red-200">Failed to load subscription</h3>
+        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        <button
+          onClick={() => fetchSubscription()}
+          className="mt-4 px-4 py-2 bg-red-100 dark:bg-red-900 text-red-900 dark:text-red-100 rounded-md hover:bg-red-200 dark:hover:bg-red-800"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  // Define plan details to match the public pricing page
+  const planDetails: { [key: string]: { name: string; price: number; scans: number } } = {
+    basic: { name: 'Basic', price: 149, scans: 80 },
+    pro: { name: 'Pro', price: 299, scans: 200 },
+    ultra: { name: 'Ultra', price: 599, scans: 500 },
+    max: { name: 'Max', price: 999, scans: 1000 },
+    // The 'free' plan is handled by the `else` block below
+  };
+
+  let displayData;
+
+  if (subscription && subscription.tier && subscription.tier !== 'free') {
+    // User has a paid subscription
+    const details = planDetails[subscription.tier] || { name: 'Unknown Plan', price: 0, scans: 0 };
+    displayData = {
+      tier_name: details.name,
+      scans_used: subscription.scans_used_this_period || 0,
+      scans_limit: details.scans,
+      price: details.price,
+      period_end: subscription.current_period_end,
+      tier: subscription.tier,
+    };
+  } else {
+    // User is on the Free Plan (no subscription record or subscription.tier is 'free')
+    displayData = {
+      tier_name: 'Free Plan',
+      scans_used: 0, // Assuming free users' scan count isn't tracked in the subscription table
+      scans_limit: 10, // Match the 10 free scans from the pricing page
+      price: 0,
+      period_end: null,
+      tier: 'free',
+    };
+  }
+
+  const usagePercentage = displayData.scans_limit > 0 ? (displayData.scans_used / displayData.scans_limit) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -60,31 +145,31 @@ export default function BillingDashboard() {
       <div className="p-6 rounded-lg bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{subscription.tier_name}</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{displayData.tier_name}</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {subscription.scans_used} / {subscription.scans_limit} scans used
+              {displayData.scans_used} / {displayData.scans_limit} scans used
             </p>
           </div>
           <div className="text-right">
             <p className="text-3xl font-bold text-gray-900 dark:text-white">
-              {subscription.tier === 'free' ? 'Free' : `₹${subscription.price}`}
+              {displayData.tier === 'free' ? 'Free' : `₹${displayData.price}`}
             </p>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Renews on {new Date(subscription.period_end).toLocaleDateString()}
+              {displayData.period_end ? `Renews on ${new Date(displayData.period_end).toLocaleDateString()}` : 'Your free plan does not expire.'}
             </p>
           </div>
         </div>
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
           <div
             className="bg-blue-600 h-2.5 rounded-full"
-            style={{ width: `${subscription.usage_percentage}%` }}
+            style={{ width: `${usagePercentage}%` }}
           ></div>
         </div>
         <div className="flex justify-between mt-4">
           <Link href="/pricing" className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors">
-            Upgrade Plan
+            {displayData.tier === 'free' ? 'Upgrade Plan' : 'Change Plan'}
           </Link>
-          {subscription.tier !== 'free' && (
+          {displayData.tier !== 'free' && (
             <button
               onClick={handleCancel}
               disabled={cancelling}
@@ -106,5 +191,5 @@ export default function BillingDashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }

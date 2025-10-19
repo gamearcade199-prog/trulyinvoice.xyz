@@ -22,7 +22,7 @@ def fix_payment_status():
         
         # First, let's see what payment status values are causing issues
         print("🔍 Checking existing payment status values...")
-        result = supabase.table('invoices').select('payment_status').execute()
+        result = supabase.table('invoices').select('payment_status')
         
         unique_values = set()
         for row in result.data:
@@ -49,7 +49,7 @@ def fix_payment_status():
             try:
                 update_result = supabase.table('invoices').update({
                     'payment_status': new_status
-                }).eq('payment_status', old_status).execute()
+                }).eq('payment_status', old_status)
                 
                 if update_result.data:
                     updated_count += len(update_result.data)

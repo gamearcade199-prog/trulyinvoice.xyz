@@ -391,10 +391,6 @@ export default function SettingsPage() {
                 </div>
               )}
 
-import BillingDashboard from '@/components/BillingDashboard'
-
-// ... existing code ...
-
               {/* Billing Tab */}
               {activeTab === 'billing' && <BillingDashboard />}
 
