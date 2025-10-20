@@ -162,8 +162,14 @@ class AccountantExcelExporter:
             column_letter = get_column_letter(column[0].column)
             for cell in column:
                 if cell.value:
-                    max_length = max(max_length, len(str(cell.value)))
-            ws.column_dimensions[column_letter].width = min(max_length + 2, 30)
+                    cell_length = len(str(cell.value))
+                    # Special handling for summary sheet
+                    if column_letter == 'D':  # Vendor column
+                        cell_length = min(cell_length, 40)  # Allow longer vendor names
+                    else:
+                        cell_length = min(cell_length, 20)  # Shorter for other columns
+                    max_length = max(max_length, cell_length)
+            ws.column_dimensions[column_letter].width = min(max_length + 2, 50)
     
     def _build_data_sheet(self, ws, data: Dict):
         """Build main data sheet with invoice details"""
@@ -245,6 +251,7 @@ class AccountantExcelExporter:
                 # Column B: Description
                 ws[f'B{row}'] = item.get('description', 'N/A')
                 ws[f'B{row}'].border = self.thin_border
+                ws[f'B{row}'].alignment = Alignment(horizontal='left', vertical='center', wrap_text=True)
                 
                 # Column C: HSN/SAC
                 ws[f'C{row}'] = item.get('hsn_sac', item.get('hsn', 'N/A'))
@@ -374,10 +381,18 @@ class AccountantExcelExporter:
                         # Handle formulas (show result length, not formula)
                         if cell_value.startswith('='):
                             # For formulas, estimate reasonable width
-                            cell_length = 12
+                            cell_length = 15
                         else:
                             # For regular content, use actual length
                             cell_length = len(cell_value)
+                        
+                        # Special handling for long text fields
+                        if column_letter in ['B', 'C']:  # Description and HSN columns
+                            # Allow longer descriptions and HSN codes
+                            cell_length = min(cell_length, 80)  # Cap at 80 chars but allow longer than before
+                        elif column_letter in ['A', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M']:
+                            # Numeric and short text columns
+                            cell_length = min(cell_length, 20)
                         
                         # Update max length if this cell is longer
                         if cell_length > max_length:
@@ -387,14 +402,28 @@ class AccountantExcelExporter:
                     pass
             
             # Set column width with padding
-            # Add 2 characters for padding, minimum width of 8
-            adjusted_width = max_length + 2
+            # Add 3 characters for padding, minimum width of 10
+            adjusted_width = max_length + 3
             
             # Set minimum and maximum widths for usability
-            if adjusted_width < 8:
-                adjusted_width = 8  # Minimum width
-            elif adjusted_width > 50:
-                adjusted_width = 50  # Maximum width (for very long descriptions)
+            if adjusted_width < 10:
+                adjusted_width = 10  # Minimum width
+            elif adjusted_width > 80:
+                adjusted_width = 80  # Maximum width (increased for long descriptions)
+            
+            # Special column widths for better readability
+            if column_letter == 'A':  # Item number column
+                adjusted_width = 8
+            elif column_letter == 'B':  # Description column - allow wider
+                adjusted_width = min(max(adjusted_width, 40), 80)
+            elif column_letter == 'C':  # HSN/SAC column
+                adjusted_width = 15
+            elif column_letter in ['D', 'E', 'F']:  # Quantity, Rate, Amount
+                adjusted_width = 12
+            elif column_letter in ['G', 'I', 'K']:  # Tax Rate columns
+                adjusted_width = 10
+            elif column_letter in ['H', 'J', 'L', 'M']:  # Tax Amount and Total columns
+                adjusted_width = 15
             
             # Apply the calculated width
             ws.column_dimensions[column_letter].width = adjusted_width

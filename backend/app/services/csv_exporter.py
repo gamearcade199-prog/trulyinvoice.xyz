@@ -39,8 +39,8 @@ class CSVExporter:
             filename = f"Invoice_{invoice_num}_{datetime.now().strftime('%Y%m%d')}.csv"
         
         # Create comprehensive CSV content with ALL fields
-        with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
-            writer = csv.writer(csvfile)
+        with open(filename, 'w', newline='', encoding='utf-8-sig') as csvfile:  # utf-8-sig for Excel compatibility
+            writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)  # Quote all fields to prevent issues
             
             # ============ COMPLETE INVOICE DATA ============
             # Core Invoice Information
@@ -258,8 +258,8 @@ class CSVExporter:
         if not filename:
             filename = f"Invoices_Bulk_Comprehensive_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         
-        with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
-            writer = csv.writer(csvfile)
+        with open(filename, 'w', newline='', encoding='utf-8-sig') as csvfile:  # utf-8-sig for Excel compatibility
+            writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)  # Quote all fields
             
             # Comprehensive headers for bulk export (ALL fields)
             headers = [

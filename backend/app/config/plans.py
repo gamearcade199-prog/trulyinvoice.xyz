@@ -30,7 +30,8 @@ PLAN_LIMITS: Dict[str, Dict[str, Any]] = {
             "basic_ai_extraction",
             "pdf_image_support",
             "email_support",
-            "1_day_storage"
+            "1_day_storage",
+            "excel_csv_export"  # Allow full Excel and CSV export for free users
         ],
         "rate_limits": {
             "api_requests_per_minute": 10,
@@ -75,7 +76,8 @@ PLAN_LIMITS: Dict[str, Dict[str, Any]] = {
             "custom_export_templates",
             "24x7_priority_support",
             "30_day_storage",
-            "advanced_gst_validation"
+            "advanced_gst_validation",
+            "excel_csv_export"
         ],
         "rate_limits": {
             "api_requests_per_minute": 60,
@@ -98,7 +100,8 @@ PLAN_LIMITS: Dict[str, Dict[str, Any]] = {
             "advanced_gst_compliance",
             "dedicated_support",
             "60_day_storage",
-            "custom_integrations"
+            "custom_integrations",
+            "excel_csv_export"
         ],
         "rate_limits": {
             "api_requests_per_minute": 100,
@@ -121,7 +124,8 @@ PLAN_LIMITS: Dict[str, Dict[str, Any]] = {
             "custom_integrations",
             "24x7_priority_support",
             "90_day_storage",
-            "custom_workflows"
+            "custom_workflows",
+            "excel_csv_export"
         ],
         "rate_limits": {
             "api_requests_per_minute": 200,
@@ -252,6 +256,7 @@ FEATURE_DESCRIPTIONS = {
     "basic_ai_extraction": "Basic AI extraction with standard accuracy",
     "pdf_image_support": "Support for PDF and image files",
     "email_support": "Standard email support",
+    "1_day_storage": "Invoice data stored for 1 day",
     "7_day_storage": "Invoice data stored for 7 days",
     "95_percent_accuracy": "95% AI extraction accuracy",
     "gst_validation": "GST number validation and compliance checking",

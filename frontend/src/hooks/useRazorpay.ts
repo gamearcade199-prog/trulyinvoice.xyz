@@ -40,36 +40,30 @@ const useRazorpay = () => {
     }
     const user = session.user;
 
-    const amount = billingCycle === 'yearly' && plan.price !== '₹0'
-      ? Math.round(parseInt(plan.price.replace('₹', '')) * 12 * 0.8)
-      : parseInt(plan.price.replace('₹', ''));
-
     const response = await fetch('/api/payments/create-order', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        amount: amount * 100, // Amount in paise
-        currency: 'INR',
-        planName: plan.name,
-        userId: user.id, // Pass the user's ID to the backend
+        tier: plan.name.toLowerCase(),
+        billing_cycle: billingCycle,
       }),
     });
 
     const order = await response.json();
 
     const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-      amount: order.amount,
+      key: order.key_id,
+      amount: order.amount_paise,
       currency: order.currency,
       name: 'TrulyInvoice',
       description: `Subscription for ${plan.name} - ${billingCycle}`,
-      order_id: order.id,
+      order_id: order.order_id,
       handler: async (response: any) => {
         // After payment, verify it and then update the user's subscription
         try {
-          const verificationResponse = await fetch('/api/payments/verify-payment', {
+          const verificationResponse = await fetch('/api/payments/verify', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -84,20 +78,8 @@ const useRazorpay = () => {
           const verificationResult = await verificationResponse.json();
 
           if (verificationResult.success) {
-            // Payment is successful, now update the subscription in Supabase
-            const { error: functionError } = await supabase.functions.invoke('update-subscription', {
-              body: {
-                planId: plan.name.toLowerCase(), // e.g., 'pro', 'ultra'
-                billingCycle: billingCycle,
-              }
-            });
-
-            if (functionError) {
-              throw new Error(`Failed to update subscription: ${functionError.message}`);
-            }
-
-            alert('Payment successful and subscription updated!');
-            // Redirect to the dashboard or billing page
+            alert('Payment successful! Your subscription has been activated.');
+            // Redirect to the dashboard
             window.location.href = '/dashboard/settings';
           } else {
             alert('Payment verification failed.');

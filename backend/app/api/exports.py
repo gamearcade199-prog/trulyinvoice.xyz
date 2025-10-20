@@ -6,15 +6,12 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List
-from app.services.supabase_helper import SupabaseClient
+from app.services.supabase_helper import supabase
 from app.services.accountant_excel_exporter import AccountantExcelExporter
 from app.services.professional_pdf_exporter import ProfessionalPDFExporter
 from app.services.csv_exporter import CSVExporter
 
 router = APIRouter()
-
-# Initialize Supabase client
-supabase = SupabaseClient()
 
 class BulkExportRequest(BaseModel):
     invoice_ids: List[str]
@@ -25,8 +22,8 @@ async def bulk_export_excel(request: BulkExportRequest):
     try:
         # Get invoices
         invoice_ids = [str(inv_id) for inv_id in request.invoice_ids]
-        invoices_data = supabase.query("invoices", filters={"id": f"in.({','.join(invoice_ids)})"})
-        invoices = invoices_data.get('data', [])
+        invoices_response = supabase.table("invoices").select("*").in_("id", invoice_ids).execute()
+        invoices = invoices_response.data
         
         # Manually parse line_items from JSON string to list
         for invoice in invoices:
@@ -58,8 +55,8 @@ async def bulk_export_pdf(request: BulkExportRequest):
     try:
         # Get invoices
         invoice_ids = [str(inv_id) for inv_id in request.invoice_ids]
-        invoices_data = supabase.query("invoices", filters={"id": f"in.({','.join(invoice_ids)})"})
-        invoices = invoices_data.get('data', [])
+        invoices_response = supabase.table("invoices").select("*").in_("id", invoice_ids).execute()
+        invoices = invoices_response.data
         
         # Manually parse line_items from JSON string to list
         for invoice in invoices:
@@ -91,8 +88,8 @@ async def bulk_export_csv(request: BulkExportRequest):
     try:
         # Get invoices
         invoice_ids = [str(inv_id) for inv_id in request.invoice_ids]
-        invoices_data = supabase.query("invoices", filters={"id": f"in.({','.join(invoice_ids)})"})
-        invoices = invoices_data.get('data', [])
+        invoices_response = supabase.table("invoices").select("*").in_("id", invoice_ids).execute()
+        invoices = invoices_response.data
         
         # Manually parse line_items from JSON string to list
         for invoice in invoices:

@@ -2,7 +2,7 @@
 Invoices API - Retrieve and manage invoices
 Compatible with existing Supabase invoices table
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import FileResponse
 from typing import List, Dict, Any
 import os
@@ -12,6 +12,11 @@ from app.services.professional_excel_exporter import ProfessionalInvoiceExporter
 from app.services.professional_pdf_exporter import ProfessionalPDFExporter
 from app.services.accountant_excel_exporter import AccountantExcelExporter
 from app.services.csv_exporter import CSVExporter
+from app.config.plans import check_feature_access
+from app.services.usage_tracker import UsageTracker
+from sqlalchemy.orm import Session
+from app.core.database import get_db
+from app.auth import get_current_user
 # 🚀 NEW BULLETPROOF EXPORTERS - GEMINI COMPATIBLE (temporarily disabled)
 # from app.services.bulletproof_excel_exporter import BulletproofExcelExporter
 # from app.services.bulletproof_pdf_exporter import BulletproofPDFExporter
@@ -20,14 +25,31 @@ from app.services.csv_exporter import CSVExporter
 router = APIRouter()
 
 
+async def check_export_permission(user_id: str, db: Session = Depends(get_db)):
+    """
+    Check if user has permission to export invoices
+    """
+    tracker = UsageTracker(db)
+    user_tier = await tracker.get_current_tier(user_id)
+    
+    if not check_feature_access(user_tier, "excel_csv_export"):
+        raise HTTPException(
+            status_code=403,
+            detail="Export functionality requires a subscription. Please upgrade your plan."
+        )
+    
+    return True
 @router.get("/", response_model=List[Dict[Any, Any]])
 async def get_invoices(user_id: str = None, limit: int = 100):
     """
     Get all invoices (optionally filtered by user)
     """
     try:
-        filters = {"user_id": user_id} if user_id else None
-        invoices = supabase.select("invoices", columns="*", filters=filters)
+        query = supabase.table("invoices").select("*").limit(limit)
+        if user_id:
+            query = query.eq("user_id", user_id)
+        invoices_response = query.execute()
+        invoices = invoices_response.data
         
         return invoices or []
         
@@ -48,7 +70,8 @@ async def get_invoice(invoice_id: str):
         try:
             numeric_id = int(invoice_id)
             print(f"  🔢 Trying numeric ID: {numeric_id}")
-            invoices = supabase.select("invoices", filters={"id": numeric_id})
+            invoices_response = supabase.table("invoices").select("*").eq("id", numeric_id).execute()
+            invoices = invoices_response.data
             if invoices:
                 print(f"  ✅ Found with numeric ID! Vendor: {invoices[0].get('vendor_name', 'Unknown')}")
                 return invoices[0]
@@ -56,14 +79,16 @@ async def get_invoice(invoice_id: str):
             print(f"  ℹ️ Not a numeric ID, trying as string/UUID")
         
         # Try as string/UUID
-        invoices = supabase.select("invoices", filters={"id": invoice_id})
+        invoices_response = supabase.table("invoices").select("*").eq("id", invoice_id).execute()
+        invoices = invoices_response.data
         print(f"  📊 Query result: {len(invoices) if invoices else 0} rows")
         
         if not invoices:
             print(f"  ❌ Invoice not found with ID: {invoice_id}")
             # Debug: Get all invoice IDs to help diagnose
             try:
-                all_invoices = supabase.select("invoices", columns="id,vendor_name,user_id")
+                all_invoices_response = supabase.table("invoices").select("id,vendor_name,user_id").execute()
+                all_invoices = all_invoices_response.data
                 print(f"  📊 Database contains {len(all_invoices)} total invoices")
                 print(f"  📋 Sample IDs in DB: {[inv['id'] for inv in all_invoices[:3]]}")
             except Exception as debug_error:
@@ -85,7 +110,7 @@ async def get_invoice(invoice_id: str):
 async def delete_invoice(invoice_id: str):
     """Delete an invoice"""
     try:
-        supabase.delete("invoices", filters={"id": invoice_id})
+        supabase.table("invoices").delete().eq("id", invoice_id).execute()
         
         return {"success": True, "message": "Invoice deleted"}
         
@@ -116,7 +141,8 @@ async def export_invoice_pdf(invoice_id: str):
     """
     try:
         # Get invoice
-        invoices = supabase.select("invoices", filters={"id": invoice_id})
+        invoices_response = supabase.table("invoices").select("*").eq("id", invoice_id).execute()
+        invoices = invoices_response.data
         
         if not invoices:
             raise HTTPException(status_code=404, detail="Invoice not found")
@@ -142,7 +168,11 @@ async def export_invoice_pdf(invoice_id: str):
 
 
 @router.get("/{invoice_id}/export-excel")
-async def export_invoice_excel(invoice_id: str):
+async def export_invoice_excel(
+    invoice_id: str,
+    current_user_id: str = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """
     📊 LIGHT-STYLED EXCEL EXPORT (for accountants, SMEs)
     
@@ -155,19 +185,23 @@ async def export_invoice_excel(invoice_id: str):
     
     Target Users: Accountants, SMEs, Bookkeepers, Anyone who needs to EDIT/IMPORT
     """
+    # Check export permissions
+    await check_export_permission(current_user_id, db)
+    
     try:
         # Get invoice
-        invoices = supabase.select("invoices", filters={"id": invoice_id})
-        
+        invoices_response = supabase.table("invoices").select("*").eq("id", invoice_id).execute()
+        invoices = invoices_response.data
+
         if not invoices:
             raise HTTPException(status_code=404, detail="Invoice not found")
-        
+
         invoice_data = invoices[0]
-        
+
         # Export to Excel (accountant-friendly version)
         exporter = AccountantExcelExporter()
         excel_filename = exporter.export_invoice(invoice_data)
-        
+
         # Return file
         return FileResponse(
             path=excel_filename,
@@ -177,13 +211,17 @@ async def export_invoice_excel(invoice_id: str):
                 "Content-Disposition": f'attachment; filename="{excel_filename}"'
             }
         )
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/{invoice_id}/export-csv")
-async def export_invoice_csv(invoice_id: str):
+async def export_invoice_csv(
+    invoice_id: str,
+    current_user_id: str = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """
     📄 RAW CSV EXPORT (for developers, ERP/CRM systems)
     
@@ -196,9 +234,13 @@ async def export_invoice_csv(invoice_id: str):
     
     Target Users: Developers, ERP Systems, Automation Scripts
     """
+    # Check export permissions
+    await check_export_permission(current_user_id, db)
+
     try:
         # Get invoice
-        invoices = supabase.select("invoices", filters={"id": invoice_id})
+        invoices_response = supabase.table("invoices").select("*").eq("id", invoice_id).execute()
+        invoices = invoices_response.data
         
         if not invoices:
             raise HTTPException(status_code=404, detail="Invoice not found")
@@ -226,7 +268,11 @@ async def export_invoice_csv(invoice_id: str):
 # ============ ORIGINAL BULK EXPORT (LEGACY) ============
 
 @router.get("/export/excel")
-async def export_invoices_excel(user_id: str = None):
+async def export_invoices_excel(
+    user_id: str = None,
+    current_user_id: str = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """
     Export invoices to formatted Excel file (.xlsx)
     Features:
@@ -238,10 +284,16 @@ async def export_invoices_excel(user_id: str = None):
     - Formulas for totals
     - Vendor analysis
     """
+    # Check export permissions
+    await check_export_permission(current_user_id, db)
+
     try:
         # Get invoices
-        filters = {"user_id": user_id} if user_id else None
-        invoices = supabase.select("invoices", columns="*", filters=filters)
+        query = supabase.table("invoices").select("*")
+        if user_id:
+            query = query.eq("user_id", user_id)
+        invoices_response = query.execute()
+        invoices = invoices_response.data
         
         if not invoices:
             raise HTTPException(status_code=404, detail="No invoices found")

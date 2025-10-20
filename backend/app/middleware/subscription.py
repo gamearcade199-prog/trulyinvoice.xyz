@@ -1,25 +1,30 @@
 from fastapi import Request, HTTPException
 from app.services.supabase_helper import supabase
-from app.core.plan_limits import PLAN_LIMITS
+from app.config.plans import get_scan_limit, PLAN_LIMITS
+from app.services.usage_tracker import UsageTracker
+from sqlalchemy.orm import Session
+from app.core.database import get_db
+from typing import Optional
+import os
 
-async def check_subscription(request: Request):
-    user_id = request.state.user_id
+async def check_subscription(user_id: str, db: Optional[Session] = None):
+    """
+    Check if user has exceeded their subscription limits
+    """
     if not user_id:
         raise HTTPException(status_code=401, detail="User not authenticated")
 
-    # Get user's plan
-    user_plan = supabase.rpc('get_user_plan', {'user_id_in': user_id})
-    if not user_plan.data:
-        raise HTTPException(status_code=404, detail="User plan not found")
+    # Get database session
+    if db is None:
+        db = next(get_db())
 
-    plan = user_plan.data
+    # Use usage tracker for proper plan and quota checking
+    tracker = UsageTracker(db)
 
-    # Get user's usage
-    usage_response = supabase.table('invoices').select('id', count='exact').eq('user_id', user_id).execute()
-    
-    # The new client returns a list-like object, so we check its length
-    scan_count = len(usage_response.data)
+    # Check if user has quota for 1 scan
+    has_quota, message = await tracker.check_quota(user_id, 1)
 
-    # Check if user has exceeded their limit
-    if scan_count >= PLAN_LIMITS[plan]['scans']:
-        raise HTTPException(status_code=403, detail="You have exceeded your scan limit. Please upgrade your plan.")
+    if not has_quota:
+        raise HTTPException(status_code=403, detail=f"Subscription limit exceeded: {message}")
+
+    return True

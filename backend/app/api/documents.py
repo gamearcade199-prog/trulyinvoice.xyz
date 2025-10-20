@@ -14,8 +14,9 @@ import os
 import re
 import requests
 import io
-from app.services.supabase_helper import supabase
-from app.middleware.subscription import check_subscription
+from app.services.usage_tracker import UsageTracker
+from sqlalchemy.orm import Session
+from app.core.database import get_db
 
 # Try to import AI extractor and PDF processing
 try:
@@ -39,7 +40,7 @@ class ProcessResponse(BaseModel):
 
 
 @router.post("/{document_id}/process", response_model=ProcessResponse)
-async def process_document(document_id: str, request: Request):
+async def process_document(document_id: str, request: Request, db: Session = Depends(get_db)):
     """
     Process an uploaded document and create invoice
     OPTIMIZED VERSION: Supports PDFs + Images, All Users, Production-Ready
@@ -54,7 +55,8 @@ async def process_document(document_id: str, request: Request):
         
         # Only check subscription for non-anonymous uploads
         if not document.get("is_anonymous", False):
-            await check_subscription(request)
+            user_id = document.get("user_id")
+            await check_subscription(user_id, db)
         
         # Extract invoice data using AI if available
         file_name = document.get("file_name", "Invoice")
@@ -73,11 +75,9 @@ async def process_document(document_id: str, request: Request):
             try:
                 # Download file from Supabase storage
                 print(f"⬇️ Downloading from storage: {storage_path}")
-                storage_response = await supabase.storage.from_("documents").download(storage_path)
-                if not storage_response:
+                file_content = supabase.storage.from_("invoice-documents").download(storage_path)
+                if not file_content:
                     raise HTTPException(status_code=404, detail="File not found in storage")
-                
-                file_content = storage_response
                 
                 # Check for Gemini API key
                 gemini_key = os.getenv('GOOGLE_AI_API_KEY')
@@ -94,18 +94,10 @@ async def process_document(document_id: str, request: Request):
                 
                 # IMAGES: JPG, JPEG, PNG - Use Vision API + Flash-Lite
                 if file_ext in ['jpg', 'jpeg', 'png']:
-                    print(f"  📸 Image detected - using Vision API + Flash-Lite...")
-                    
-                    # Use raw bytes directly for our new extractor
-                if file_name.lower().endswith(('.jpg', '.jpeg', '.png')):
-                    print(f"📸 Image detected - using Vision API...")
-                    try:
-                        ai_result = await extractor.extract_invoice_data(file_content, file_name)
-                    except Exception as e:
-                        print(f"⚠️ Vision API extraction failed: {str(e)}")
-                        raise HTTPException(status_code=500, detail=f"Vision API extraction failed: {str(e)}")
+                    print(f"📸 Image detected - using Vision API + Flash-Lite...")
+                    ai_result = await extractor.extract_invoice_data(file_content, file_name)
                 
-                # PDFs: Extract text then use AI
+                # PDFs: Extract text then use Gemini AI
                 elif file_name.lower().endswith('.pdf'):
                     print(f"📄 PDF detected - extracting text...")
                     extracted_text = ""
@@ -119,8 +111,11 @@ async def process_document(document_id: str, request: Request):
                             print(f"   Page {page_num + 1}: {len(text)} chars")
                         
                         if extracted_text.strip():
-                            print(f"🤖 Extracted {len(extracted_text)} chars - processing...")
-                            ai_result = await extractor.process_text(extracted_text)
+                            print(f"🤖 Extracted {len(extracted_text)} chars - processing with Gemini...")
+                            # Use GeminiExtractor for text processing
+                            from app.services.gemini_extractor import GeminiExtractor
+                            gemini_extractor = GeminiExtractor()
+                            ai_result = gemini_extractor.extract_from_text(extracted_text, file_name)
                         else:
                             raise HTTPException(status_code=422, detail="No text found in PDF - might be scanned image")
                     except Exception as e:
@@ -226,7 +221,8 @@ async def process_document(document_id: str, request: Request):
         print(f"  💾 Creating invoice for user {user_id}...")
         print(f"  📋 Invoice data keys: {list(invoice_data.keys())}")
         try:
-            created_invoice = supabase.insert("invoices", invoice_data)
+            created_invoice_response = supabase.table("invoices").insert(invoice_data).execute()
+            created_invoice = created_invoice_response.data[0] if created_invoice_response.data else None
             
             if not created_invoice:
                 print(f"  ❌ Supabase returned empty response!")
@@ -235,10 +231,20 @@ async def process_document(document_id: str, request: Request):
             invoice_id = created_invoice.get('id')
             print(f"  ✅ Invoice created: {invoice_id}")
             
+            # Increment scan count for the user
+            if user_id and not document.get("is_anonymous", False):
+                try:
+                    tracker = UsageTracker(db)
+                    await tracker.increment_scan_count(user_id, 1)
+                    print(f"  📊 Scan count incremented for user {user_id}")
+                except Exception as e:
+                    print(f"  ⚠️ Warning: Failed to increment scan count: {str(e)}")
+                    # Don't fail the whole process just because scan count update failed
+            
             # Verify invoice was created
             print(f"  🔍 Verifying invoice exists...")
-            verify = supabase.select("invoices", filters={"id": invoice_id})
-            if verify:
+            verify_response = supabase.table("invoices").select("*").eq("id", invoice_id).execute()
+            if verify_response.data:
                 print(f"  ✅ Verification successful - invoice found in database")
             else:
                 print(f"  ⚠️ Invoice created but not found in database!")
@@ -248,7 +254,7 @@ async def process_document(document_id: str, request: Request):
         
         # 4. Update document status to 'completed'
         try:
-            supabase.update("documents", filters={"id": document_id}, data={"status": "completed"})
+            supabase.table("documents").update({"status": "completed"}).eq("id", document_id).execute()
         except Exception as e:
             print(f"  ⚠️ Warning: Failed to update document status: {str(e)}")
             # Don't fail the whole process just because status update failed
@@ -264,7 +270,7 @@ async def process_document(document_id: str, request: Request):
     except HTTPException as he:
         # Update document status to failed on HTTP exceptions
         try:
-            supabase.update("documents", filters={"id": document_id}, data={"status": "failed", "error": str(he.detail)})
+            supabase.table("documents").update({"status": "failed", "error": str(he.detail)}).eq("id", document_id).execute()
         except:
             pass  # Don't let status update failure mask the original error
         raise
@@ -272,7 +278,7 @@ async def process_document(document_id: str, request: Request):
         print(f"  ❌ Processing error: {str(e)}")
         # Update document status to failed on general exceptions
         try:
-            supabase.update("documents", filters={"id": document_id}, data={"status": "failed", "error": str(e)})
+            supabase.table("documents").update({"status": "failed", "error": str(e)}).eq("id", document_id).execute()
         except:
             pass  # Don't let status update failure mask the original error
         raise HTTPException(status_code=500, detail=str(e))
@@ -310,17 +316,19 @@ async def process_anonymous_document(file: UploadFile = File(...)):
         extractor = VisionFlashLiteExtractor()
         
         if file.content_type == 'application/pdf':
-            # Extract text from PDF
+            # Extract text from PDF and use Gemini
             pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_content))
             text_content = ""
             for page in pdf_reader.pages:
                 text_content += page.extract_text() + "\n"
             
-            # Process with AI
-            result = extractor.extract_invoice_data_from_text(text_content)
+            # Use Gemini for text processing
+            from app.services.gemini_extractor import GeminiExtractor
+            gemini_extractor = GeminiExtractor()
+            result = gemini_extractor.extract_from_text(text_content, file.filename)
         else:
-            # Process image directly
-            result = extractor.extract_invoice_data_from_image(file_content)
+            # Process image directly with Vision + Flash-Lite
+            result = extractor.extract_invoice_data(file_content, file.filename)
         
         # Return preview data (no database storage)
         return {
@@ -351,7 +359,8 @@ async def process_anonymous_document(file: UploadFile = File(...)):
 async def get_document(document_id: str):
     """Get document details"""
     try:
-        documents = supabase.select("documents", filters={"id": document_id})
+        documents_response = supabase.table("documents").select("*").eq("id", document_id).execute()
+        documents = documents_response.data
         
         if not documents:
             raise HTTPException(status_code=404, detail="Document not found")

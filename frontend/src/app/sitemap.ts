@@ -1,13 +1,13 @@
-// Sitemap generation for TrulyInvoice
-// Only includes pages that actually exist to avoid 404s
+// Comprehensive sitemap generation for TrulyInvoice - Invoice to Excel Converter
+// Includes all existing pages with proper SEO priorities and change frequencies
 
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://trulyinvoice.xyz'
-  
-  // Static pages that currently exist
-  const staticPages = [
+
+  // Core business pages - highest priority
+  const corePages = [
     {
       url: baseUrl,
       lastModified: new Date(),
@@ -21,6 +21,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${baseUrl}/features`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/features/invoice-to-excel-converter`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
+    },
+  ]
+
+  // Authentication pages - medium priority
+  const authPages = [
+    {
       url: `${baseUrl}/login`,
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
@@ -33,28 +49,92 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     },
     {
-      url: `${baseUrl}/features/invoice-to-excel-converter`,
+      url: `${baseUrl}/register`,
       lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
     },
+    {
+      url: `${baseUrl}/forgot-password`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+    },
+  ]
+
+  // Legal and informational pages - medium priority
+  const legalPages = [
+    {
+      url: `${baseUrl}/about`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/privacy`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.4,
+    },
+    {
+      url: `${baseUrl}/terms`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.4,
+    },
+    {
+      url: `${baseUrl}/security`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+    },
+  ]
+
+  // Location-specific landing pages - high priority for local SEO
+  const locationPages = [
     {
       url: `${baseUrl}/invoice-software/mumbai`,
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     },
+    // Add more cities as they are created
   ]
-  
-  // TODO: Add these pages to sitemap when they are created:
-  // - /features (when features page is built)
-  // - /about (when about page is built)
-  // - /contact (when contact page is built)
-  // - /privacy (when privacy page is built)
-  // - /terms (when terms page is built)
-  // - /blog (when blog is built)
-  // - City pages: /invoice-software-{city} (when landing pages are built)
-  // - Industry pages: /invoice-software-{industry} (when industry pages are built)
-  
-  return staticPages
+
+  // User dashboard and functionality pages - low priority (behind login)
+  const userPages = [
+    {
+      url: `${baseUrl}/dashboard`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/invoices`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/upload`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.3,
+    },
+  ]
+
+  // Combine all pages
+  return [
+    ...corePages,
+    ...authPages,
+    ...legalPages,
+    ...locationPages,
+    ...userPages,
+  ]
 }

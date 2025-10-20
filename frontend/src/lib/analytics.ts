@@ -1,21 +1,24 @@
 // Google Analytics and Tracking Setup for TrulyInvoice
-// This file configures comprehensive analytics tracking
+// This file configures comprehensive analytics tracking for invoice-to-excel conversion
 
 export const trackingConfig = {
-  // Google Analytics 4
-  googleAnalyticsId: 'G-1234567890', // Replace with your GA4 measurement ID
-  
+  // Google Analytics 4 - Replace with your actual GA4 measurement ID
+  googleAnalyticsId: 'G-XXXXXXXXXX', // Replace with your GA4 measurement ID
+
   // Google Tag Manager (optional)
   gtmId: 'GTM-XXXXXXX', // Replace with your GTM container ID
-  
-  // Microsoft Clarity (optional)
+
+  // Microsoft Clarity (optional) - For user behavior analysis
   clarityId: 'YOUR_CLARITY_ID',
-  
-  // Facebook Pixel (optional)
+
+  // Facebook Pixel (optional) - For retargeting
   facebookPixelId: 'YOUR_PIXEL_ID',
-  
-  // LinkedIn Insight Tag (optional)
+
+  // LinkedIn Insight Tag (optional) - For B2B targeting
   linkedInPartnerId: 'YOUR_PARTNER_ID',
+
+  // Hotjar (optional) - For user feedback and heatmaps
+  hotjarId: 'YOUR_HOTJAR_ID',
 }
 
 // Event tracking configuration

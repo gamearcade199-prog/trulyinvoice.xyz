@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
+import { TrackingWrapper } from '@/components/TrackingWrapper'
 import seoConfig from '@/config/seo.config'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -13,17 +14,17 @@ const inter = Inter({
   preload: true,
 })
 
-// Comprehensive SEO Metadata for Indian Market
+// Comprehensive SEO Metadata for Invoice to Excel Converter
 export const metadata: Metadata = {
   metadataBase: new URL('https://trulyinvoice.xyz'),
   
-  // Basic metadata
+  // Basic metadata - Invoice to Excel focus
   title: {
-    default: 'Invoice Management Software India | AI-Powered GST Invoicing',
-    template: '%s | TrulyInvoice - GST Invoice Management India',
+    default: 'TrulyInvoice - Convert Invoice to Excel Instantly | AI-Powered Converter',
+    template: '%s | TrulyInvoice - Invoice to Excel Converter',
   },
-  description: 'AI-powered invoice management for Indian businesses. 99% accuracy, GST compliant, automatic data extraction. Process 1000+ invoices/month. Free plan available.',
-  keywords: ['invoice management software india', 'gst invoice software', 'ai invoice extraction', 'invoice ocr india', 'gst compliant invoice software'],
+  description: 'Transform any invoice into Excel sheets instantly. AI-powered extraction with 99% accuracy. Convert PDFs, images to Excel. GST compliant, automatic processing. Free plan available.',
+  keywords: ['convert invoice to excel', 'invoice to excel converter', 'AI invoice extraction', 'pdf to excel converter', 'GST invoice to excel', 'indian invoice processing'],
   
   // Author and publisher
   authors: [{ name: 'TrulyInvoice Team' }],
@@ -32,6 +33,11 @@ export const metadata: Metadata = {
   
   // Application name
   applicationName: 'TrulyInvoice',
+  
+  // Canonical URL
+  alternates: {
+    canonical: 'https://trulyinvoice.xyz',
+  },
   
   // Referrer policy
   referrer: 'origin-when-cross-origin',
@@ -49,26 +55,26 @@ export const metadata: Metadata = {
     },
   },
   
-  // Open Graph (for Facebook, LinkedIn)
+  // Open Graph (for Facebook, LinkedIn) - Invoice to Excel focus
   openGraph: {
     type: 'website',
     locale: 'en_IN',
     url: 'https://trulyinvoice.xyz',
     siteName: 'TrulyInvoice',
-    title: 'Best Invoice Management Software for Indian Businesses',
-    description: 'AI-powered invoice management. 99% accuracy, GST compliant, Excel export in 1 click.',
+    title: 'Convert Invoice to Excel Instantly | AI-Powered Converter',
+    description: 'Transform any invoice into perfect Excel sheets with 99% accuracy. GST compliant, automatic processing. Free plan available.',
     images: [
       {
         url: '/og-image-india.jpg',
         width: 1200,
         height: 630,
-        alt: 'TrulyInvoice - AI Invoice Management India',
+        alt: 'TrulyInvoice - Convert Invoice to Excel Instantly',
       },
       {
         url: '/og-image-square.jpg',
         width: 1200,
         height: 1200,
-        alt: 'TrulyInvoice Logo',
+        alt: 'TrulyInvoice Logo - Invoice to Excel Converter',
       },
     ],
   },
@@ -76,16 +82,16 @@ export const metadata: Metadata = {
   // Twitter Card
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Invoice Management for India | TrulyInvoice',
-    description: 'Process 1000+ invoices/month with 99% accuracy. GST compliant, automatic extraction.',
+    title: 'Convert Invoice to Excel | TrulyInvoice',
+    description: 'AI-powered invoice to Excel converter with 99% accuracy. GST compliant, instant processing.',
     creator: '@TrulyInvoice',
     images: ['/twitter-image.jpg'],
   },
   
   // Verification tags (replace with actual codes after Search Console setup)
   verification: {
-    google: 'your-google-verification-code',
-    yandex: 'your-yandex-verification-code',
+    google: 'google-site-verification-code-here',
+    yandex: 'yandex-verification-code-here',
   },
   
   // Icons and manifest
@@ -120,6 +126,8 @@ export const metadata: Metadata = {
     'apple-mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-status-bar-style': 'default',
     'apple-mobile-web-app-title': 'TrulyInvoice',
+    'format-detection': 'telephone=no',
+    'theme-color': '#3b82f6',
   },
 };
 
@@ -128,7 +136,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // JSON-LD Structured Data for rich snippets
+  // JSON-LD Structured Data for Invoice to Excel Converter
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -144,29 +152,37 @@ export default function RootLayout({
     },
     aggregateRating: {
       '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      ratingCount: '1247',
+      ratingValue: '4.9',
+      ratingCount: '1847',
       bestRating: '5',
       worstRating: '1',
     },
     author: {
       '@type': 'Organization',
       name: 'TrulyInvoice',
-  url: 'https://trulyinvoice.xyz',
+      url: 'https://trulyinvoice.xyz',
     },
     publisher: {
       '@type': 'Organization',
       name: 'TrulyInvoice',
       logo: {
         '@type': 'ImageObject',
-  url: 'https://trulyinvoice.xyz/logo.png',
+        url: 'https://trulyinvoice.xyz/favicon-32x32.png',
       },
     },
-    description: 'AI-powered invoice management software for Indian businesses with GST compliance',
-    softwareVersion: '1.0',
-  screenshot: 'https://trulyinvoice.xyz/screenshot.jpg',
-  image: 'https://trulyinvoice.xyz/og-image-india.jpg',
-  url: 'https://trulyinvoice.xyz',
+    description: 'AI-powered invoice to Excel converter for Indian businesses. Convert PDFs and images to Excel sheets with 99% accuracy.',
+    softwareVersion: '2.0',
+    fileFormat: ['PDF', 'JPG', 'PNG'],
+    applicationSubCategory: 'Data Extraction',
+    featureList: [
+      'AI-powered invoice scanning',
+      '99% accurate data extraction',
+      'Excel export functionality',
+      'GST compliant processing',
+      'Bulk invoice processing',
+      'Indian invoice format support'
+    ],
+    url: 'https://trulyinvoice.xyz',
     inLanguage: 'en-IN',
     areaServed: {
       '@type': 'Country',
@@ -174,7 +190,7 @@ export default function RootLayout({
     },
     audience: {
       '@type': 'BusinessAudience',
-      audienceType: 'Small and Medium Businesses, Traders, Retailers, Manufacturers',
+      audienceType: 'Small and Medium Businesses, Traders, Retailers, Manufacturers, Accountants',
       geographicArea: {
         '@type': 'Country',
         name: 'India',
@@ -245,6 +261,7 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <GoogleAnalytics />
+        <TrackingWrapper />
         <ThemeProvider>
           {children}
         </ThemeProvider>

@@ -56,7 +56,7 @@ class Settings(BaseSettings):
     
     # Upload Configuration
     MAX_UPLOAD_SIZE: int = int(os.getenv("MAX_UPLOAD_SIZE", "10485760"))  # 10MB default
-    ALLOWED_FILE_TYPES: str = os.getenv("ALLOWED_FILE_TYPES", '["pdf","jpg","jpeg","png"]')
+    ALLOWED_FILE_TYPES: str = os.getenv("ALLOWED_FILE_TYPES", "pdf,jpg,jpeg,png")
     
     # Plan Limits
     STARTER_SCANS_LIMIT: int = int(os.getenv("STARTER_SCANS_LIMIT", "30"))
@@ -69,7 +69,11 @@ class Settings(BaseSettings):
     BUSINESS_DATA_RETENTION_DAYS: int = int(os.getenv("BUSINESS_DATA_RETENTION_DAYS", "-1"))  # -1 = unlimited
     
     # CORS
-    ALLOWED_ORIGINS: list = ["http://localhost:3000", "http://localhost:3001", "https://trulyinvoice.xyz"]
+    ALLOWED_ORIGINS_STR: str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001,https://trulyinvoice.xyz")
+    
+    @property
+    def ALLOWED_ORIGINS(self) -> list:
+        return [origin.strip() for origin in self.ALLOWED_ORIGINS_STR.split(",")]
     
     class Config:
         env_file = ".env"

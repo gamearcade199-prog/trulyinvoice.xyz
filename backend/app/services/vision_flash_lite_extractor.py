@@ -21,6 +21,16 @@ from .flash_lite_formatter import FlashLiteFormatter
 class VisionFlashLiteExtractor:
     def __init__(self):
         """Initialize combined Vision API + Flash-Lite extractor (with Gemini fallback)"""
+        # Lazy initialization - don't create extractors until needed
+        self.vision_extractor = None
+        self.flash_lite_formatter = None
+        self._initialized = False
+    
+    def _ensure_initialized(self):
+        """Lazy initialization of extractors"""
+        if self._initialized:
+            return
+            
         try:
             # Try to initialize Vision API, but it's optional
             if VISION_AVAILABLE:
@@ -31,11 +41,13 @@ class VisionFlashLiteExtractor:
                 print("⚠️ Vision API not available - Using Gemini-only fallback (still excellent for invoices)")
             
             self.flash_lite_formatter = FlashLiteFormatter()
+            self._initialized = True
             
         except Exception as e:
             print(f"⚠️ Vision initialization skipped ({e}) - Will use Gemini-only fallback")
             self.vision_extractor = None
             self.flash_lite_formatter = FlashLiteFormatter()
+            self._initialized = True
     
     async def extract_invoice_data(self, image_data: bytes, image_filename: str = "unknown") -> Dict[str, Any]:
         """
@@ -48,11 +60,17 @@ class VisionFlashLiteExtractor:
         Returns:
             Structured invoice data with confidence scores
         """
+        # Ensure extractors are initialized
+        self._ensure_initialized()
+        
         start_time = time.time()
         
         print(f"🔍 Processing: {image_filename}")
         print("⚡ VISION + FLASH-LITE EXTRACTION")
         print("=" * 40)
+        
+        # Ensure extractors are initialized
+        self._ensure_initialized()
         
         try:
             # If Vision API not available, skip directly to Gemini fallback

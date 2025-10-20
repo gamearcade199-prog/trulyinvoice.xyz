@@ -1,4 +1,4 @@
-// robots.txt configuration for TrulyInvoice
+// Comprehensive robots.txt configuration for TrulyInvoice - Invoice to Excel Converter
 import { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
@@ -13,6 +13,16 @@ export default function robots(): MetadataRoute.Robots {
           '/admin/',
           '/_next/',
           '/private/',
+          '/debug-',
+          '/test',
+          '/temp',
+          '/admin',
+          '/private',
+          '/internal',
+          '/staging',
+          '/dev',
+          '/beta',
+          '/preview',
         ],
       },
       {
@@ -23,13 +33,86 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: 'Googlebot-Image',
         allow: '/',
+        crawlDelay: 0,
+      },
+      {
+        userAgent: 'Googlebot-News',
+        allow: '/',
+        crawlDelay: 0,
+      },
+      {
+        userAgent: 'Googlebot-Video',
+        allow: '/',
+        crawlDelay: 0,
       },
       {
         userAgent: 'Bingbot',
         allow: '/',
         crawlDelay: 1,
       },
+      {
+        userAgent: 'Slurp',
+        allow: '/',
+        crawlDelay: 1,
+      },
+      {
+        userAgent: 'DuckDuckBot',
+        allow: '/',
+        crawlDelay: 1,
+      },
+      {
+        userAgent: 'Baiduspider',
+        allow: '/',
+        crawlDelay: 2,
+      },
+      {
+        userAgent: 'YandexBot',
+        allow: '/',
+        crawlDelay: 2,
+      },
+      {
+        userAgent: 'facebookexternalhit',
+        allow: '/',
+        crawlDelay: 0,
+      },
+      {
+        userAgent: 'Twitterbot',
+        allow: '/',
+        crawlDelay: 0,
+      },
+      {
+        userAgent: 'LinkedInBot',
+        allow: '/',
+        crawlDelay: 0,
+      },
+      {
+        userAgent: 'WhatsApp',
+        allow: '/',
+        crawlDelay: 0,
+      },
+      // Block aggressive scrapers and bots
+      {
+        userAgent: 'AhrefsBot',
+        disallow: '/',
+      },
+      {
+        userAgent: 'SemrushBot',
+        disallow: '/',
+      },
+      {
+        userAgent: 'MJ12bot',
+        disallow: '/',
+      },
+      {
+        userAgent: 'DotBot',
+        disallow: '/',
+      },
+      {
+        userAgent: 'ZoomBot',
+        disallow: '/',
+      },
     ],
-  sitemap: 'https://trulyinvoice.xyz/sitemap.xml',
+    sitemap: 'https://trulyinvoice.xyz/sitemap.xml',
+    host: 'https://trulyinvoice.xyz',
   }
 }

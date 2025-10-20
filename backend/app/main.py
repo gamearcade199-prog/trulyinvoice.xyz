@@ -41,6 +41,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add rate limiting middleware
+from app.middleware.rate_limiter import rate_limit_middleware, rate_limit_exception_handler
+from slowapi.errors import RateLimitExceeded
+app.middleware("http")(rate_limit_middleware)
+app.add_exception_handler(RateLimitExceeded, rate_limit_exception_handler)
+
 # Import routers
 from app.api import documents, invoices, health, exports, payments, subscriptions, auth
 
