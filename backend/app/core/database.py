@@ -14,7 +14,7 @@ load_dotenv()
 # Database URL from environment
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:password@localhost:5432/trulyinvoice"
+    "sqlite:///./trulyinvoice.db"  # Use SQLite for compatibility
 )
 
 # Compatibility fix for Render/Heroku

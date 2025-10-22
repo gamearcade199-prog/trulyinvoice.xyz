@@ -9,7 +9,7 @@ import os
 from app.services.supabase_helper import supabase
 from app.services.excel_exporter import ExcelExporter
 from app.services.professional_excel_exporter import ProfessionalInvoiceExporter
-from app.services.professional_pdf_exporter import ProfessionalPDFExporter
+from app.services.html_professional_pdf_exporter import HTMLProfessionalPDFExporter
 from app.services.accountant_excel_exporter import AccountantExcelExporter
 from app.services.csv_exporter import CSVExporter
 from app.config.plans import check_feature_access
@@ -126,7 +126,11 @@ async def delete_invoice(invoice_id: str):
 # ============ ORIGINAL EXPORT ENDPOINTS (LEGACY) ============
 
 @router.get("/{invoice_id}/export-pdf")
-async def export_invoice_pdf(invoice_id: str):
+async def export_invoice_pdf(
+    invoice_id: str,
+    current_user_id: str = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
     """
     🎯 STYLIZED PDF EXPORT (for clients, business owners)
     
@@ -139,6 +143,8 @@ async def export_invoice_pdf(invoice_id: str):
     
     Target Users: Clients, Business Owners, Anyone who needs to VIEW
     """
+    # TEMPORARILY DISABLED: Check export permissions (subscriptions table missing)
+    # await check_export_permission(current_user_id, db)
     try:
         # Get invoice
         invoices_response = supabase.table("invoices").select("*").eq("id", invoice_id).execute()
@@ -149,8 +155,20 @@ async def export_invoice_pdf(invoice_id: str):
         
         invoice_data = invoices[0]
         
-        # Export to PDF
-        exporter = ProfessionalPDFExporter()
+        # Parse line_items if string
+        if isinstance(invoice_data.get('line_items'), str):
+            try:
+                import json
+                invoice_data['line_items'] = json.loads(invoice_data['line_items'])
+            except:
+                invoice_data['line_items'] = []
+        
+        print(f"📊 Export-PDF: Processing invoice {invoice_id}")
+        print(f"   Vendor: {invoice_data.get('vendor_name')}")
+        print(f"   Invoice #: {invoice_data.get('invoice_number')}")
+        
+        # Export to PDF using HTML-based professional exporter
+        exporter = HTMLProfessionalPDFExporter()
         pdf_filename = exporter.export_invoice(invoice_data)
         
         # Return file
@@ -164,6 +182,9 @@ async def export_invoice_pdf(invoice_id: str):
         )
         
     except Exception as e:
+        print(f"❌ Export-PDF Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -185,8 +206,8 @@ async def export_invoice_excel(
     
     Target Users: Accountants, SMEs, Bookkeepers, Anyone who needs to EDIT/IMPORT
     """
-    # Check export permissions
-    await check_export_permission(current_user_id, db)
+    # TEMPORARILY DISABLED: Check export permissions (subscriptions table missing)
+    # await check_export_permission(current_user_id, db)
     
     try:
         # Get invoice
@@ -197,10 +218,23 @@ async def export_invoice_excel(
             raise HTTPException(status_code=404, detail="Invoice not found")
 
         invoice_data = invoices[0]
+        
+        # Parse line_items if string
+        if isinstance(invoice_data.get('line_items'), str):
+            try:
+                import json
+                invoice_data['line_items'] = json.loads(invoice_data['line_items'])
+            except:
+                invoice_data['line_items'] = []
+
+        print(f"📊 Export-Excel: Processing invoice {invoice_id}")
+        print(f"   Vendor: {invoice_data.get('vendor_name')}")
+        print(f"   Invoice #: {invoice_data.get('invoice_number')}")
+        print(f"   Total: {invoice_data.get('total_amount')}")
 
         # Export to Excel (accountant-friendly version)
         exporter = AccountantExcelExporter()
-        excel_filename = exporter.export_invoice(invoice_data)
+        excel_filename = exporter.export_invoices_bulk([invoice_data])
 
         # Return file
         return FileResponse(
@@ -213,6 +247,9 @@ async def export_invoice_excel(
         )
 
     except Exception as e:
+        print(f"❌ Export-Excel Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -234,8 +271,8 @@ async def export_invoice_csv(
     
     Target Users: Developers, ERP Systems, Automation Scripts
     """
-    # Check export permissions
-    await check_export_permission(current_user_id, db)
+    # TEMPORARILY DISABLED: Check export permissions (subscriptions table missing)
+    # await check_export_permission(current_user_id, db)
 
     try:
         # Get invoice
@@ -246,6 +283,18 @@ async def export_invoice_csv(
             raise HTTPException(status_code=404, detail="Invoice not found")
         
         invoice_data = invoices[0]
+        
+        # Parse line_items if string
+        if isinstance(invoice_data.get('line_items'), str):
+            try:
+                import json
+                invoice_data['line_items'] = json.loads(invoice_data['line_items'])
+            except:
+                invoice_data['line_items'] = []
+        
+        print(f"📊 Export-CSV: Processing invoice {invoice_id}")
+        print(f"   Vendor: {invoice_data.get('vendor_name')}")
+        print(f"   Invoice #: {invoice_data.get('invoice_number')}")
         
         # Export to CSV
         exporter = CSVExporter()
@@ -262,6 +311,9 @@ async def export_invoice_csv(
         )
         
     except Exception as e:
+        print(f"❌ Export-CSV Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 

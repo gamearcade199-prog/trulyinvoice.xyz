@@ -6,7 +6,7 @@ export const seoConfig = {
   siteName: 'TrulyInvoice',
   siteUrl: 'https://trulyinvoice.xyz',
   defaultTitle: 'TrulyInvoice - Invoice to Excel Converter | 99% Accurate AI Extraction',
-  defaultDescription: 'Convert any invoice to Excel instantly. AI-powered extraction with 99% accuracy. GST compliant, automatic data processing. Transform PDFs, images to Excel sheets in seconds. Free plan available.',
+  defaultDescription: 'AI-powered invoice to Excel converter with 99% accuracy. Convert PDFs & images instantly. GST compliant. Free plan available.',
   
   // Keywords targeting Indian market - Invoice to Excel focus
   keywords: [
@@ -117,13 +117,6 @@ export const seoConfig = {
       priceCurrency: 'INR',
       description: 'Free plan with 10 invoice conversions per month',
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      ratingCount: '1847',
-      bestRating: '5',
-      worstRating: '1',
-    },
     address: {
       '@type': 'PostalAddress',
       addressCountry: 'IN',
@@ -150,20 +143,11 @@ export const seoConfig = {
   image: 'https://trulyinvoice.xyz/logo.png',
   '@id': 'https://trulyinvoice.xyz',
   url: 'https://trulyinvoice.xyz',
-    telephone: '+91-XXXXXXXXXX',
     priceRange: '₹0 - ₹999',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Your Street Address',
-      addressLocality: 'Mumbai',
-      addressRegion: 'Maharashtra',
-      postalCode: '400001',
+      addressLocality: 'India',
       addressCountry: 'IN',
-    },
-    geo: {
-      '@type': 'GeoCoordinates',
-      latitude: 19.0760,
-      longitude: 72.8777,
     },
     areaServed: [
       {
@@ -288,7 +272,7 @@ export const seoConfig = {
 export const pageSEO = {
   home: {
     title: 'TrulyInvoice - Convert Invoice to Excel Instantly | AI-Powered Converter',
-    description: 'Transform any invoice into Excel sheets instantly. AI-powered extraction with 99% accuracy. Convert PDFs, images to Excel. GST compliant, automatic processing. Free plan with 10 conversions/month.',
+    description: 'AI-powered invoice to Excel converter with 99% accuracy. Convert PDFs & images instantly. GST compliant. Free plan available.',
     keywords: 'convert invoice to excel, invoice to excel converter, AI invoice extraction, pdf to excel converter, GST invoice to excel, indian invoice processing',
     canonical: 'https://trulyinvoice.xyz',
     structuredData: {

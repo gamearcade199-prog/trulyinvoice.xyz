@@ -4,12 +4,16 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import UsageWarning from '@/components/UsageWarning'
+import UpgradeModal from '@/components/UpgradeModal'
+import { useQuotaModal } from '@/hooks/useQuotaModal'
 
 export default function BillingDashboard() {
   const [subscription, setSubscription] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { isModalOpen, showUpgradeModal, hideUpgradeModal } = useQuotaModal()
 
   useEffect(() => {
     fetchSubscription()
@@ -142,6 +146,14 @@ export default function BillingDashboard() {
         <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">Manage your subscription and payment methods.</p>
       </div>
 
+      {/* Usage Warning Component */}
+      <UsageWarning
+        scansUsed={displayData.scans_used}
+        scansLimit={displayData.scans_limit}
+        currentPlan={displayData.tier}
+        onUpgradeClick={() => showUpgradeModal('proactive_warning')}
+      />
+
       <div className="p-6 rounded-lg bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -190,6 +202,16 @@ export default function BillingDashboard() {
           </button>
         </div>
       </div>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={isModalOpen}
+        onClose={hideUpgradeModal}
+        currentPlan={displayData.tier}
+        scansUsed={displayData.scans_used}
+        scansLimit={displayData.scans_limit}
+        reason="proactive_warning"
+      />
     </div>
   );
 }

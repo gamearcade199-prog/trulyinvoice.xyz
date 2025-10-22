@@ -2,15 +2,23 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, CheckCircle2, Upload, Zap, FileText, Sparkles, TrendingUp, Shield, X, Loader2, Eye, Moon, Sun, LayoutDashboard, LogOut, Menu, CreditCard } from 'lucide-react'
 import { useTheme } from '@/components/ThemeProvider'
 import { supabase } from '@/lib/supabase'
 import { uploadInvoiceAnonymous, linkTempInvoicesToUser } from '@/lib/invoiceUpload'
 import { getCurrencySymbol, formatCurrency } from '@/lib/currency'
-import TrustedBy from '@/components/TrustedBy'
-import SavingsCalculator from '@/components/SavingsCalculator'
-import WhatYouGet from '@/components/WhatYouGet'
+
+// Lazy load below-fold components for better performance
+const TrustedBy = dynamic(() => import('@/components/TrustedBy'), { loading: () => null })
+const SavingsCalculator = dynamic(() => import('@/components/SavingsCalculator'), { loading: () => null })
+const WhatYouGet = dynamic(() => import('@/components/WhatYouGet'), { loading: () => null })
+const Footer = dynamic(() => import('@/components/Footer'), { loading: () => null })
+
+import UpgradeModal from '@/components/UpgradeModal'
+import { useQuotaModal } from '@/hooks/useQuotaModal'
+import Breadcrumb from '@/components/Breadcrumb'
 
 export default function HomePage() {
   const { theme, toggleTheme } = useTheme()
@@ -25,6 +33,7 @@ export default function HomePage() {
   const [processingError, setProcessingError] = useState('')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { isModalOpen, showUpgradeModal, hideUpgradeModal, handleQuotaError, quotaState } = useQuotaModal()
 
   // Check authentication status
   useEffect(() => {
@@ -116,13 +125,18 @@ export default function HomePage() {
       }
     } catch (error: any) {
       clearInterval(progressInterval)
+      // Check if it's a quota error (HTTP 429)
+      if (handleQuotaError(error)) {
+        setIsProcessing(false)
+        return
+      }
       setProcessingError(error.message || 'Failed to process invoice')
       setIsProcessing(false)
     }
   }
 
   return (
-    <main className="min-h-screen relative bg-gray-50 dark:bg-gray-950 transition-colors">
+    <main className="min-h-screen relative bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 transition-colors">
       {/* Navigation */}
       <nav className="bg-white/90 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-colors">
         <div className="container mx-auto px-4">
@@ -286,17 +300,25 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section with Interactive Upload */}
-      <section className="bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 py-12 md:py-20 relative overflow-hidden transition-colors">
+            {/* Hero Section with Interactive Upload */}
+      <section className="relative flex items-center overflow-hidden" style={{ height: 'calc(100vh - 64px)' }}>
+        {/* Decorative Background Blobs */}
         <div className="absolute top-0 right-0 w-72 h-72 bg-blue-200 dark:bg-blue-800/40 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-20"></div>
         <div className="absolute bottom-0 left-0 w-72 h-72 bg-purple-200 dark:bg-purple-800/40 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-3xl opacity-20"></div>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
           <div className="max-w-4xl mx-auto text-center">
+            {/* AI Badge */}
+            <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-full text-sm font-semibold mb-6 backdrop-blur-sm border border-blue-200/50 dark:border-blue-800/50">
+              <Sparkles className="w-4 h-4" />
+              AI-Powered
+            </div>
+            
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 dark:text-gray-50 mb-4 leading-tight">
-              From Invoice to Excel, Instantly.
+              Convert Invoice to Excel <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Instantly</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-200 mb-8 max-w-3xl mx-auto">
-              Our AI reads any invoice (PDF, image, or scan) and automatically extracts the data into a perfect Excel sheet. Stop manual data entry forever.
+              Transform any invoice into Excel sheets instantly. AI-powered extraction with 99% accuracy. Convert PDFs, images to Excel. GST compliant, automatic processing.
             </p>
 
             {/* Interactive Upload Zone */}
@@ -333,9 +355,9 @@ export default function HomePage() {
             </div>
 
             {/* Security Guarantee */}
-            <div className="mt-6 flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-              <Shield className="w-4 h-4" />
-              <span>Bank-Level Security. Your data is private and secure.</span>
+            <div className="mt-6 flex items-center justify-center gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 px-4">
+              <Shield className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span className="text-center">Encrypted & Secure. Your files are safe.</span>
             </div>
           </div>
         </div>
@@ -648,50 +670,49 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 dark:bg-gray-950 text-gray-300 py-8 md:py-12 transition-colors">
+      {/* Related Links Section */}
+      <section className="py-12 md:py-16 bg-gray-50 dark:bg-gray-900/50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-6 md:mb-8">
-            <div>
-              <div className="flex items-center gap-2 mb-3 md:mb-4">
-                <div className="w-7 h-7 md:w-8 md:h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                  <FileText className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                </div>
-                <span className="text-lg md:text-xl font-bold text-white">TrulyInvoice</span>
-              </div>
-              <p className="text-xs md:text-sm text-gray-400">
-                AI-powered invoice management built for Indian businesses
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-8 text-center">Learn More About TrulyInvoice</h2>
+          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <Link 
+              href="/features"
+              className="group p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-all hover:shadow-lg"
+            >
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                Features
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Explore our powerful AI-powered invoice processing capabilities and automation features.
               </p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white mb-3 md:mb-4 text-sm md:text-base">Product</h4>
-              <ul className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
-                <li><Link href="/features" className="hover:text-white transition-colors">Features</Link></li>
-                <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link href="/dashboard" className="hover:text-white transition-colors">Demo</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white mb-3 md:mb-4 text-sm md:text-base">Company</h4>
-              <ul className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
-                <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
-                <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white mb-3 md:mb-4 text-sm md:text-base">Legal</h4>
-              <ul className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
-                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link></li>
-                <li><Link href="/terms" className="hover:text-white transition-colors">Terms</Link></li>
-                <li><Link href="/security" className="hover:text-white transition-colors">Security</Link></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 dark:border-gray-900 pt-6 md:pt-8 text-xs md:text-sm text-center text-gray-400">
-            <p>© 2025 TrulyInvoice. All rights reserved.</p>
+            </Link>
+
+            <Link 
+              href="/pricing"
+              className="group p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-all hover:shadow-lg"
+            >
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                Pricing Plans
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Choose the perfect plan for your invoice processing needs. From free to enterprise.
+              </p>
+            </Link>
+
+            <Link 
+              href="/about"
+              className="group p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-all hover:shadow-lg"
+            >
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                About Us
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Discover our mission to revolutionize invoice processing with AI technology.
+              </p>
+            </Link>
           </div>
         </div>
-      </footer>
+      </section>
 
       {/* Signup Modal */}
       {showSignupModal && (
@@ -758,6 +779,19 @@ export default function HomePage() {
           </div>
         </div>
       )}
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={isModalOpen}
+        onClose={hideUpgradeModal}
+        currentPlan={quotaState?.currentPlan || 'free'}
+        scansUsed={quotaState?.scansUsed || 0}
+        scansLimit={quotaState?.scansLimit || 10}
+        reason="quota_exceeded"
+      />
+
+      {/* Footer with City Links */}
+      <Footer />
     </main>
   )
 }

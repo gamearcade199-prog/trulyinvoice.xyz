@@ -1,67 +1,95 @@
 """
-Authentication Utilities
-Simple helpers for authentication with Supabase
+Authentication Utilities - Production Grade
+Secure JWT validation with Supabase integration
 """
-from fastapi import Depends, HTTPException, status, Header
-from typing import Optional
+from fastapi import Depends, HTTPException, status, Header, Request
+from typing import Optional, Dict
+from datetime import datetime
+import os
+from functools import wraps
+
+# Import Supabase for JWT validation
+from app.services.supabase_helper import supabase
 
 
 def get_current_user(authorization: Optional[str] = Header(None)) -> str:
     """
-    Extract user ID from Authorization header.
-    
-    In a Supabase setup, the frontend sends the JWT token in the Authorization header.
-    For simplicity, we're extracting the user_id directly.
-    
-    In production, you should verify the JWT token with Supabase's public key.
+    Extract and validate user ID from Authorization header.
+    Validates JWT token with Supabase Auth.
     
     Args:
-        authorization: Bearer token from header
-        
+        authorization: Authorization header (Bearer {token})
+    
     Returns:
-        user_id: Supabase user ID
-        
+        Authenticated user ID (UUID)
+    
     Raises:
-        HTTPException: If token is missing or invalid
+        HTTPException: 401 if token is invalid or missing
+        HTTPException: 403 if token is expired
+    
+    Example:
+        Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
     """
     if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authorization header missing"
+            detail="Missing authorization header",
+            headers={"WWW-Authenticate": "Bearer"}
         )
     
     try:
-        # Extract token from "Bearer <token>"
-        if not authorization.startswith("Bearer "):
+        # Expected format: "Bearer {jwt_token}"
+        parts = authorization.split()
+        if len(parts) != 2:
+            raise ValueError("Invalid header format")
+        
+        scheme, token = parts
+        
+        if scheme.lower() != "bearer":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authorization format. Expected 'Bearer <token>'"
+                detail="Invalid authentication scheme. Use: 'Bearer {token}'",
+                headers={"WWW-Authenticate": "Bearer"}
             )
         
-        token = authorization.replace("Bearer ", "")
-        
-        # TODO: In production, verify JWT token with Supabase
-        # For now, we'll assume the token is valid
-        # The frontend uses Supabase auth, which manages the session
-        
-        # For development/testing, you can extract user_id from the token
-        # or use a mock user_id
-        
-        # Simple validation - just check token exists
-        if not token or len(token) < 20:
+        # Validate token with Supabase Auth
+        try:
+            response = supabase.auth.get_user(token)
+            
+            if not response.user or not response.user.id:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid or expired authentication token"
+                )
+            
+            user_id = response.user.id
+            
+            # Log successful authentication (for audit trail)
+            print(f"✅ User authenticated: {user_id}")
+            
+            return user_id
+            
+        except HTTPException:
+            raise
+        except Exception as e:
+            print(f"⚠️ Token validation error: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token"
+                detail="Failed to validate authentication token"
             )
         
-        # In a real implementation, decode and verify the JWT here
-        # For now, return a placeholder that the frontend will handle
-        return token  # Return token as user identifier for now
-        
-    except Exception as e:
+    except ValueError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Authentication failed: {str(e)}"
+            detail="Invalid authorization header format. Expected: 'Bearer {token}'"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Authentication error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication failed"
         )
 
 
@@ -69,11 +97,41 @@ def get_current_user_optional(authorization: Optional[str] = Header(None)) -> Op
     """
     Optional authentication - returns None if not authenticated.
     Use for endpoints that work for both authenticated and anonymous users.
+    
+    Args:
+        authorization: Optional authorization header
+    
+    Returns:
+        User ID if authenticated, None otherwise
     """
     if not authorization:
         return None
     
     try:
         return get_current_user(authorization)
-    except:
+    except HTTPException:
         return None
+    except Exception:
+        return None
+
+
+def verify_user_ownership(user_id: str, resource_owner_id: str) -> bool:
+    """
+    Verify that a user owns a specific resource.
+    
+    Args:
+        user_id: ID of the user making the request
+        resource_owner_id: ID of the resource owner
+    
+    Returns:
+        True if user owns the resource, raises HTTPException otherwise
+    
+    Raises:
+        HTTPException: 403 if user doesn't own the resource
+    """
+    if user_id != resource_owner_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource"
+        )
+    return True

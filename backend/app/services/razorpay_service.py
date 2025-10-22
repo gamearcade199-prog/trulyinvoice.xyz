@@ -184,20 +184,24 @@ class RazorpayService:
         db: Session
     ) -> Tuple[bool, str, Optional[Dict]]:
         """
-        Process successful payment and activate subscription
+        Process successful payment and activate subscription.
+        
+        ⚠️ NOTE: This function assumes caller has already verified:
+        - Payment signature
+        - Payment status = "captured"
+        - Payment amount matches order amount
+        - Order belongs to current user (verified via order.notes.user_id)
+        - Duplicate payment check done
         
         Args:
             order_id: Razorpay order ID
             payment_id: Razorpay payment ID
-            signature: Payment signature
+            signature: Payment signature (already verified by caller)
             db: Database session
         
         Returns:
             Tuple of (success: bool, message: str, subscription_data: dict)
         """
-        # Verify signature
-        if not self.verify_payment_signature(order_id, payment_id, signature):
-            return False, "Invalid payment signature", None
         
         # Fetch order details from Razorpay
         try:
@@ -213,6 +217,7 @@ class RazorpayService:
                     }
                 }
         except Exception as e:
+            print(f"❌ Failed to fetch order: {str(e)}")
             return False, f"Failed to fetch order: {str(e)}", None
         
         # Extract subscription details from order notes
@@ -222,7 +227,11 @@ class RazorpayService:
         billing_cycle = notes.get("billing_cycle", "monthly")
         
         if not user_id or not tier:
+            print(f"❌ Invalid order data. user_id={user_id}, tier={tier}")
             return False, "Invalid order data", None
+        
+        print(f"📝 Processing payment for user {user_id}")
+        print(f"   Tier: {tier}, Cycle: {billing_cycle}")
         
         # Get or create subscription
         subscription = db.query(Subscription).filter(
@@ -238,6 +247,7 @@ class RazorpayService:
         
         if subscription:
             # Update existing subscription
+            print(f"✏️ Updating existing subscription")
             subscription.tier = tier
             subscription.status = "active"
             subscription.billing_cycle = billing_cycle
@@ -249,6 +259,7 @@ class RazorpayService:
             subscription.cancelled_at = None
         else:
             # Create new subscription
+            print(f"✨ Creating new subscription")
             subscription = Subscription(
                 user_id=user_id,
                 tier=tier,
@@ -264,6 +275,8 @@ class RazorpayService:
         
         db.commit()
         db.refresh(subscription)
+        
+        print(f"✅ Subscription activated")
         
         # Return subscription data
         plan = get_plan_config(tier)

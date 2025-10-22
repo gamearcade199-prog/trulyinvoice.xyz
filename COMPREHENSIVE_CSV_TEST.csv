@@ -54,11 +54,6 @@
 "Consultant Name","Rajesh Kumar"
 "Hourly Rate","1500.0"
 "Hours Worked","25.42"
-"=== EXTRACTION QUALITY ===",""
-"Processing Time (seconds)","2.8"
-"Quality Score (%)","95.5"
-"Extraction Version","v3.0"
-"Data Source","gemini-2.5-flash"
 "",""
 
 "#","Description","HSN/SAC","Quantity","Rate","Amount","CGST Rate","CGST Amount","SGST Rate","SGST Amount","IGST Rate","IGST Amount","Line Total"

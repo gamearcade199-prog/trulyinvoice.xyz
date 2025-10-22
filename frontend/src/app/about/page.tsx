@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Breadcrumb from '@/components/Breadcrumb'
 import { ArrowLeft, FileText, Target, Users, Award, Heart } from 'lucide-react'
 
 export default function AboutPage() {
@@ -30,9 +31,12 @@ export default function AboutPage() {
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 py-16">
         <div className="container mx-auto px-4">
+          <div className="mb-6">
+            <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'About' }]} />
+          </div>
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              About TrulyInvoice
+              About TrulyInvoice - AI Invoice to Excel Conversion Platform
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-400">
               Transforming invoice management with AI-powered automation
@@ -179,6 +183,48 @@ export default function AboutPage() {
                 <p className="text-sm text-gray-500 dark:text-gray-400 italic">
                   Updated October 2025 - Enhanced with latest AI capabilities
                 </p>
+              </div>
+            </div>
+
+            {/* Related Links Section */}
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">Learn More About TrulyInvoice</h2>
+              <div className="grid md:grid-cols-3 gap-6">
+                <Link 
+                  href="/pricing"
+                  className="group p-6 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-all hover:shadow-lg"
+                >
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    Pricing Plans
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Choose the perfect plan for your invoice processing needs. From free to enterprise.
+                  </p>
+                </Link>
+
+                <Link 
+                  href="/features"
+                  className="group p-6 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-all hover:shadow-lg"
+                >
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    Features
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Explore powerful AI-powered invoice processing capabilities.
+                  </p>
+                </Link>
+
+                <Link 
+                  href="/"
+                  className="group p-6 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-all hover:shadow-lg"
+                >
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    Start Converting
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Ready to automate your invoice processing? Get started today.
+                  </p>
+                </Link>
               </div>
             </div>
           </div>

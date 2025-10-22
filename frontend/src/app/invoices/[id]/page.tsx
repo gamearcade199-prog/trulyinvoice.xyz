@@ -9,6 +9,7 @@ export const revalidate = 0
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Image from 'next/image'
 import DashboardLayout from '@/components/DashboardLayout'
 import { createClient } from '@supabase/supabase-js'
 import { 
@@ -170,40 +171,106 @@ export default function InvoiceDetailsPage() {
     }
   }
 
-  const exportToExcel = () => {
-    // ACCOUNTANT-FRIENDLY EXCEL (light styling, formulas, import-ready)
-    // For accountants, SMEs, bookkeeping teams
-    // Import to Tally/Zoho/QuickBooks
-    const link = document.createElement('a')
-    link.href = `http://localhost:8000/api/invoices/${invoiceId}/export-excel`
-    link.download = `Invoice_${invoice?.invoice_number || invoiceId}.xlsx`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  const exportToExcel = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        alert('Please log in to export Excel')
+        return
+      }
+
+      const response = await fetch(`http://localhost:8000/api/invoices/${invoiceId}/export-excel`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `Invoice_${invoice?.invoice_number || invoiceId}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Excel Export error:', error)
+      alert('Failed to export Excel. Please try again.')
+    }
   }
 
-  const exportToPDF = () => {
-    // STYLIZED PDF (beautiful formatting, colors, branding)
-    // For clients, business owners, professional presentation
-    // Print-ready, perfect for emailing to customers
-    const link = document.createElement('a')
-    link.href = `http://localhost:8000/api/invoices/${invoiceId}/export-pdf`
-    link.download = `Invoice_${invoice?.invoice_number || invoiceId}.pdf`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  const exportToPDF = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        alert('Please log in to export PDF')
+        return
+      }
+
+      const response = await fetch(`http://localhost:8000/api/invoices/${invoiceId}/export-pdf`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `Invoice_${invoice?.invoice_number || invoiceId}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('PDF Export error:', error)
+      alert('Failed to export PDF. Please try again.')
+    }
   }
 
-  const exportToCSV = () => {
-    // RAW CSV (plain text, no formatting, machine-readable)
-    // For developers, ERP/CRM systems, automation scripts
-    // Bulk processing and API integration
-    const link = document.createElement('a')
-    link.href = `http://localhost:8000/api/invoices/${invoiceId}/export-csv`
-    link.download = `Invoice_${invoice?.invoice_number || invoiceId}.csv`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  const exportToCSV = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        alert('Please log in to export CSV')
+        return
+      }
+
+      const response = await fetch(`http://localhost:8000/api/invoices/${invoiceId}/export-csv`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.style.display = 'none'
+      a.href = url
+      a.download = `Invoice_${invoice?.invoice_number || invoiceId}.csv`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('CSV Export error:', error)
+      alert('Failed to export CSV. Please try again.')
+    }
   }
 
   if (loading) {
@@ -564,10 +631,12 @@ export default function InvoiceDetailsPage() {
                     />
                   ) : (
                     <div className="relative h-[600px]">
-                      <img
+                      <Image
                         src={invoice.documents.file_url}
-                        alt="Invoice"
+                        alt={`Invoice document: ${invoice.invoice_number || 'Uploaded Invoice'}`}
+                        fill
                         className="w-full h-full object-contain bg-gray-50"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
                       />
                     </div>
                   )}

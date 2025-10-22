@@ -7,12 +7,14 @@ Creates beautifully formatted PDF invoices with:
 - Proper sections (Vendor, Invoice Details, Line Items, Tax Summary)
 - Color coding and professional styling
 - Print-ready format
+- ANTI-OVERLAP FORMATTING: Optimized spacing, padding, and text truncation
+  to prevent text overlapping in all sections
 """
 
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
 from reportlab.pdfgen import canvas
@@ -102,35 +104,36 @@ class ProfessionalPDFExporter:
         """
         
         if not filename:
-            invoice_num = invoice_data.get('invoice_number', 'INVOICE').replace('/', '_')
-            filename = f"Invoice_{invoice_num}_{datetime.now().strftime('%Y%m%d')}.pdf"
+            invoice_num = invoice_data.get('invoice_number') or 'INVOICE'
+            invoice_num = str(invoice_num).replace('/', '_')
+            filename = f"Invoice_{invoice_num}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
         
-        # Create PDF
+        # Create PDF with improved margins to prevent text crowding
         pdf = SimpleDocTemplate(
             filename,
             pagesize=A4,
-            rightMargin=40,
-            leftMargin=40,
-            topMargin=40,
-            bottomMargin=40
+            rightMargin=50,  # Increased from 40
+            leftMargin=50,   # Increased from 40
+            topMargin=50,    # Increased from 40
+            bottomMargin=50  # Increased from 40
         )
         
         # Container for PDF elements
         story = []
         
-        # Build PDF content
+        # Build PDF content with improved spacing
         story.extend(self._build_header())
-        story.append(Spacer(1, 0.2 * inch))
+        story.append(Spacer(1, 0.25 * inch))  # Increased spacing
         
         story.extend(self._build_vendor_section(invoice_data))
-        story.append(Spacer(1, 0.15 * inch))
+        story.append(Spacer(1, 0.2 * inch))   # Increased spacing
         
         story.extend(self._build_invoice_details(invoice_data))
-        story.append(Spacer(1, 0.15 * inch))
+        story.append(Spacer(1, 0.2 * inch))   # Increased spacing
         
         if invoice_data.get('line_items'):
             story.extend(self._build_line_items_table(invoice_data))
-            story.append(Spacer(1, 0.15 * inch))
+            story.append(Spacer(1, 0.2 * inch))   # Increased spacing
         
         story.extend(self._build_tax_summary(invoice_data))
         
@@ -140,20 +143,70 @@ class ProfessionalPDFExporter:
         print(f"✅ Professional PDF invoice exported: {filename}")
         return filename
     
+    def _build_invoice_info(self, invoice: Dict) -> List:
+        """Build basic invoice information for bulk export"""
+        elements = []
+        
+        # Basic info
+        info_data = [
+            ['Invoice:', invoice.get('invoice_number', 'N/A'), 'Date:', invoice.get('invoice_date', 'N/A')],
+            ['Vendor:', invoice.get('vendor_name', 'N/A'), 'Amount:', f"₹{invoice.get('total_amount', 0):,.2f}"]
+        ]
+        
+        info_table = Table(info_data, colWidths=[1*inch, 2*inch, 1*inch, 2*inch])
+        info_table.setStyle(TableStyle([
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ]))
+        
+        elements.append(info_table)
+        elements.append(Spacer(1, 0.1 * inch))
+        return elements
+    
+    def _build_line_items(self, invoice: Dict) -> List:
+        """Build line items for bulk export"""
+        elements = []
+        
+        if not invoice.get('line_items'):
+            return elements
+            
+        # Simple line items table
+        table_data = [['Item', 'Qty', 'Rate', 'Amount']]
+        for item in invoice.get('line_items', []):
+            table_data.append([
+                str(item.get('description', 'N/A'))[:30],
+                str(item.get('quantity', 1)),
+                f"₹{float(item.get('rate', 0)):,.0f}",
+                f"₹{float(item.get('amount', 0)):,.0f}"
+            ])
+        
+        items_table = Table(table_data, colWidths=[3*inch, 0.8*inch, 1.2*inch, 1.2*inch])
+        items_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ]))
+        
+        elements.append(items_table)
+        return elements
+    
     def export_invoices_bulk(self, invoices: List[Dict], filename: str = None) -> str:
         """Export multiple invoices to a single PDF file"""
         if not filename:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"bulk_invoices_professional_{timestamp}.pdf"
         
-        # Create PDF with multiple invoices
+        # Create PDF with multiple invoices with improved margins
         pdf = SimpleDocTemplate(
             filename,
             pagesize=A4,
-            rightMargin=40,
-            leftMargin=40,
-            topMargin=40,
-            bottomMargin=40
+            rightMargin=50,  # Increased from 40
+            leftMargin=50,   # Increased from 40
+            topMargin=50,    # Increased from 40
+            bottomMargin=50  # Increased from 40
         )
         
         story = []
@@ -265,25 +318,25 @@ class ProfessionalPDFExporter:
         elements.append(vendor_header_table)
         elements.append(Spacer(1, 0.1 * inch))
         
-        # Comprehensive vendor details
+        # Comprehensive vendor details with better text handling
         vendor_data = [
-            ['Vendor Name:', data.get('vendor_name', 'N/A'), 'GSTIN:', data.get('vendor_gstin', 'N/A')],
-            ['PAN:', data.get('vendor_pan', 'N/A'), 'Email:', data.get('vendor_email', 'N/A')],
-            ['Phone:', data.get('vendor_phone', 'N/A'), 'State:', data.get('vendor_state', 'N/A')],
-            ['Address:', data.get('vendor_address', 'N/A'), 'Pincode:', data.get('vendor_pincode', 'N/A')],
+            ['Vendor Name:', str(data.get('vendor_name', 'N/A'))[:25], 'GSTIN:', str(data.get('vendor_gstin', 'N/A'))[:18]],
+            ['PAN:', str(data.get('vendor_pan', 'N/A'))[:12], 'Email:', str(data.get('vendor_email', 'N/A'))[:25]],
+            ['Phone:', str(data.get('vendor_phone', 'N/A'))[:15], 'State:', str(data.get('vendor_state', 'N/A'))[:20]],
+            ['Address:', str(data.get('vendor_address', 'N/A'))[:35], 'Pincode:', str(data.get('vendor_pincode', 'N/A'))[:10]],
         ]
         
-        vendor_table = Table(vendor_data, colWidths=[1.2 * inch, 2.3 * inch, 1.2 * inch, 2.3 * inch])
+        vendor_table = Table(vendor_data, colWidths=[1.4 * inch, 2.1 * inch, 1.4 * inch, 2.1 * inch])
         vendor_table.setStyle(TableStyle([
             ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
             ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
             ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
             ('FONTNAME', (3, 0), (3, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('LEFTPADDING', (0, 0), (-1, -1), 12),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 12),
-            ('TOPPADDING', (0, 0), (-1, -1), 4),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),  # Slightly smaller font
+            ('LEFTPADDING', (0, 0), (-1, -1), 14),  # Increased padding
+            ('RIGHTPADDING', (0, 0), (-1, -1), 14),
+            ('TOPPADDING', (0, 0), (-1, -1), 5),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
         ]))
         elements.append(vendor_table)
         elements.append(Spacer(1, 0.2 * inch))
@@ -304,24 +357,24 @@ class ProfessionalPDFExporter:
         elements.append(customer_header_table)
         elements.append(Spacer(1, 0.1 * inch))
         
-        # Customer details
+        # Customer details with better text handling
         customer_data = [
-            ['Customer Name:', data.get('customer_name', 'N/A'), 'GSTIN:', data.get('customer_gstin', 'N/A')],
-            ['Phone:', data.get('customer_phone', 'N/A'), 'State:', data.get('customer_state', 'N/A')],
-            ['Address:', data.get('customer_address', 'N/A'), '', ''],
+            ['Customer Name:', str(data.get('customer_name', 'N/A'))[:25], 'GSTIN:', str(data.get('customer_gstin', 'N/A'))[:18]],
+            ['Phone:', str(data.get('customer_phone', 'N/A'))[:15], 'State:', str(data.get('customer_state', 'N/A'))[:20]],
+            ['Address:', str(data.get('customer_address', 'N/A'))[:35], '', ''],
         ]
         
-        customer_table = Table(customer_data, colWidths=[1.2 * inch, 2.3 * inch, 1.2 * inch, 2.3 * inch])
+        customer_table = Table(customer_data, colWidths=[1.4 * inch, 2.1 * inch, 1.4 * inch, 2.1 * inch])
         customer_table.setStyle(TableStyle([
             ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
             ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
             ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
             ('FONTNAME', (3, 0), (3, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('LEFTPADDING', (0, 0), (-1, -1), 12),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 12),
-            ('TOPPADDING', (0, 0), (-1, -1), 4),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),  # Slightly smaller font
+            ('LEFTPADDING', (0, 0), (-1, -1), 14),  # Increased padding
+            ('RIGHTPADDING', (0, 0), (-1, -1), 14),
+            ('TOPPADDING', (0, 0), (-1, -1), 5),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
         ]))
         elements.append(customer_table)
         
@@ -345,21 +398,21 @@ class ProfessionalPDFExporter:
             elements.append(Spacer(1, 0.1 * inch))
             
             bank_data = [
-                ['Bank Name:', data.get('bank_name', 'N/A'), 'Account Number:', data.get('account_number', 'N/A')],
-                ['IFSC Code:', data.get('ifsc_code', 'N/A'), 'SWIFT Code:', data.get('swift_code', 'N/A')],
+                ['Bank Name:', str(data.get('bank_name', 'N/A'))[:25], 'Account Number:', str(data.get('account_number', 'N/A'))[:18]],
+                ['IFSC Code:', str(data.get('ifsc_code', 'N/A'))[:12], 'SWIFT Code:', str(data.get('swift_code', 'N/A'))[:12]],
             ]
             
-            bank_table = Table(bank_data, colWidths=[1.2 * inch, 2.3 * inch, 1.2 * inch, 2.3 * inch])
+            bank_table = Table(bank_data, colWidths=[1.4 * inch, 2.1 * inch, 1.4 * inch, 2.1 * inch])
             bank_table.setStyle(TableStyle([
                 ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
                 ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
                 ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
                 ('FONTNAME', (3, 0), (3, -1), 'Helvetica'),
-                ('FONTSIZE', (0, 0), (-1, -1), 10),
-                ('LEFTPADDING', (0, 0), (-1, -1), 12),
-                ('RIGHTPADDING', (0, 0), (-1, -1), 12),
-                ('TOPPADDING', (0, 0), (-1, -1), 4),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                ('FONTSIZE', (0, 0), (-1, -1), 9),  # Slightly smaller font
+                ('LEFTPADDING', (0, 0), (-1, -1), 14),  # Increased padding
+                ('RIGHTPADDING', (0, 0), (-1, -1), 14),
+                ('TOPPADDING', (0, 0), (-1, -1), 5),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
             ]))
             elements.append(bank_table)
 
@@ -389,39 +442,39 @@ class ProfessionalPDFExporter:
         payment_status = data.get('payment_status', 'unpaid').upper()
         status_color = self.colors['success'] if 'PAID' in payment_status else self.colors['warning']
         
-        # Core invoice details (enhanced)
+        # Core invoice details (enhanced) with better text handling
         details_data = [
-            ['Invoice Number:', data.get('invoice_number', 'N/A'), 'Payment Status:', payment_status],
-            ['Invoice Date:', data.get('invoice_date', 'N/A'), 'Due Date:', data.get('due_date', 'N/A')],
-            ['Currency:', data.get('currency', 'INR'), 'Invoice Type:', data.get('invoice_type', 'Standard')],
-            ['Payment Method:', data.get('payment_method', 'N/A'), 'Payment Terms:', data.get('payment_terms', 'N/A')],
+            ['Invoice Number:', str(data.get('invoice_number', 'N/A'))[:20], 'Payment Status:', payment_status],
+            ['Invoice Date:', str(data.get('invoice_date', 'N/A'))[:12], 'Due Date:', str(data.get('due_date', 'N/A'))[:12]],
+            ['Currency:', str(data.get('currency', 'INR'))[:5], 'Invoice Type:', str(data.get('invoice_type', 'Standard'))[:15]],
+            ['Payment Method:', str(data.get('payment_method', 'N/A'))[:18], 'Payment Terms:', str(data.get('payment_terms', 'N/A'))[:20]],
         ]
         
         # Add PO information if available
         if data.get('po_number') or data.get('po_date'):
             details_data.extend([
-                ['PO Number:', data.get('po_number', 'N/A'), 'PO Date:', data.get('po_date', 'N/A')],
+                ['PO Number:', str(data.get('po_number', 'N/A'))[:15], 'PO Date:', str(data.get('po_date', 'N/A'))[:12]],
             ])
         
         # Add GST information
         if data.get('place_of_supply') or data.get('hsn_code') or data.get('sac_code'):
             details_data.extend([
-                ['Place of Supply:', data.get('place_of_supply', 'N/A'), 'Supply Type:', data.get('supply_type', 'N/A')],
-                ['HSN Code:', data.get('hsn_code', 'N/A'), 'SAC Code:', data.get('sac_code', 'N/A')],
+                ['Place of Supply:', str(data.get('place_of_supply', 'N/A'))[:18], 'Supply Type:', str(data.get('supply_type', 'N/A'))[:15]],
+                ['HSN Code:', str(data.get('hsn_code', 'N/A'))[:12], 'SAC Code:', str(data.get('sac_code', 'N/A'))[:12]],
             ])
         
-        details_table = Table(details_data, colWidths=[1.3 * inch, 2 * inch, 1.3 * inch, 2.4 * inch])
+        details_table = Table(details_data, colWidths=[1.5 * inch, 1.8 * inch, 1.5 * inch, 2.2 * inch])
         
         style_list = [
             ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
             ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
             ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
             ('FONTNAME', (3, 0), (3, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('LEFTPADDING', (0, 0), (-1, -1), 12),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 12),
-            ('TOPPADDING', (0, 0), (-1, -1), 4),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),  # Slightly smaller font
+            ('LEFTPADDING', (0, 0), (-1, -1), 14),  # Increased padding
+            ('RIGHTPADDING', (0, 0), (-1, -1), 14),
+            ('TOPPADDING', (0, 0), (-1, -1), 5),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
         ]
         
         # Highlight payment status
@@ -474,17 +527,17 @@ class ProfessionalPDFExporter:
         if industry_data:
             elements.append(Spacer(1, 0.15 * inch))
             
-            industry_table = Table(industry_data, colWidths=[1.3 * inch, 2 * inch, 1.3 * inch, 2.4 * inch])
+            industry_table = Table(industry_data, colWidths=[1.5 * inch, 1.8 * inch, 1.5 * inch, 2.2 * inch])
             industry_style = [
                 ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
                 ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
                 ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
                 ('FONTNAME', (3, 0), (3, -1), 'Helvetica'),
-                ('FONTSIZE', (0, 0), (-1, -1), 9),
-                ('LEFTPADDING', (0, 0), (-1, -1), 12),
-                ('RIGHTPADDING', (0, 0), (-1, -1), 12),
-                ('TOPPADDING', (0, 0), (-1, -1), 3),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+                ('FONTSIZE', (0, 0), (-1, -1), 8),  # Smaller font for industry details
+                ('LEFTPADDING', (0, 0), (-1, -1), 14),  # Increased padding
+                ('RIGHTPADDING', (0, 0), (-1, -1), 14),
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
             ]
             
             # Style section headers
@@ -500,15 +553,13 @@ class ProfessionalPDFExporter:
             industry_table.setStyle(TableStyle(industry_style))
             elements.append(industry_table)
         
-        return elements
-        
         details_table.setStyle(TableStyle(style_list))
         elements.append(details_table)
         
         return elements
     
     def _build_line_items_table(self, data: Dict) -> List:
-        """Build line items table"""
+        """Build line items table with improved spacing to prevent text overlap"""
         elements = []
         
         # Section header
@@ -525,39 +576,44 @@ class ProfessionalPDFExporter:
             ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
         ]))
         elements.append(header_table)
-        elements.append(Spacer(1, 0.1 * inch))
+        elements.append(Spacer(1, 0.15 * inch))  # Increased spacing
         
         # Table header
         table_data = [['#', 'Description', 'HSN/SAC', 'Qty', 'Rate', 'Amount']]
         
-        # Add line items
+        # Add line items with better text handling
         for idx, item in enumerate(data.get('line_items', []), start=1):
+            # Truncate description more conservatively and handle long text better
+            description = str(item.get('description', 'N/A'))
+            if len(description) > 35:  # Reduced from 40
+                description = description[:32] + "..."  # Better truncation
+            
             table_data.append([
                 str(idx),
-                str(item.get('description', 'N/A'))[:40],  # Truncate long descriptions
+                description,
                 str(item.get('hsn_sac', item.get('hsn', 'N/A'))),
                 str(item.get('quantity', 1)),
                 f"₹{float(item.get('rate', 0)):,.2f}",
                 f"₹{float(item.get('amount', 0)):,.2f}"
             ])
         
-        # Create table
-        items_table = Table(table_data, colWidths=[0.4 * inch, 2.5 * inch, 0.9 * inch, 0.6 * inch, 1.3 * inch, 1.3 * inch])
+        # Create table with better column widths and spacing
+        items_table = Table(table_data, colWidths=[0.5 * inch, 2.2 * inch, 1.0 * inch, 0.7 * inch, 1.4 * inch, 1.4 * inch])
         
-        # Table styling
+        # Table styling with increased padding to prevent overlap
         style_list = [
             # Header row
             ('BACKGROUND', (0, 0), (-1, 0), self.colors['total_bg']),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
             ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('TOPPADDING', (0, 0), (-1, 0), 8),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+            ('FONTSIZE', (0, 0), (-1, 0), 9),  # Slightly smaller font
+            ('TOPPADDING', (0, 0), (-1, 0), 10),  # Increased padding
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
             
             # Data rows
             ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),  # Smaller font for data
             ('ALIGN', (0, 1), (0, -1), 'CENTER'),  # # column
             ('ALIGN', (1, 1), (1, -1), 'LEFT'),    # Description
             ('ALIGN', (2, 1), (2, -1), 'CENTER'),  # HSN
@@ -568,11 +624,11 @@ class ProfessionalPDFExporter:
             ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
             ('BOX', (0, 0), (-1, -1), 1, colors.black),
             
-            # Padding
-            ('LEFTPADDING', (0, 0), (-1, -1), 6),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-            ('TOPPADDING', (0, 1), (-1, -1), 5),
-            ('BOTTOMPADDING', (0, 1), (-1, -1), 5),
+            # Increased padding to prevent text overlap
+            ('LEFTPADDING', (0, 0), (-1, -1), 8),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+            ('TOPPADDING', (0, 1), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
         ]
         
         items_table.setStyle(TableStyle(style_list))
@@ -604,28 +660,28 @@ class ProfessionalPDFExporter:
         summary_data = []
         
         # Handle None values properly for all financial fields
-        subtotal = float(data.get('subtotal', 0))
-        taxable_amount = float(data.get('taxable_amount', 0))
-        discount = float(data.get('discount', 0))
-        shipping_charges = float(data.get('shipping_charges', 0))
-        other_charges = float(data.get('other_charges', 0))
-        roundoff = float(data.get('roundoff', 0))
+        subtotal = float(data.get('subtotal') or 0)
+        taxable_amount = float(data.get('taxable_amount') or 0)
+        discount = float(data.get('discount') or 0)
+        shipping_charges = float(data.get('shipping_charges') or 0)
+        other_charges = float(data.get('other_charges') or 0)
+        roundoff = float(data.get('roundoff') or 0)
         
         # GST & Tax amounts
-        cgst = float(data.get('cgst', 0))
-        sgst = float(data.get('sgst', 0))
-        igst = float(data.get('igst', 0))
-        ugst = float(data.get('ugst', 0))
-        cess = float(data.get('cess', 0))
-        total_gst = float(data.get('total_gst', 0))
+        cgst = float(data.get('cgst') or 0)
+        sgst = float(data.get('sgst') or 0)
+        igst = float(data.get('igst') or 0)
+        ugst = float(data.get('ugst') or 0)
+        cess = float(data.get('cess') or 0)
+        total_gst = float(data.get('total_gst') or 0)
         
         # Additional taxes
-        vat = float(data.get('vat', 0))
-        service_tax = float(data.get('service_tax', 0))
-        tds_amount = float(data.get('tds_amount', 0))
-        tcs_amount = float(data.get('tcs_amount', 0))
+        vat = float(data.get('vat') or 0)
+        service_tax = float(data.get('service_tax') or 0)
+        tds_amount = float(data.get('tds_amount') or 0)
+        tcs_amount = float(data.get('tcs_amount') or 0)
         
-        total_amount = float(data.get('total_amount', 0))
+        total_amount = float(data.get('total_amount') or 0)
         
         # Financial Breakdown Section
         if subtotal > 0 or taxable_amount > 0:
@@ -684,32 +740,22 @@ class ProfessionalPDFExporter:
         # Final Total (highlighted)
         summary_data.append(['', 'FINAL TOTAL AMOUNT:', f"₹{total_amount:,.2f}"])
         
-        # Quality metadata (if available)
-        if data.get('quality_score') or data.get('extraction_version'):
-            summary_data.append(['', '', ''])  # Separator
-            summary_data.append(['', 'EXTRACTION QUALITY', ''])
-            if data.get('quality_score'):
-                summary_data.append(['', 'Quality Score:', f"{float(data.get('quality_score', 0)):.1f}%"])
-            if data.get('extraction_version'):
-                summary_data.append(['', 'Version:', data.get('extraction_version', 'v2.5')])
-            if data.get('data_source'):
-                summary_data.append(['', 'Source:', data.get('data_source', 'gemini-2.5-flash')])
-        
         # Create table
         summary_table = Table(summary_data, colWidths=[2.5 * inch, 2.5 * inch, 2 * inch])
         
-        # Styling
+        # Styling with better spacing
         style_list = [
             ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
             ('FONTNAME', (2, 0), (2, -1), 'Helvetica'),
-            ('FONTSIZE', (1, 0), (2, -1), 10),
+            ('FONTSIZE', (1, 0), (2, -1), 9),  # Slightly smaller font
             ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
             ('ALIGN', (2, 0), (2, -1), 'RIGHT'),
             
-            # Padding
-            ('TOPPADDING', (1, 0), (2, -1), 4),
-            ('BOTTOMPADDING', (1, 0), (2, -1), 4),
-            ('RIGHTPADDING', (2, 0), (2, -1), 12),
+            # Increased padding to prevent text overlap
+            ('TOPPADDING', (1, 0), (2, -1), 5),
+            ('BOTTOMPADDING', (1, 0), (2, -1), 5),
+            ('RIGHTPADDING', (2, 0), (2, -1), 15),  # More right padding
+            ('LEFTPADDING', (1, 0), (1, -1), 10),
         ]
         
         # Style section headers and final total

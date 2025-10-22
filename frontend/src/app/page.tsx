@@ -3,7 +3,7 @@ import HomePageComponent from '@/components/HomePage'
 
 export const metadata: Metadata = {
   title: 'TrulyInvoice - Convert Invoice to Excel Instantly | AI-Powered Converter',
-  description: 'Transform any invoice into Excel sheets instantly. AI-powered extraction with 99% accuracy. Convert PDFs, images to Excel. GST compliant, automatic processing. Free plan with 10 conversions/month.',
+  description: 'AI-powered invoice to Excel converter with 99% accuracy. Convert PDFs & images instantly. GST compliant. Free plan available.',
   keywords: ['convert invoice to excel', 'invoice to excel converter', 'AI invoice extraction', 'pdf to excel converter', 'GST invoice to excel', 'indian invoice processing'],
   openGraph: {
     title: 'Convert Invoice to Excel Instantly | TrulyInvoice',

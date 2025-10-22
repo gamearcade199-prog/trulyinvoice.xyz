@@ -3,7 +3,7 @@ import PricingPage from '@/components/PricingPage'
 
 export const metadata: Metadata = {
   title: 'Pricing Plans - Invoice to Excel Converter | TrulyInvoice',
-  description: 'Choose the perfect pricing plan for your invoice processing needs. From free tier to enterprise solutions, get accurate invoice data extraction with 95-99.5% AI accuracy. Start converting invoices to Excel today.',
+  description: 'Simple pricing for invoice to Excel conversion. Free tier with 10 scans/month, premium plans from ₹99. 95-99.5% AI accuracy. Start today!',
   keywords: [
     'invoice to excel pricing',
     'invoice processing plans',
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: 'Pricing Plans - Invoice to Excel Converter | TrulyInvoice',
-    description: 'Choose the perfect pricing plan for your invoice processing needs. From free tier to enterprise solutions, get accurate invoice data extraction with 95-99.5% AI accuracy.',
+    description: 'Simple pricing for invoice to Excel conversion. Free tier with 10 scans/month, premium plans from ₹99. 95-99.5% AI accuracy. Start today!',
     url: 'https://trulyinvoice.xyz/pricing',
     siteName: 'TrulyInvoice',
     images: [
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Pricing Plans - Invoice to Excel Converter | TrulyInvoice',
-    description: 'Choose the perfect pricing plan for your invoice processing needs. From free tier to enterprise solutions, get accurate invoice data extraction with 95-99.5% AI accuracy.',
+    description: 'Simple pricing for invoice to Excel conversion. Free tier with 10 scans/month, premium plans from ₹99. 95-99.5% AI accuracy. Start today!',
     images: ['https://trulyinvoice.xyz/twitter-image-pricing.jpg'],
   },
   alternates: {

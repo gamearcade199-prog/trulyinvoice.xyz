@@ -11,7 +11,7 @@ import os
 import pathlib
 backend_dir = pathlib.Path(__file__).parent.parent
 env_path = backend_dir / ".env"
-load_dotenv(env_path)
+load_dotenv(env_path, encoding='utf-8')
 
 app = FastAPI(
     title="TrulyInvoice API",
@@ -48,7 +48,8 @@ app.middleware("http")(rate_limit_middleware)
 app.add_exception_handler(RateLimitExceeded, rate_limit_exception_handler)
 
 # Import routers
-from app.api import documents, invoices, health, exports, payments, subscriptions, auth
+from app.api import documents, invoices, health, exports, payments, auth
+# from app.api import subscriptions  # Temporarily disabled due to SQLAlchemy table conflict
 
 # Register routes
 app.include_router(health.router, tags=["Health"])
@@ -56,7 +57,7 @@ app.include_router(documents.router, prefix="/api/documents", tags=["Documents"]
 app.include_router(invoices.router, prefix="/api/invoices", tags=["Invoices"])
 app.include_router(exports.router, prefix="/api/bulk", tags=["Bulk Exports"])
 app.include_router(payments.router, prefix="/api/payments", tags=["Payments"])
-app.include_router(subscriptions.router, prefix="/api/subscriptions", tags=["Subscriptions"])
+# app.include_router(subscriptions.router, prefix="/api/subscriptions", tags=["Subscriptions"])  # Temporarily disabled
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 
 # Note: Bulk export endpoints moved to separate router to avoid circular imports

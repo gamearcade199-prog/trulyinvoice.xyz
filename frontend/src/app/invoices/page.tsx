@@ -32,10 +32,27 @@ export default function InvoicesPageClean() {
   const [showBulkExportDropdown, setShowBulkExportDropdown] = useState(false)
   const [showRowExportDropdown, setShowRowExportDropdown] = useState<{[key: string]: boolean}>({})
   const [showMobileExportDropdown, setShowMobileExportDropdown] = useState<{[key: string]: boolean}>({})
+  const [userExportTemplate, setUserExportTemplate] = useState('simple')
 
   useEffect(() => {
     fetchInvoices()
     // Auto-refresh removed - was annoying. User can manually refresh if needed.
+    
+    // Load user's preferred export template
+    const loadUserTemplate = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const savedTemplate = localStorage.getItem(`export_template_${user.id}`)
+          if (savedTemplate && ['simple', 'accountant', 'analyst', 'compliance'].includes(savedTemplate)) {
+            setUserExportTemplate(savedTemplate)
+          }
+        }
+      } catch (error) {
+        console.error('Error loading template preference:', error)
+      }
+    }
+    loadUserTemplate()
   }, [])
 
   // Close dropdowns when clicking outside
@@ -124,10 +141,17 @@ export default function InvoicesPageClean() {
 
   const exportSingleInvoiceToPDF = async (invoice: any) => {
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        alert('Please log in to export PDF')
+        return
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bulk/export-pdf`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
           invoice_ids: [invoice.id]
@@ -156,10 +180,17 @@ export default function InvoicesPageClean() {
 
   const handlePDFExport = async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        alert('Please log in to export PDF')
+        return
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bulk/export-pdf`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
           invoice_ids: invoices.map(inv => inv.id)
@@ -188,13 +219,21 @@ export default function InvoicesPageClean() {
 
   const handleExcelExport = async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        alert('Please log in to export Excel')
+        return
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bulk/export-excel`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
-          invoice_ids: invoices.map(inv => inv.id)
+          invoice_ids: invoices.map(inv => inv.id),
+          template: userExportTemplate
         })
       })
 
@@ -220,13 +259,21 @@ export default function InvoicesPageClean() {
 
   const exportSingleInvoiceToExcel = async (invoice: any) => {
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        alert('Please log in to export Excel')
+        return
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bulk/export-excel`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
-          invoice_ids: [invoice.id]
+          invoice_ids: [invoice.id],
+          template: userExportTemplate
         })
       })
 
@@ -291,13 +338,21 @@ export default function InvoicesPageClean() {
     }
     
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        alert('Please log in to export Excel')
+        return
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bulk/export-excel`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
-          invoice_ids: selected.map(inv => inv.id)
+          invoice_ids: selected.map(inv => inv.id),
+          template: userExportTemplate
         })
       })
 
@@ -329,10 +384,17 @@ export default function InvoicesPageClean() {
     }
     
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        alert('Please log in to export PDF')
+        return
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bulk/export-pdf`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
           invoice_ids: selected.map(inv => inv.id)
@@ -540,13 +602,39 @@ export default function InvoicesPageClean() {
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Invoices</h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">Manage and track all your invoices in one place</p>
           </div>
-          <Link
-            href="/upload"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors font-semibold"
-          >
-            <Plus className="w-4 h-4" />
-            Upload Invoice
-          </Link>
+          <div className="flex items-center gap-3">
+            {/* Template Selector */}
+            <div className="relative">
+              <select
+                value={userExportTemplate}
+                onChange={async (e) => {
+                  const newTemplate = e.target.value
+                  setUserExportTemplate(newTemplate)
+                  try {
+                    const { data: { user } } = await supabase.auth.getUser()
+                    if (user) {
+                      localStorage.setItem(`export_template_${user.id}`, newTemplate)
+                    }
+                  } catch (error) {
+                    console.error('Error saving template preference:', error)
+                  }
+                }}
+                className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
+                title="Export template preference"
+              >
+                <option value="simple">Simple (2 sheets)</option>
+                <option value="accountant">Accountant (5 sheets)</option>
+              </select>
+            </div>
+            
+            <Link
+              href="/upload"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors font-semibold"
+            >
+              <Plus className="w-4 h-4" />
+              Upload Invoice
+            </Link>
+          </div>
         </div>
 
         {/* Search and Filter */}

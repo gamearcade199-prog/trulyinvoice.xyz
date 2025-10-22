@@ -47,9 +47,9 @@ def test_architecture_components():
     print("-" * 40)
     
     try:
-        from app.services.vision_flash_lite_extractor import VisionFlashLiteExtractor
-        extractor = VisionFlashLiteExtractor()
-        print("✅ VisionFlashLiteExtractor initialized")
+        from app.services.vision_ocr_flash_lite_extractor import VisionOCR_FlashLite_Extractor
+        extractor = VisionOCR_FlashLite_Extractor()
+        print("✅ VisionOCR_FlashLite_Extractor initialized")
         print("   Components: Vision API (OCR) + Flash-Lite (Format)")
     except Exception as e:
         print(f"❌ Vision+Flash-Lite extractor error: {e}")

@@ -14,7 +14,7 @@ export async function exportInvoicesToCSV(invoices: any[]) {
     return
   }
 
-  // CSV headers
+  // CSV headers - full names to prevent cutoff
   const headers = [
     'Invoice Number',
     'Vendor Name',
@@ -29,20 +29,41 @@ export async function exportInvoicesToCSV(invoices: any[]) {
     'Created At'
   ]
 
+  // Helper function for consistent date formatting (DD/MM/YYYY)
+  const formatDate = (dateString: string | null | undefined): string => {
+    if (!dateString) return ''
+    try {
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) return ''
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = date.getFullYear()
+      return `${day}/${month}/${year}`
+    } catch {
+      return ''
+    }
+  }
+
   // Convert invoices to CSV rows
-  const rows = invoices.map(invoice => [
-    invoice.invoice_number || 'N/A',
-    invoice.vendor_name || 'Unknown',
-    invoice.invoice_date ? new Date(invoice.invoice_date).toLocaleDateString() : 'N/A',
-    invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : 'N/A',
-    invoice.subtotal || 0,
-    invoice.tax_amount || 0,
-    invoice.total_amount || 0,
-    invoice.payment_status || 'unpaid',
-    invoice.payment_method || 'N/A',
-    invoice.gstin || 'N/A',
-    new Date(invoice.created_at).toLocaleDateString()
-  ])
+  const rows = invoices.map(invoice => {
+    // Calculate subtotal: use stored value or total - tax
+    const taxAmount = (invoice.cgst || 0) + (invoice.sgst || 0) + (invoice.igst || 0)
+    const subtotal = invoice.subtotal || (invoice.total_amount ? invoice.total_amount - taxAmount : 0)
+
+    return [
+      invoice.invoice_number || '',
+      invoice.vendor_name || '',
+      formatDate(invoice.invoice_date),
+      formatDate(invoice.due_date),
+      subtotal.toFixed(2),
+      taxAmount.toFixed(2),
+      (invoice.total_amount || 0).toFixed(2),
+      invoice.payment_status || 'pending',
+      invoice.payment_method || '',
+      invoice.gstin || '',
+      formatDate(invoice.created_at)
+    ]
+  })
 
   // Combine headers and rows
   const csvContent = [

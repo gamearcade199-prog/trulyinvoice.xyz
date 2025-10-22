@@ -1,17 +1,17 @@
 """
 ULTRA-CHEAP AI Service for Invoice Processing - 99% Cost Reduction
-Uses Vision API + Gemini 2.5 Flash-Lite for maximum savings at ₹0.13 per invoice
+Uses Vision API OCR + Gemini 2.5 Flash-Lite for maximum savings at ₹0.13 per invoice
 """
 import os
 import time
 from typing import Dict, Any, Tuple
-from .vision_flash_lite_extractor import VisionFlashLiteExtractor
+from .vision_ocr_flash_lite_extractor import VisionOCR_FlashLite_Extractor
 
 class AIService:
     """Ultra-cheap AI service for invoice data extraction with 99% cost reduction"""
     
     def __init__(self):
-        self.extractor = VisionFlashLiteExtractor()
+        self.extractor = VisionOCR_FlashLite_Extractor()
     
     async def extract_invoice_data(
         self,
@@ -20,12 +20,13 @@ class AIService:
     ) -> Tuple[Dict[str, Any], bool]:
         """
         Ultra-cheap invoice data extraction at ₹0.13 per invoice
+        Uses Vision API OCR + Gemini 2.5 Flash-Lite formatting
         
         Returns:
             Tuple of (extracted_data, used_fallback_model)
         """
         start_time = time.time()
-        print(f"🚀 Starting Vision + Flash-Lite extraction for {file_type} file...")
+        print(f"🚀 Starting Vision OCR + Flash-Lite extraction for {file_type} file...")
         
         try:
             if file_type.lower() == 'pdf':
@@ -45,14 +46,14 @@ class AIService:
                 data = self.extractor.flash_lite_formatter.format_text_to_json(text)
                 
             else:
-                # For images: Use full Vision + Flash-Lite pipeline
+                # For images: Use Vision OCR + Flash-Lite pipeline
                 with open(file_path, 'rb') as f:
                     image_bytes = f.read()
                 
                 # Extract filename for logging
                 filename = os.path.basename(file_path)
                 
-                # Use Vision + Flash-Lite extraction
+                # Use Vision OCR + Flash-Lite extraction
                 data = self.extractor.extract_invoice_data(image_bytes, filename)
             
             processing_time = time.time() - start_time
@@ -63,7 +64,7 @@ class AIService:
                 # Add compatibility metadata
                 data['confidence_score'] = data.get('_extraction_metadata', {}).get('vision_confidence', 0.85)
                 data['processing_time'] = processing_time
-                data['extraction_method'] = 'vision_flash_lite'
+                data['extraction_method'] = 'vision_ocr_flash_lite'
                 data['cost_inr'] = 0.13
                 return data, False
             else:

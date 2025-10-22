@@ -3,7 +3,7 @@ import FeaturesPage from '@/components/FeaturesPage'
 
 export const metadata: Metadata = {
   title: 'Features - Invoice to Excel Converter | AI-Powered OCR & GST Compliance',
-  description: 'Discover powerful features of TrulyInvoice: AI-powered OCR with 99%+ accuracy, GST compliance, bulk processing, multi-currency support, and advanced analytics. Convert invoices to Excel instantly.',
+  description: 'AI invoice extraction with 99% accuracy. GST compliant, bulk processing, multi-currency support. Auto-convert PDF/image invoices to Excel. Learn more!',
   keywords: [
     'invoice to excel features',
     'AI OCR invoice processing',
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: 'Features - Invoice to Excel Converter | AI-Powered OCR & GST Compliance',
-    description: 'Discover powerful features of TrulyInvoice: AI-powered OCR with 99%+ accuracy, GST compliance, bulk processing, multi-currency support, and advanced analytics.',
+    description: 'AI invoice extraction with 99% accuracy. GST compliant, bulk processing, multi-currency support. Auto-convert PDF/image invoices to Excel. Learn more!',
     url: 'https://trulyinvoice.xyz/features',
     siteName: 'TrulyInvoice',
     images: [
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Features - Invoice to Excel Converter | AI-Powered OCR & GST Compliance',
-    description: 'Discover powerful features of TrulyInvoice: AI-powered OCR with 99%+ accuracy, GST compliance, bulk processing, multi-currency support, and advanced analytics.',
+    description: 'AI invoice extraction with 99% accuracy. GST compliant, bulk processing, multi-currency support. Auto-convert PDF/image invoices to Excel. Learn more!',
     images: ['https://trulyinvoice.xyz/twitter-image.jpg'],
   },
   alternates: {

@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     default: 'TrulyInvoice - Convert Invoice to Excel Instantly | AI-Powered Converter',
     template: '%s | TrulyInvoice - Invoice to Excel Converter',
   },
-  description: 'Transform any invoice into Excel sheets instantly. AI-powered extraction with 99% accuracy. Convert PDFs, images to Excel. GST compliant, automatic processing. Free plan available.',
+  description: 'AI-powered invoice to Excel converter with 99% accuracy. Convert PDFs & images instantly. GST compliant. Free plan available.',
   keywords: ['convert invoice to excel', 'invoice to excel converter', 'AI invoice extraction', 'pdf to excel converter', 'GST invoice to excel', 'indian invoice processing'],
   
   // Author and publisher
@@ -140,22 +140,21 @@ export default function RootLayout({
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
+    '@id': 'https://trulyinvoice.xyz',
     name: 'TrulyInvoice',
+    alternateName: 'Invoice to Excel Converter',
+    description: 'AI-powered invoice to Excel converter with 99% accuracy. Convert PDFs and images to Excel sheets instantly. GST compliant, perfect for Indian businesses.',
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web Browser, iOS, Android',
+    url: 'https://trulyinvoice.xyz',
+    image: 'https://trulyinvoice.xyz/og-image-india.jpg',
+    screenshot: 'https://trulyinvoice.xyz/og-image-india.jpg',
     offers: {
       '@type': 'AggregateOffer',
       priceCurrency: 'INR',
       lowPrice: '0',
       highPrice: '999',
-      offerCount: '4',
-    },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      ratingCount: '1847',
-      bestRating: '5',
-      worstRating: '1',
+      offerCount: '5',
     },
     author: {
       '@type': 'Organization',
@@ -170,7 +169,6 @@ export default function RootLayout({
         url: 'https://trulyinvoice.xyz/favicon-32x32.png',
       },
     },
-    description: 'AI-powered invoice to Excel converter for Indian businesses. Convert PDFs and images to Excel sheets with 99% accuracy.',
     softwareVersion: '2.0',
     fileFormat: ['PDF', 'JPG', 'PNG'],
     applicationSubCategory: 'Data Extraction',
@@ -182,7 +180,6 @@ export default function RootLayout({
       'Bulk invoice processing',
       'Indian invoice format support'
     ],
-    url: 'https://trulyinvoice.xyz',
     inLanguage: 'en-IN',
     areaServed: {
       '@type': 'Country',

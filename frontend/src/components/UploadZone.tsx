@@ -80,7 +80,7 @@ export default function UploadZone({
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
         className={`
-          relative border-3 border-dashed rounded-2xl lg:rounded-3xl p-6 md:p-12 lg:p-16 text-center cursor-pointer
+          relative border-3 border-dashed rounded-2xl lg:rounded-3xl p-4 md:p-6 lg:p-4 text-center cursor-pointer
           transition-all duration-300 ease-in-out hover:scale-[1.01] lg:hover:scale-[1.02]
           ${isDragging 
             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 scale-[1.02] lg:scale-[1.03] shadow-2xl' 
@@ -97,19 +97,19 @@ export default function UploadZone({
           className="hidden"
         />
 
-        <div className="flex flex-col items-center gap-3 md:gap-4 lg:gap-6">
+        <div className="flex flex-col items-center gap-2 md:gap-3 lg:gap-2">
           <div className={`
-            p-3 md:p-6 lg:p-8 rounded-full transition-all duration-300
+            p-2 md:p-3 lg:p-2 rounded-full transition-all duration-300
             ${isDragging ? 'bg-blue-100 dark:bg-blue-900/50 scale-110 lg:scale-125' : 'bg-blue-50 dark:bg-blue-900/30'}
           `}>
-            <Upload className={`w-8 h-8 md:w-12 md:h-12 lg:w-16 lg:h-16 ${isDragging ? 'text-blue-600 dark:text-blue-400' : 'text-blue-500 dark:text-blue-400'}`} />
+            <Upload className={`w-6 h-6 md:w-8 md:h-8 lg:w-8 lg:h-8 ${isDragging ? 'text-blue-600 dark:text-blue-400' : 'text-blue-500 dark:text-blue-400'}`} />
           </div>
 
           <div>
-            <h3 className="text-lg md:text-2xl lg:text-3xl font-semibold text-gray-800 dark:text-white mb-1 md:mb-2 lg:mb-3">
+            <h3 className="text-base md:text-lg lg:text-base font-semibold text-gray-800 dark:text-white mb-1 md:mb-2 lg:mb-1">
               Upload your invoices
             </h3>
-            <p className="text-sm md:text-base lg:text-lg text-gray-600 dark:text-gray-400">
+            <p className="text-sm md:text-base lg:text-sm text-gray-600 dark:text-gray-400">
               Drag and drop your files here, or{' '}
               <span className="text-blue-600 dark:text-blue-400 font-semibold">browse</span>
             </p>
@@ -118,7 +118,7 @@ export default function UploadZone({
             </div>
           </div>
 
-          <div className="text-xs md:text-sm lg:text-base text-gray-500 dark:text-gray-500">
+          <div className="text-xs md:text-sm lg:text-xs text-gray-500 dark:text-gray-500">
             Supports PDF, JPG, PNG • Max {maxSizeMB}MB per file
           </div>
         </div>
@@ -126,14 +126,14 @@ export default function UploadZone({
 
       {/* Selected Files */}
       {selectedFiles.length > 0 && (
-        <div className="mt-4 md:mt-6 space-y-2 md:space-y-3">
+        <div className="mt-3 md:mt-4 space-y-2 md:space-y-3">
           <h4 className="font-semibold text-gray-700 dark:text-gray-300 text-sm md:text-base">
             Selected Files ({selectedFiles.length})
           </h4>
           {selectedFiles.map((file, index) => (
             <div
               key={index}
-              className="flex items-center justify-between p-3 md:p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
+              className="flex items-center justify-between p-2 md:p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
             >
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">

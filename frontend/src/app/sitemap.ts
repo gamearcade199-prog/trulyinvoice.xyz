@@ -96,16 +96,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ]
 
-  // Location-specific landing pages - high priority for local SEO
-  const locationPages = [
-    {
-      url: `${baseUrl}/invoice-software/mumbai`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    },
-    // Add more cities as they are created
+  // Location-specific landing pages - high priority for local SEO (20 Indian cities)
+  const cities = [
+    'mumbai', 'delhi', 'bangalore', 'chennai', 'kolkata', 'hyderabad',
+    'pune', 'ahmedabad', 'jaipur', 'lucknow', 'kanpur', 'nagpur',
+    'indore', 'thane', 'bhopal', 'visakhapatnam', 'pimpri-chinchwad',
+    'patna', 'vadodara', 'surat'
   ]
+  
+  const locationPages = cities.map(city => ({
+    url: `${baseUrl}/invoice-software/${city}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }))
 
   // User dashboard and functionality pages - low priority (behind login)
   const userPages = [

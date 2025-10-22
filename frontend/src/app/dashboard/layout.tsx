@@ -1,10 +1,10 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Dashboard - Invoice Management',
-  description: 'View and manage all your invoices in one place. Upload, process, and export GST invoices with AI-powered automation.',
+  title: 'Dashboard - Your Invoice History & Statistics | TrulyInvoice',
+  description: 'Access your invoice history, processing statistics, and account overview. Track uploads, conversions, and usage on your TrulyInvoice dashboard.',
   alternates: {
-  canonical: 'https://trulyinvoice.xyz/dashboard',
+    canonical: 'https://trulyinvoice.xyz/dashboard',
   },
   robots: {
     index: false, // Don't index dashboard (user-specific content)

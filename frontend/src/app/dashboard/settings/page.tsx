@@ -190,7 +190,7 @@ export default function SettingsPage() {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings - Account & Preferences</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">Manage your account settings and preferences.</p>
         </div>
 

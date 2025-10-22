@@ -1,6 +1,20 @@
 // Invoice upload utility for non-authenticated users
 import { supabase } from './supabase'
 
+export class QuotaExceededError extends Error {
+  status: number
+  scansUsed: number
+  scansLimit: number
+
+  constructor(message: string, scansUsed?: number, scansLimit?: number) {
+    super(message)
+    this.name = 'QuotaExceededError'
+    this.status = 429
+    this.scansUsed = scansUsed || 0
+    this.scansLimit = scansLimit || 0
+  }
+}
+
 export interface TempInvoiceData {
   fileName: string
   fileSize: number
@@ -151,6 +165,20 @@ export async function uploadInvoiceAnonymous(file: File) {
     });
 
     if (!response.ok) {
+      // Check for quota exceeded error (HTTP 429)
+      if (response.status === 429) {
+        const errorData = await response.json()
+        const match = errorData.detail?.match(/Used: (\d+)\/(\d+)/)
+        
+        if (match) {
+          throw new QuotaExceededError(
+            errorData.detail,
+            parseInt(match[1], 10),
+            parseInt(match[2], 10)
+          )
+        }
+        throw new QuotaExceededError(errorData.detail || 'Monthly scan limit exceeded')
+      }
       throw new Error(`Processing failed: ${response.statusText}`)
     }
 

@@ -37,7 +37,7 @@ try:
     from pathlib import Path
     sys.path.append(str(Path(__file__).parent))
     
-    from app.services.gemini_extractor import GeminiExtractor
+    from app.services.vision_ocr_flash_lite_extractor import VisionOCR_FlashLite_Extractor
     
     print("✅ Gemini extractor available")
     
@@ -57,7 +57,7 @@ try:
     Payment Status: pending
     """
     
-    extractor = GeminiExtractor()
+    extractor = VisionOCR_FlashLite_Extractor()
     result = extractor.extract_from_text(sample_text)
     
     if result:

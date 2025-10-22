@@ -52,7 +52,7 @@ export default function SupportPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Support Center
+            Support Center - Invoice Processing Help & Documentation
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Get help with TrulyInvoice - we're here to assist you

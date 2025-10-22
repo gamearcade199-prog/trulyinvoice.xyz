@@ -34,9 +34,9 @@ def test_production_pipeline():
     print("\n2️⃣ GEMINI OCR TEST")
     
     try:
-        from app.services.gemini_extractor import GeminiExtractor
+        from app.services.vision_ocr_flash_lite_extractor import VisionOCR_FlashLite_Extractor
         
-        extractor = GeminiExtractor()
+        extractor = VisionOCR_FlashLite_Extractor()
         
         # Sample invoice text (simulating OCR output)
         sample_invoice = """

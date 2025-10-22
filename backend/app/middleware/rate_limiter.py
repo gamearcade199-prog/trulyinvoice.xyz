@@ -21,7 +21,8 @@ limiter = Limiter(
     key_func=get_remote_address,
     default_limits=["100/minute", "1000/hour"],
     storage_uri="memory://",  # Use in-memory storage (upgrade to Redis in production)
-    strategy="fixed-window"
+    strategy="fixed-window",
+    config_filename=None  # Disable automatic .env file reading
 )
 
 
@@ -378,3 +379,139 @@ class BurstRateLimiter:
 
 # Global burst rate limiter
 burst_limiter = BurstRateLimiter()
+
+
+# Authentication-specific rate limiting
+class AuthenticationRateLimiter:
+    """
+    Specialized rate limiter for authentication endpoints.
+    
+    Security Features:
+    - 5 failed attempts per minute per IP
+    - Exponential backoff (5s, 10s, 30s, 60s, 300s)
+    - IP-based blocking for repeated violations
+    - Failed login tracking with email
+    """
+    
+    def __init__(self):
+        # Track failed attempts per IP: {ip: {"attempts": int, "last_attempt": datetime, "emails": [str]}}
+        self.failed_attempts: dict = defaultdict(lambda: {
+            "attempts": 0,
+            "last_attempt": None,
+            "emails": [],
+            "blocked_until": None
+        })
+    
+    def check_login_allowed(self, client_ip: str) -> tuple[bool, Optional[str]]:
+        """
+        Check if login from this IP is allowed.
+        
+        Args:
+            client_ip: Client IP address
+        
+        Returns:
+            (allowed: bool, error_message: Optional[str])
+        """
+        now = datetime.utcnow()
+        attempts_data = self.failed_attempts[client_ip]
+        
+        # Check if IP is currently blocked
+        if attempts_data["blocked_until"] and now < attempts_data["blocked_until"]:
+            remaining = (attempts_data["blocked_until"] - now).total_seconds()
+            return False, f"Too many failed login attempts. Try again in {int(remaining)} seconds."
+        
+        # Reset if outside window
+        if attempts_data["last_attempt"] is None or \
+           (now - attempts_data["last_attempt"]).total_seconds() > 60:
+            attempts_data["attempts"] = 0
+            attempts_data["last_attempt"] = None
+            attempts_data["blocked_until"] = None
+        
+        return True, None
+    
+    def record_failed_login(self, client_ip: str, email: str):
+        """
+        Record a failed login attempt.
+        
+        Args:
+            client_ip: Client IP address
+            email: Email of failed login
+        """
+        now = datetime.utcnow()
+        attempts_data = self.failed_attempts[client_ip]
+        
+        # Reset if outside window
+        if attempts_data["last_attempt"] is None or \
+           (now - attempts_data["last_attempt"]).total_seconds() > 60:
+            attempts_data["attempts"] = 0
+            attempts_data["emails"] = []
+            attempts_data["blocked_until"] = None
+        
+        # Increment attempts
+        attempts_data["attempts"] += 1
+        attempts_data["last_attempt"] = now
+        
+        # Track email for this attempt
+        if email not in attempts_data["emails"]:
+            attempts_data["emails"].append(email)
+        
+        print(f"🚨 Failed login: {client_ip} ({email}) - Attempt {attempts_data['attempts']}/5")
+        
+        # Block if exceeded
+        if attempts_data["attempts"] >= 5:
+            # Exponential backoff: 5s, 10s, 30s, 60s, 300s
+            violations = len([ip for ip, data in self.failed_attempts.items() 
+                            if data.get("blocked_until") and data["blocked_until"] > now])
+            backoff = min(5 * (2 ** (violations % 5)), 300)
+            
+            attempts_data["blocked_until"] = now + timedelta(seconds=backoff)
+            print(f"🔒 IP blocked: {client_ip} for {backoff} seconds")
+    
+    def record_successful_login(self, client_ip: str):
+        """
+        Clear failed attempts after successful login.
+        
+        Args:
+            client_ip: Client IP address
+        """
+        if client_ip in self.failed_attempts:
+            del self.failed_attempts[client_ip]
+            print(f"✅ Login successful: {client_ip} - attempts cleared")
+
+
+# Global auth rate limiter
+auth_rate_limiter = AuthenticationRateLimiter()
+
+
+def check_login_rate_limit(client_ip: str) -> tuple[bool, Optional[str]]:
+    """
+    Check if login attempt should be allowed.
+    
+    Args:
+        client_ip: Client IP address
+    
+    Returns:
+        (allowed: bool, error_message: Optional[str])
+    """
+    return auth_rate_limiter.check_login_allowed(client_ip)
+
+
+def record_failed_login_attempt(client_ip: str, email: str):
+    """
+    Record a failed login attempt.
+    
+    Args:
+        client_ip: Client IP address
+        email: Email that failed to log in
+    """
+    auth_rate_limiter.record_failed_login(client_ip, email)
+
+
+def record_successful_login(client_ip: str):
+    """
+    Clear rate limit after successful login.
+    
+    Args:
+        client_ip: Client IP address
+    """
+    auth_rate_limiter.record_successful_login(client_ip)

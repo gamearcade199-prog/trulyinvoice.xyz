@@ -90,8 +90,8 @@ def test_complete_pipeline():
         
         # Test Vision extractor directly
         try:
-            from app.services.vision_flash_lite_extractor import VisionFlashLiteExtractor
-            extractor = VisionFlashLiteExtractor()
+            from app.services.vision_ocr_flash_lite_extractor import VisionOCR_FlashLite_Extractor
+            extractor = VisionOCR_FlashLite_Extractor()
             
             print(f"   Calling Vision API for {actual_test_image}...")
             ai_result = extractor.extract_invoice_data(file_content, actual_test_image)

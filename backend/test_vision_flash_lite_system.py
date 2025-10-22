@@ -34,7 +34,7 @@ def test_new_system():
         sys.path.insert(0, '.')
         from app.services.vision_extractor import VisionExtractor
         from app.services.flash_lite_formatter import FlashLiteFormatter
-        from app.services.vision_flash_lite_extractor import VisionFlashLiteExtractor
+        from app.services.vision_ocr_flash_lite_extractor import VisionOCR_FlashLite_Extractor
         print("   ✅ All new services imported successfully")
     except Exception as e:
         print(f"   ❌ Import failed: {e}")
@@ -45,7 +45,7 @@ def test_new_system():
     try:
         vision_extractor = VisionExtractor()
         flash_lite_formatter = FlashLiteFormatter()
-        combined_extractor = VisionFlashLiteExtractor()
+        combined_extractor = VisionOCR_FlashLite_Extractor()
         print("   ✅ All services initialized successfully")
     except Exception as e:
         print(f"   ❌ Initialization failed: {e}")
