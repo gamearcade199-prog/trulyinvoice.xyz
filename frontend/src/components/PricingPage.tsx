@@ -3,12 +3,11 @@
 import { Check, Zap, Crown, Rocket, Sparkles, ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'next/link'
-import Breadcrumb from '@/components/Breadcrumb'
 import useRazorpay from '@/hooks/useRazorpay'
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly')
-  const { processPayment, isLoaded } = useRazorpay()
+  const { processPayment, isLoaded, processingPlan } = useRazorpay()
 
   const plans = [
     {
@@ -113,7 +112,7 @@ export default function PricingPage() {
         '90-day storage',
         '24/7 priority support',
       ],
-      buttonText: 'Contact Sales',
+      buttonText: 'Get Started',
       buttonStyle: 'bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-lg hover:shadow-xl transition-all',
       popular: false,
     },
@@ -121,21 +120,16 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
-      {/* Header */}
-      <header className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="mb-2">
-            <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Pricing' }]} />
-          </div>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-semibold">Back to Home</span>
-          </Link>
-        </div>
-      </header>
+      {/* Back Button */}
+      <div className="container mx-auto px-4 pt-6">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group"
+        >
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span className="font-semibold">Back to Home</span>
+        </Link>
+      </div>
 
       <div className="container mx-auto px-4 py-12 md:py-16">
         {/* Header */}
@@ -182,59 +176,59 @@ export default function PricingPage() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 max-w-7xl mx-auto mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5 lg:gap-6 max-w-[90rem] mx-auto mb-16">
           {plans.map((plan) => {
             const Icon = plan.icon
             return (
               <div
                 key={plan.name}
-                className={`relative rounded-2xl p-8 transition-all duration-300 backdrop-blur-sm ${
+                className={`relative rounded-xl sm:rounded-2xl p-5 sm:p-7 transition-all duration-300 backdrop-blur-sm h-full flex flex-col ${
                   plan.popular
-                    ? 'bg-white/90 dark:bg-gray-800/90 border-2 border-purple-500 dark:border-purple-400 scale-105 z-10'
-                    : 'bg-white/70 dark:bg-gray-800/70 border border-gray-200/50 dark:border-gray-700/50 hover:scale-105'
+                    ? 'bg-white/90 dark:bg-gray-800/90 border-2 border-purple-500 dark:border-purple-400 lg:scale-110 lg:z-10'
+                    : 'bg-white/70 dark:bg-gray-800/70 border border-gray-200/50 dark:border-gray-700/50 hover:scale-100 sm:hover:scale-[1.08]'
                 } ${plan.borderGlow}`}
               >
                 {/* Popular Badge */}
                 {plan.popular && (
-                  <div className="absolute -top-5 left-1/2 transform -translate-x-1/2">
-                    <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-xl flex items-center gap-2">
-                      <Sparkles className="w-4 h-4" />
-                      Most Popular
+                  <div className="absolute -top-2 sm:-top-2.5 left-1/2 transform -translate-x-1/2">
+                    <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold shadow-lg flex items-center gap-1">
+                      <Sparkles className="w-2 sm:w-2.5 h-2 sm:h-2.5" />
+                      <span>Popular</span>
                     </div>
                   </div>
                 )}
 
                 {/* Icon */}
-                <div className="mb-6">
-                  <div className={`w-16 h-16 ${plan.iconBg} rounded-2xl flex items-center justify-center shadow-lg`}>
-                    <Icon className="w-8 h-8 text-white" />
+                <div className="mb-4 sm:mb-5">
+                  <div className={`w-12 sm:w-14 h-12 sm:h-14 ${plan.iconBg} rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg`}>
+                    <Icon className="w-6 sm:w-7 h-6 sm:h-7 text-white" />
                   </div>
                 </div>
 
                 {/* Plan Name */}
-                <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
+                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">
                   {plan.name}
                 </h3>
 
                 {/* Price */}
-                <div className="mb-3">
-                  <span className="text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                <div className="mb-3 sm:mb-3.5">
+                  <span className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                     {billingCycle === 'yearly' && plan.price !== '₹0'
                       ? `₹${Math.round(parseInt(plan.price.replace('₹', '')) * 12 * 0.8)}`
                       : plan.price}
                   </span>
-                  <span className="text-gray-500 dark:text-gray-400 ml-2 text-lg">
+                  <span className="text-gray-500 dark:text-gray-400 ml-1 text-sm">
                     /{billingCycle === 'yearly' ? 'year' : 'month'}
                   </span>
                 </div>
 
                 {/* Scans */}
-                <div className="mb-8">
-                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 px-4 py-2 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                <div className="mb-5 sm:mb-6">
+                  <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 text-sm">
+                    <span className="font-bold text-blue-600 dark:text-blue-400">
                       {plan.scans}
                     </span>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                    <span className="text-gray-600 dark:text-gray-400 hidden sm:inline">
                       {plan.period}
                     </span>
                   </div>
@@ -245,28 +239,28 @@ export default function PricingPage() {
                   onClick={() => {
                     if (plan.name === 'Free') {
                       window.location.href = '/register';
-                    } else if (plan.name === 'Max') {
-                      window.location.href = '/contact';
                     } else {
                       processPayment(plan, billingCycle);
                     }
                   }}
-                  disabled={!isLoaded && plan.name !== 'Free' && plan.name !== 'Max'}
-                  className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-200 mb-8 block text-center ${plan.buttonStyle}`}
+                  disabled={(!isLoaded && plan.name !== 'Free') || processingPlan === plan.name}
+                  className={`w-full py-3 sm:py-3.5 px-4 sm:px-6 rounded-xl font-bold text-base transition-all duration-200 mb-5 sm:mb-6 block text-center ${
+                    processingPlan === plan.name ? 'opacity-70 cursor-not-allowed' : ''
+                  } ${plan.buttonStyle}`}
                 >
-                  {plan.buttonText}
+                  {processingPlan === plan.name ? 'Processing...' : plan.buttonText}
                 </button>
 
                 {/* Features */}
-                <div className="space-y-4">
-                  <p className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">
+                <div className="space-y-2 sm:space-y-3 flex-1">
+                  <p className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide mb-3">
                     What&apos;s Included
                   </p>
                   {plan.features.map((feature, index) => (
-                    <div key={index} className="flex items-start gap-3">
+                    <div key={index} className="flex items-start gap-2 sm:gap-2.5">
                       <div className="mt-0.5 flex-shrink-0">
-                        <div className="w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                          <Check className="w-3 h-3 text-green-600 dark:text-green-400 font-bold" />
+                        <div className="w-4 sm:w-4.5 h-4 sm:h-4.5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+                          <Check className="w-2.5 sm:w-3 h-2.5 sm:h-3 text-green-600 dark:text-green-400 font-bold" />
                         </div>
                       </div>
                       <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">

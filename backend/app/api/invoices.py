@@ -160,7 +160,8 @@ async def export_invoice_pdf(
             try:
                 import json
                 invoice_data['line_items'] = json.loads(invoice_data['line_items'])
-            except:
+            except Exception as e:
+                logger.warning(f"Failed to parse line_items JSON for PDF export: {e}")
                 invoice_data['line_items'] = []
         
         print(f"📊 Export-PDF: Processing invoice {invoice_id}")
@@ -224,7 +225,8 @@ async def export_invoice_excel(
             try:
                 import json
                 invoice_data['line_items'] = json.loads(invoice_data['line_items'])
-            except:
+            except Exception as e:
+                logger.warning(f"Failed to parse line_items JSON for Excel export: {e}")
                 invoice_data['line_items'] = []
 
         print(f"📊 Export-Excel: Processing invoice {invoice_id}")
@@ -289,7 +291,8 @@ async def export_invoice_csv(
             try:
                 import json
                 invoice_data['line_items'] = json.loads(invoice_data['line_items'])
-            except:
+            except Exception as e:
+                logger.warning(f"Failed to parse line_items JSON for CSV export: {e}")
                 invoice_data['line_items'] = []
         
         print(f"📊 Export-CSV: Processing invoice {invoice_id}")

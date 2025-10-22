@@ -35,10 +35,12 @@ async def check_subscription(user_id: str, db: Optional[Session] = None) -> Tupl
         print(f"📊 Checking subscription for user {user_id}, month: {current_month}")
 
         # Get user's subscription and current usage
-        subscription_response = supabase.table("subscriptions").select("*").eq("user_id", user_id).single().execute()
+        # Use maybeSingle() instead of single() to handle missing subscriptions gracefully
+        subscription_response = supabase.table("subscriptions").select("*").eq("user_id", user_id).maybeSingle().execute()
         
         if not subscription_response.data:
             # No subscription - default to free
+            print(f"ℹ️ No subscription found for {user_id}, defaulting to free tier")
             user_tier = "free"
             scans_used = 0
         else:

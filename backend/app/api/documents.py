@@ -340,16 +340,16 @@ async def process_document(document_id: str, request: Request):
         # Update document status to failed on HTTP exceptions
         try:
             supabase.table("documents").update({"status": "failed", "error": str(he.detail)}).eq("id", document_id).execute()
-        except:
-            pass  # Don't let status update failure mask the original error
+        except Exception as update_error:
+            logger.warning(f"Failed to update document status after HTTP error: {update_error}")
         raise
     except Exception as e:
         print(f"  ❌ Processing error: {str(e)}")
         # Update document status to failed on general exceptions
         try:
             supabase.table("documents").update({"status": "failed", "error": str(e)}).eq("id", document_id).execute()
-        except:
-            pass  # Don't let status update failure mask the original error
+        except Exception as update_error:
+            logger.warning(f"Failed to update document status after error: {update_error}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -521,8 +521,8 @@ async def upload_document(
             # Try to clean up storage file
             try:
                 supabase.storage.from_("invoice-documents").remove([storage_path])
-            except:
-                pass
+            except Exception as cleanup_error:
+                logger.warning(f"Failed to cleanup storage after document creation error: {cleanup_error}")
             raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
         
         # For anonymous uploads, return document info without processing

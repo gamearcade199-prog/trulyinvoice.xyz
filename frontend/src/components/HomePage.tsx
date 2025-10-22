@@ -140,14 +140,14 @@ export default function HomePage() {
       {/* Navigation */}
       <nav className="bg-white/90 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-colors">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-12">
             {/* Logo */}
             <Link href="/" aria-label="TrulyInvoice Homepage">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-white" />
+                <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-xl font-bold text-gray-900 dark:text-white">TrulyInvoice</span>
+                <span className="text-lg font-bold text-gray-900 dark:text-white">TrulyInvoice</span>
               </div>
             </Link>
 

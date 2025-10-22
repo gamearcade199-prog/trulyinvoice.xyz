@@ -52,7 +52,7 @@ class Settings(BaseSettings):
     
     # Environment & Debug
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
-    DEBUG: str = os.getenv("DEBUG", "true")
+    DEBUG: str = os.getenv("DEBUG", "false")  # Default false for production safety
     
     # Upload Configuration
     MAX_UPLOAD_SIZE: int = int(os.getenv("MAX_UPLOAD_SIZE", "10485760"))  # 10MB default

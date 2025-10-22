@@ -79,7 +79,7 @@ async def setup_new_user(
     Workflow:
     1. Frontend registers user with Supabase Auth
     2. Frontend calls this endpoint with user_id
-    3. Backend creates free subscription record
+    3. Backend creates free subscription record in Supabase
     4. User can start using the app with 10 free scans per month
     """
     try:
@@ -97,63 +97,69 @@ async def setup_new_user(
         
         print(f"✅ Registration rate check passed: {client_ip} ({request.email})")
         
-        # Check if user already has a subscription
-        existing_subscription = db.query(Subscription).filter(
-            Subscription.user_id == request.user_id
-        ).first()
+        # Check if user already has a subscription in Supabase (using maybeSingle for graceful handling)
+        try:
+            existing_response = supabase.table("subscriptions").select("*").eq("user_id", request.user_id).maybeSingle().execute()
+            existing_subscription = existing_response.data
+        except Exception as e:
+            print(f"ℹ️ Could not check existing subscription: {e}")
+            existing_subscription = None
         
         if existing_subscription:
+            print(f"ℹ️ Subscription already exists for {request.user_id}")
             return UserRegistrationResponse(
                 success=True,
                 message="User already has a subscription",
                 subscription={
-                    "tier": existing_subscription.tier,
-                    "status": existing_subscription.status,
-                    "scans_used": existing_subscription.scans_used_this_period,
-                    "period_end": existing_subscription.current_period_end.isoformat()
+                    "tier": existing_subscription.get("tier", "free"),
+                    "status": existing_subscription.get("status", "active"),
+                    "scans_used": existing_subscription.get("scans_used_this_period", 0),
+                    "period_end": existing_subscription.get("current_period_end")
                 }
             )
         
-        # Create new free subscription
-        now = datetime.utcnow()
-        period_end = now + timedelta(days=30)  # 30-day billing cycle
+        # Create new free subscription in Supabase
+        now = datetime.utcnow().isoformat()
+        period_end = (datetime.utcnow() + timedelta(days=30)).isoformat()  # 30-day billing cycle
         
-        new_subscription = Subscription(
-            user_id=request.user_id,
-            tier="free",  # Always start with free plan
-            status="active",
-            scans_used_this_period=0,  # No scans used yet
-            current_period_start=now,
-            current_period_end=period_end,
-            razorpay_order_id=None,  # No payment for free plan
-            razorpay_payment_id=None,
-            created_at=now,
-            updated_at=now
-        )
+        subscription_data = {
+            "user_id": request.user_id,
+            "tier": "free",  # Always start with free plan
+            "status": "active",
+            "scans_used_this_period": 0,  # No scans used yet
+            "current_period_start": now,
+            "current_period_end": period_end,
+            "razorpay_order_id": None,  # No payment for free plan
+            "razorpay_payment_id": None,
+            "created_at": now,
+            "updated_at": now
+        }
         
-        db.add(new_subscription)
-        db.commit()
-        db.refresh(new_subscription)
+        # Insert into Supabase
+        response = supabase.table("subscriptions").insert([subscription_data]).execute()
         
-        print(f"📝 New user registered: {request.user_id} ({request.email})")
-        
-        return UserRegistrationResponse(
-            success=True,
-            message=f"Free plan activated! You have 10 scans per month.",
-            subscription={
-                "tier": new_subscription.tier,
-                "status": new_subscription.status,
-                "scans_used": new_subscription.scans_used_this_period,
-                "scans_limit": 10,  # Free plan limit
-                "period_start": new_subscription.current_period_start.isoformat(),
-                "period_end": new_subscription.current_period_end.isoformat()
-            }
-        )
+        if response.data:
+            new_subscription = response.data[0]
+            print(f"📝 New user registered in Supabase: {request.user_id} ({request.email})")
+            
+            return UserRegistrationResponse(
+                success=True,
+                message=f"Free plan activated! You have 10 scans per month.",
+                subscription={
+                    "tier": new_subscription.get("tier", "free"),
+                    "status": new_subscription.get("status", "active"),
+                    "scans_used": new_subscription.get("scans_used_this_period", 0),
+                    "scans_limit": 10,  # Free plan limit
+                    "period_start": new_subscription.get("current_period_start"),
+                    "period_end": new_subscription.get("current_period_end")
+                }
+            )
+        else:
+            raise Exception("Failed to insert subscription into Supabase")
         
     except HTTPException:
         raise
     except Exception as e:
-        db.rollback()
         print(f"❌ Registration error: {str(e)}")
         raise HTTPException(
             status_code=500,

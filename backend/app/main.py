@@ -23,6 +23,7 @@ app = FastAPI(
 # Allow frontend to make API calls from different domains
 allowed_origins = [
     "http://localhost:3000",  # Local development
+    "http://localhost:3001",  # Alternative local port
     "http://localhost:3004",  # Alternative local port
     "https://trulyinvoice.xyz",  # Production domain
     "https://www.trulyinvoice.xyz",  # Production with www
