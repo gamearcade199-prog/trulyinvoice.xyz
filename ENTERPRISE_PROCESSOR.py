@@ -23,7 +23,7 @@ class EnterpriseInvoiceProcessor:
     
     def __init__(self):
         self.supabase_url = "https://ldvwxqluaheuhbycdpwn.supabase.co"
-        self.supabase_key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxkdnd4cWx1YWhldWhieWNkcHduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwNzY2NTYsImV4cCI6MjA3NTY1MjY1Nn0.uPBCzeJ3tH1SD0QObL850zcrKDDLr9TA6KCUzBp9e1A"
+        self.supabase_key = "YOUR_NEW_SUPABASE_ANON_KEY_HERE"
     
     def extract_intelligent_data(self, filename: str, document_metadata: Dict[str, Any]) -> Dict[str, Any]:
         """Extract intelligent data from filename and metadata"""

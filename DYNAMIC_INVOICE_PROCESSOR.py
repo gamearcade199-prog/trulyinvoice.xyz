@@ -33,7 +33,7 @@ app.add_middleware(
 
 # Supabase config
 SUPABASE_URL = "https://ldvwxqluaheuhbycdpwn.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxkdnd4cWx1YWhldWhieWNkcHduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwNzY2NTYsImV4cCI6MjA3NTY1MjY1Nn0.uPBCzeJ3tH1SD0QObL850zcrKDDLr9TA6KCUzBp9e1A"
+SUPABASE_KEY = "YOUR_NEW_SUPABASE_ANON_KEY_HERE"
 
 class DynamicInvoiceExtractor:
     """

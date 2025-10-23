@@ -183,7 +183,7 @@ git push origin main
 
 **Required Variable**:
 ```bash
-GOOGLE_VISION_API_KEY=AIzaSyA8A4n7CtBuu6GAQEn1f7jnrxazemmAgyE
+GOOGLE_VISION_API_KEY=YOUR_NEW_GOOGLE_VISION_API_KEY_HERE
 ```
 
 **How to Add on Render**:
@@ -191,7 +191,7 @@ GOOGLE_VISION_API_KEY=AIzaSyA8A4n7CtBuu6GAQEn1f7jnrxazemmAgyE
 2. Click "Environment" tab
 3. Add new variable:
    - **Key**: `GOOGLE_VISION_API_KEY`
-   - **Value**: `AIzaSyA8A4n7CtBuu6GAQEn1f7jnrxazemmAgyE`
+   - **Value**: `YOUR_NEW_GOOGLE_VISION_API_KEY_HERE`
 4. Click "Save" → Service auto-restarts
 5. Wait ~2 minutes for deployment
 
@@ -331,7 +331,7 @@ curl -X POST https://your-backend.onrender.com/api/documents/process-anonymous \
 
 ```bash
 # On Render.com (or your hosting):
-GOOGLE_VISION_API_KEY=AIzaSyA8A4n7CtBuu6GAQEn1f7jnrxazemmAgyE
+GOOGLE_VISION_API_KEY=YOUR_NEW_GOOGLE_VISION_API_KEY_HERE
 ```
 
 **Why It's Critical**:

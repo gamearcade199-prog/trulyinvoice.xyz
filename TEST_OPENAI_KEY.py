@@ -5,7 +5,7 @@ import asyncio
 import os
 
 # Set API key
-os.environ['OPENAI_API_KEY'] = 'sk-proj-QV11YeZfpHaD2D6IewgKMQFuZwhsvOly2wkFi0ZhOguKvqFjuAjKJrgaItuRWf2swPcIIg8ac7T3BlbkFJE2yJBIoCgkuhN0ydlIvLUTsOdJkqSYx4WGolma_gTyq'
+os.environ['OPENAI_API_KEY'] = 'YOUR_NEW_OPENAI_API_KEY_HERE'
 
 async def test_openai():
     from openai import OpenAI

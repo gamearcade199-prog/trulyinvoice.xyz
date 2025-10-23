@@ -103,7 +103,7 @@ Your production logs show:
 
 **ACTION REQUIRED**:
 1. Check your **Render.com** (or hosting platform) environment variables
-2. Verify `GOOGLE_VISION_API_KEY` is set to: `AIzaSyA8A4n7CtBuu6GAQEn1f7jnrxazemmAgyE`
+2. Verify `GOOGLE_VISION_API_KEY` is set to: `YOUR_NEW_GOOGLE_VISION_API_KEY_HERE`
 3. **Restart backend server** after adding/updating the key
 
 **How to Fix on Render.com**:
@@ -111,7 +111,7 @@ Your production logs show:
 1. Go to Dashboard → trulyinvoice-backend → Environment
 2. Add environment variable:
    Key: GOOGLE_VISION_API_KEY
-   Value: AIzaSyA8A4n7CtBuu6GAQEn1f7jnrxazemmAgyE
+   Value: YOUR_NEW_GOOGLE_VISION_API_KEY_HERE
 3. Save → Auto-deploys
 ```
 
@@ -213,11 +213,11 @@ git push origin main
 ```bash
 # On Render.com dashboard:
 1. Add/Update:
-   GOOGLE_VISION_API_KEY=AIzaSyA8A4n7CtBuu6GAQEn1f7jnrxazemmAgyE
+   GOOGLE_VISION_API_KEY=YOUR_NEW_GOOGLE_VISION_API_KEY_HERE
 
 2. Verify existing:
-   GOOGLE_AI_API_KEY=AIzaSyA8A4n7CtBuu6GAQEn1f7jnrxazemmAgyE
-   GEMINI_API_KEY=AIzaSyA8A4n7CtBuu6GAQEn1f7jnrxazemmAgyE
+   GOOGLE_AI_API_KEY=YOUR_NEW_GOOGLE_AI_API_KEY_HERE
+   GEMINI_API_KEY=YOUR_NEW_GEMINI_API_KEY_HERE
 
 3. Restart backend service
 ```
@@ -277,7 +277,7 @@ npm run build
 # ACTION: Add GOOGLE_VISION_API_KEY to production
 # Platform: Render.com (or your hosting)
 # Key: GOOGLE_VISION_API_KEY
-# Value: AIzaSyA8A4n7CtBuu6GAQEn1f7jnrxazemmAgyE
+# Value: YOUR_NEW_GOOGLE_VISION_API_KEY_HERE
 # Then: Restart backend
 ```
 
