@@ -771,7 +771,8 @@ export default function InvoicesPageClean() {
         ) : (
           <>
             {/* Desktop Table */}
-            <div className="hidden sm:block bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-visible">
+            <div className="hidden sm:block bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-x-auto">
+              <div className="min-w-[1200px]">
                 <table className="w-full table-auto">
                 <thead className="bg-gray-100 dark:bg-gray-950">
                   <tr>
@@ -901,6 +902,7 @@ export default function InvoicesPageClean() {
                   ))}
                 </tbody>
                 </table>
+              </div>
             </div>
 
             {/* Mobile Cards */}

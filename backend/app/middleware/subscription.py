@@ -35,16 +35,16 @@ async def check_subscription(user_id: str, db: Optional[Session] = None) -> Tupl
         print(f"📊 Checking subscription for user {user_id}, month: {current_month}")
 
         # Get user's subscription and current usage
-        # Use maybeSingle() instead of single() to handle missing subscriptions gracefully
-        subscription_response = supabase.table("subscriptions").select("*").eq("user_id", user_id).maybeSingle().execute()
+        # Use execute() and check data array to handle missing subscriptions gracefully
+        subscription_response = supabase.table("subscriptions").select("*").eq("user_id", user_id).execute()
         
-        if not subscription_response.data:
+        if not subscription_response.data or len(subscription_response.data) == 0:
             # No subscription - default to free
             print(f"ℹ️ No subscription found for {user_id}, defaulting to free tier")
             user_tier = "free"
             scans_used = 0
         else:
-            subscription = subscription_response.data
+            subscription = subscription_response.data[0]  # Get first result
             user_tier = subscription.get("tier", "free")
             scans_used = subscription.get("scans_used_this_period", 0)
             
@@ -91,13 +91,13 @@ async def check_and_renew_subscription(user_id: str, db: Optional[Session] = Non
         Subscription renewal status
     """
     try:
-        subscription_response = supabase.table("subscriptions").select("*").eq("user_id", user_id).single().execute()
+        subscription_response = supabase.table("subscriptions").select("*").eq("user_id", user_id).execute()
         
-        if not subscription_response.data:
+        if not subscription_response.data or len(subscription_response.data) == 0:
             print(f"⚠️ No subscription found for user {user_id}")
             return {"status": "none", "renewed": False}
         
-        subscription = subscription_response.data
+        subscription = subscription_response.data[0]  # Get first result
         now = datetime.utcnow()
         period_end = datetime.fromisoformat(subscription.get("current_period_end"))
         
@@ -157,10 +157,10 @@ async def increment_usage(user_id: str, amount: int = 1) -> bool:
         current_month = now.strftime("%Y-%m")
         
         # Update scan count
-        subscription_response = supabase.table("subscriptions").select("*").eq("user_id", user_id).single().execute()
+        subscription_response = supabase.table("subscriptions").select("*").eq("user_id", user_id).execute()
         
-        if subscription_response.data:
-            current_scans = subscription_response.data.get("scans_used_this_period", 0)
+        if subscription_response.data and len(subscription_response.data) > 0:
+            current_scans = subscription_response.data[0].get("scans_used_this_period", 0)
             
             supabase.table("subscriptions").update({
                 "scans_used_this_period": current_scans + amount

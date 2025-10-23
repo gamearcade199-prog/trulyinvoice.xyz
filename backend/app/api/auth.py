@@ -97,10 +97,10 @@ async def setup_new_user(
         
         print(f"✅ Registration rate check passed: {client_ip} ({request.email})")
         
-        # Check if user already has a subscription in Supabase (using maybeSingle for graceful handling)
+        # Check if user already has a subscription in Supabase
         try:
-            existing_response = supabase.table("subscriptions").select("*").eq("user_id", request.user_id).maybeSingle().execute()
-            existing_subscription = existing_response.data
+            existing_response = supabase.table("subscriptions").select("*").eq("user_id", request.user_id).execute()
+            existing_subscription = existing_response.data[0] if existing_response.data else None
         except Exception as e:
             print(f"ℹ️ Could not check existing subscription: {e}")
             existing_subscription = None

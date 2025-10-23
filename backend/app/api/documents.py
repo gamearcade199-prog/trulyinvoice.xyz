@@ -282,25 +282,25 @@ async def process_document(document_id: str, request: Request):
             # Increment scan count for the user
             if not is_anonymous:
                 try:
-                    # Update usage tracking in Supabase
+                    # Update usage tracking in Supabase (using usage_logs table)
                     current_month = datetime.now().strftime("%Y-%m")
 
                     # Check if usage record exists
-                    usage_response = supabase.table("usage_tracking").select("*").eq("user_id", user_id).eq("month", current_month).execute()
+                    usage_response = supabase.table("usage_logs").select("*").eq("user_id", user_id).eq("month", current_month).execute()
 
                     if usage_response.data:
                         # Update existing record
-                        current_count = usage_response.data[0].get("scan_count", 0)
-                        supabase.table("usage_tracking").update({
-                            "scan_count": current_count + 1,
+                        current_count = usage_response.data[0].get("scans_used", 0)
+                        supabase.table("usage_logs").update({
+                            "scans_used": current_count + 1,
                             "updated_at": datetime.now().isoformat()
                         }).eq("user_id", user_id).eq("month", current_month).execute()
                     else:
                         # Create new record
-                        supabase.table("usage_tracking").insert({
+                        supabase.table("usage_logs").insert({
                             "user_id": user_id,
                             "month": current_month,
-                            "scan_count": 1,
+                            "scans_used": 1,
                             "created_at": datetime.now().isoformat(),
                             "updated_at": datetime.now().isoformat()
                         }).execute()
