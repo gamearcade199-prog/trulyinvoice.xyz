@@ -40,24 +40,52 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Add rate limiting middleware
-from app.middleware.rate_limiter import rate_limit_middleware, rate_limit_exception_handler
+from .middleware.rate_limiter import rate_limit_middleware, rate_limit_exception_handler
 from slowapi.errors import RateLimitExceeded
 app.middleware("http")(rate_limit_middleware)
 app.add_exception_handler(RateLimitExceeded, rate_limit_exception_handler)
 
+# Environment validation
+@app.on_event("startup")
+async def validate_environment():
+    """Validate required environment variables on startup"""
+    import sys
+    required_vars = [
+        "SUPABASE_URL",
+        "SUPABASE_SERVICE_KEY",
+        "GEMINI_API_KEY",
+        "RAZORPAY_KEY_ID",
+        "RAZORPAY_KEY_SECRET"
+    ]
+    
+    missing = [var for var in required_vars if not os.getenv(var)]
+    
+    if missing:
+        print(f"❌ CRITICAL: Missing required environment variables: {', '.join(missing)}")
+        print("⚠️  Application cannot start without these variables!")
+        sys.exit(1)
+    
+    print("✅ Environment validation passed")
+    print(f"   - Supabase: Connected")
+    print(f"   - Gemini API: Configured")
+    print(f"   - Razorpay: Configured")
+
 # Import routers
-from app.api import documents, invoices, health, exports, payments, auth
-# from app.api import subscriptions  # Temporarily disabled due to SQLAlchemy table conflict
+from .api import documents, invoices, health, exports, payments, auth, debug, storage
+# from .api import subscriptions  # Temporarily disabled due to SQLAlchemy table conflict
 
 # Register routes
 app.include_router(health.router, tags=["Health"])
+app.include_router(debug.router, prefix="/api/debug", tags=["Debug"])
 app.include_router(documents.router, prefix="/api/documents", tags=["Documents"])
 app.include_router(invoices.router, prefix="/api/invoices", tags=["Invoices"])
 app.include_router(exports.router, prefix="/api/bulk", tags=["Bulk Exports"])
 app.include_router(payments.router, prefix="/api/payments", tags=["Payments"])
+app.include_router(storage.router, prefix="/api/storage", tags=["Storage"])
 # app.include_router(subscriptions.router, prefix="/api/subscriptions", tags=["Subscriptions"])  # Temporarily disabled
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 

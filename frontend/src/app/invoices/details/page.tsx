@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
 import { ArrowLeft, Calendar, DollarSign, Building2, FileText, Edit2, Save, X, Download, FileSpreadsheet, FileImage } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 export default function InvoiceDetailsPage() {
   const searchParams = useSearchParams()
@@ -16,11 +17,41 @@ export default function InvoiceDetailsPage() {
   const [editedInvoice, setEditedInvoice] = useState<any>(null)
   const [saving, setSaving] = useState(false)
   const [exporting, setExporting] = useState<string | null>(null) // Track which export is in progress
+  const [exportTemplate, setExportTemplate] = useState('accountant') // Track user's export template
 
   useEffect(() => {
     if (invoiceId) {
+      // Load user's export template preference
+      const loadTemplatePreference = async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser()
+          if (user) {
+            // Try to get from database first
+            const { data, error } = await supabase
+              .from('users')
+              .select('export_template')
+              .eq('id', user.id)
+              .single()
+            
+            if (data?.export_template) {
+              setExportTemplate(data.export_template)
+              console.log(`📋 Loaded export template from DB: ${data.export_template}`)
+            } else {
+              // Fallback to localStorage
+              const saved = localStorage.getItem(`export_template_${user.id}`)
+              if (saved && ['simple', 'accountant', 'analyst', 'compliance'].includes(saved)) {
+                setExportTemplate(saved)
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('⚠️ Could not load template preference:', err)
+        }
+      }
+      
       // Wake up backend and fetch invoice details
       const loadInvoiceData = async () => {
+        await loadTemplatePreference()
         await wakeUpBackend()
         await fetchInvoiceDetails()
       }
@@ -126,11 +157,23 @@ export default function InvoiceDetailsPage() {
       // Wake up backend first
       await wakeUpBackend()
       
+      // Get auth token
+      const { data: { session } } = await (await import('@supabase/supabase-js')).createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      ).auth.getSession()
+      
+      const token = session?.access_token
+      if (!token) {
+        throw new Error('No authentication token. Please log in again.')
+      }
+      
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://trulyinvoice-backend.onrender.com'
       const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}/export-pdf`, {
         method: 'GET',
         headers: {
-          'Accept': 'application/pdf'
+          'Accept': 'application/pdf',
+          'Authorization': `Bearer ${token}`
         }
       })
       
@@ -165,11 +208,23 @@ export default function InvoiceDetailsPage() {
       // Wake up backend first
       await wakeUpBackend()
       
+      // Get auth token
+      const { data: { session } } = await (await import('@supabase/supabase-js')).createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      ).auth.getSession()
+      
+      const token = session?.access_token
+      if (!token) {
+        throw new Error('No authentication token. Please log in again.')
+      }
+      
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://trulyinvoice-backend.onrender.com'
       const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}/export-excel`, {
         method: 'GET',
         headers: {
-          'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'Authorization': `Bearer ${token}`
         }
       })
       
@@ -204,11 +259,23 @@ export default function InvoiceDetailsPage() {
       // Wake up backend first
       await wakeUpBackend()
       
+      // Get auth token
+      const { data: { session } } = await (await import('@supabase/supabase-js')).createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      ).auth.getSession()
+      
+      const token = session?.access_token
+      if (!token) {
+        throw new Error('No authentication token. Please log in again.')
+      }
+      
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://trulyinvoice-backend.onrender.com'
       const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}/export-csv`, {
         method: 'GET',
         headers: {
-          'Accept': 'text/csv'
+          'Accept': 'text/csv',
+          'Authorization': `Bearer ${token}`
         }
       })
       

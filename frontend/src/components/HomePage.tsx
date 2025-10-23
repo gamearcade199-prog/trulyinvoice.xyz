@@ -93,6 +93,8 @@ export default function HomePage() {
     setProcessingError('')
     setExtractedData(null)
 
+    console.log('🚀 Starting upload process for:', file.name)
+
     // Animate progress while uploading
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
@@ -105,13 +107,17 @@ export default function HomePage() {
     }, 300)
 
     try {
+      console.log('📤 Calling uploadInvoiceAnonymous...')
       // Upload and process invoice (works for both logged-in and anonymous users)
       const result = await uploadInvoiceAnonymous(file)
+
+      console.log('📥 Upload result:', result)
 
       clearInterval(progressInterval)
       setProgress(100)
 
       if (result.success && result.data) {
+        console.log('✅ Upload successful, extracted data:', result.data)
         setExtractedData(result.data)
         setTimeout(() => {
           setIsProcessing(false)
@@ -120,17 +126,30 @@ export default function HomePage() {
           }
         }, 500)
       } else {
+        console.error('❌ Upload failed:', result.error)
         setProcessingError(result.error || 'Failed to process invoice')
         setIsProcessing(false)
       }
     } catch (error: any) {
+      console.error('🚨 Exception during upload:', error)
       clearInterval(progressInterval)
+      
       // Check if it's a quota error (HTTP 429)
       if (handleQuotaError(error)) {
         setIsProcessing(false)
         return
       }
-      setProcessingError(error.message || 'Failed to process invoice')
+      
+      // More detailed error message
+      let errorMessage = 'Failed to process invoice'
+      if (error.message) {
+        errorMessage = error.message
+      } else if (error.toString) {
+        errorMessage = error.toString()
+      }
+      
+      console.log('Setting error message:', errorMessage)
+      setProcessingError(errorMessage)
       setIsProcessing(false)
     }
   }
@@ -323,13 +342,17 @@ export default function HomePage() {
 
             {/* Interactive Upload Zone */}
             <div
-              onDragEnter={(e) => { e.preventDefault(); setIsDragging(true) }}
+              onDragEnter={(e) => { e.preventDefault(); if (!isProcessing) setIsDragging(true) }}
               onDragLeave={(e) => { e.preventDefault(); setIsDragging(false) }}
               onDragOver={(e) => e.preventDefault()}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`relative max-w-3xl mx-auto border-4 border-dashed rounded-3xl p-8 sm:p-12 cursor-pointer transition-all duration-300 ease-in-out transform ${
-                isDragging ? 'border-blue-600 dark:border-blue-400 bg-blue-50/50 dark:bg-blue-900/30 scale-105' : 'border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400'
+              onDrop={isProcessing ? undefined : handleDrop}
+              onClick={isProcessing ? undefined : () => fileInputRef.current?.click()}
+              className={`relative max-w-3xl mx-auto border-4 border-dashed rounded-3xl p-8 sm:p-12 transition-all duration-300 ease-in-out transform ${
+                isProcessing 
+                  ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/30' 
+                  : isDragging 
+                    ? 'border-blue-600 dark:border-blue-400 bg-blue-50/50 dark:bg-blue-900/30 scale-105 cursor-pointer' 
+                    : 'border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 cursor-pointer'
               }`}
             >
               <input
@@ -338,8 +361,39 @@ export default function HomePage() {
                 accept=".pdf,.jpg,.jpeg,.png"
                 onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
                 className="hidden"
+                disabled={isProcessing}
               />
-              <div className="flex flex-col items-center gap-4">
+              
+              {/* Processing Overlay */}
+              {isProcessing && (
+                <div className="absolute inset-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-3xl flex flex-col items-center justify-center z-10">
+                  <div className="flex flex-col items-center gap-4">
+                    {/* Spinning loader */}
+                    <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                    
+                    {/* Progress bar */}
+                    <div className="w-64 bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300 ease-out"
+                        style={{ width: `${progress}%` }}
+                      ></div>
+                    </div>
+                    
+                    {/* Status text */}
+                    <div className="text-center">
+                      <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-1">
+                        Processing Your Invoice...
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400">
+                        AI is extracting data • {progress}% complete
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Normal upload UI */}
+              <div className={`flex flex-col items-center gap-4 ${isProcessing ? 'opacity-30' : ''}`}>
                 <div className="p-4 rounded-full bg-gradient-to-br from-blue-500 to-purple-500">
                   <Upload className="w-12 h-12 text-white" />
                 </div>
@@ -353,6 +407,20 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+
+            {/* Error Message */}
+            {processingError && (
+              <div className="mt-4 max-w-3xl mx-auto p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <X className="w-3 h-3 text-white" />
+                  </div>
+                  <p className="text-red-700 dark:text-red-300 text-sm font-medium">
+                    {processingError}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Security Guarantee */}
             <div className="mt-6 flex items-center justify-center gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 px-4">
@@ -743,15 +811,15 @@ export default function HomePage() {
               <div className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">Vendor:</span>
-                  <span className="font-semibold text-gray-900 dark:text-white truncate">{extractedData?.vendor}</span>
+                  <span className="font-semibold text-gray-900 dark:text-white truncate">{extractedData?.vendor_name || extractedData?.vendor || 'Not found'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">Amount:</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{extractedData?.amount}</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{extractedData?.total_amount || extractedData?.amount || 'Not found'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">Invoice #:</span>
-                  <span className="font-semibold text-gray-900 dark:text-white truncate">{extractedData?.invoiceNumber}</span>
+                  <span className="font-semibold text-gray-900 dark:text-white truncate">{extractedData?.invoice_number || extractedData?.invoiceNumber || 'Not found'}</span>
                 </div>
               </div>
             </div>

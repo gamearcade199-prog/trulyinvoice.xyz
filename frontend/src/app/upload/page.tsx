@@ -13,7 +13,8 @@ import {
   Zap,
   Shield,
   FileText,
-  Cpu
+  Cpu,
+  Upload
 } from 'lucide-react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -100,6 +101,17 @@ export default function UploadPageRobust() {
         setProcessingStatus('🎯 Processing anonymously for preview...')
       } else {
         console.log('👤 User authenticated:', user.id)
+        
+        // Save user's selected template preference to database
+        try {
+          await supabase
+            .from('users')
+            .update({ export_template: selectedTemplate })
+            .eq('id', user.id)
+          console.log(`📋 Saved template preference to database: ${selectedTemplate}`)
+        } catch (err) {
+          console.warn('⚠️ Could not save template preference:', err)
+        }
       }
       
       for (let i = 0; i < files.length; i++) {
@@ -349,64 +361,197 @@ export default function UploadPageRobust() {
           <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-pink-300/20 rounded-full filter blur-3xl animate-blob animation-delay-4000"></div>
         </div>
 
-        <div className="max-w-5xl mx-auto px-4 md:px-0 py-8">
-          {/* Header - Enhanced with Animation */}
-          <div className="text-center mb-8 md:mb-12 relative z-10 animate-in fade-in slide-in-from-top-4 duration-700">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-6">
+          {/* Professional Header with Gradient */}
+          <div className="text-center mb-8 relative z-10">
+            {/* Floating Badge */}
             <div className="inline-block mb-4">
-              <div className="px-4 py-2 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-full border border-blue-200/50 dark:border-blue-800/50 backdrop-blur-sm hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
-                <span className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" />
-                  AI-Powered Invoice Processing
-                </span>
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-full blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                <div className="relative px-4 py-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-full border border-gray-200/50 dark:border-gray-700/50 shadow-lg">
+                  <span className="text-sm font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-blue-600" />
+                    AI-Powered Processing
+                  </span>
+                </div>
               </div>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight leading-tight">
-              Upload Your Invoices
+            
+            {/* Modern Typography */}
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">
+              Upload Your <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Invoices</span>
             </h1>
-            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto font-light mb-8">
-              Our advanced AI extracts all data automatically in seconds. No manual entry needed.
+            <p className="text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
+              Advanced AI extracts all data automatically in seconds. 
+              <span className="text-blue-600 dark:text-blue-400 font-medium"> No manual entry required.</span>
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
-              <div className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl border border-white/20 dark:border-gray-700/20 hover:bg-white/60 dark:hover:bg-gray-800/60 transition-all duration-300 shadow-sm hover:shadow-md">
-                <Zap className="w-4 h-4 text-green-500" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">PDF Support</span>
+          </div>
+
+          {/* Error Message - Enhanced */}
+          {error && (
+            <div className="mb-6 relative">
+              <div className="absolute inset-0 bg-red-500/10 rounded-2xl blur"></div>
+              <div className="relative bg-red-50/80 dark:bg-red-900/20 backdrop-blur-xl border border-red-200/50 dark:border-red-800/50 text-red-700 dark:text-red-300 px-5 py-4 rounded-2xl flex items-start gap-4 shadow-lg">
+                <div className="flex-shrink-0 mt-0.5">
+                  <div className="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                    <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-sm mb-1">Upload Failed</p>
+                  <p className="text-sm break-words opacity-90">{error}</p>
+                </div>
               </div>
-              <div className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl border border-white/20 dark:border-gray-700/20 hover:bg-white/60 dark:hover:bg-gray-800/60 transition-all duration-300 shadow-sm hover:shadow-md">
-                <Shield className="w-4 h-4 text-blue-500" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Image Recognition</span>
+            </div>
+          )}
+
+          {/* Premium Upload Zone Card */}
+          <div className="mb-8 relative group">
+            {/* Glow Effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+            
+            {/* Main Card */}
+            <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl border border-gray-200/50 dark:border-gray-700/50 rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500">
+              {/* Card Header */}
+              <div className="px-6 pt-6 pb-4 border-b border-gray-100 dark:border-gray-800">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <Upload className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 dark:text-white text-lg">Upload Center</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Drag & drop or click to select files</p>
+                  </div>
+                </div>
               </div>
-              <div className="inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl border border-white/20 dark:border-gray-700/20 hover:bg-white/60 dark:hover:bg-gray-800/60 transition-all duration-300 shadow-sm hover:shadow-md">
-                <Sparkles className="w-4 h-4 text-purple-500" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">60+ Fields</span>
+              
+              {/* Upload Zone */}
+              <div className="p-6">
+                <UploadZone onFileSelect={handleFileSelect} />
               </div>
             </div>
           </div>
 
-          {/* Export Template Selection - Enhanced */}
-          <div className="relative mb-8 px-4 md:px-0 animate-in fade-in slide-in-from-top-4 duration-700 group" style={{ animationDelay: '100ms' }}>
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-3xl p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-300">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 via-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <span className="text-xl">📊</span>
+          {/* Process Button - Premium Design */}
+          {files.length > 0 && !isUploading && !uploadComplete && (
+            <div className="mb-8 flex justify-center">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                <button
+                  onClick={handleUpload}
+                  className="relative px-8 py-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white rounded-2xl font-bold text-lg flex items-center gap-3 shadow-2xl hover:shadow-3xl hover:scale-105 active:scale-95 transition-all duration-300"
+                >
+                  <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  Process {files.length} Invoice{files.length > 1 ? 's' : ''}
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Enhanced Progress Card */}
+          {isUploading && (
+            <div className="mb-8 relative">
+              <div className="absolute inset-0 bg-blue-500/10 rounded-3xl blur"></div>
+              <div className="relative bg-white/90 dark:bg-gray-900/90 backdrop-blur-2xl border border-gray-200/50 dark:border-gray-700/50 rounded-3xl shadow-2xl p-6">
+                <div className="flex items-center gap-4 mb-5">
+                  <div className="relative">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                      <Loader2 className="w-6 h-6 text-white animate-spin" />
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-gray-900 dark:text-white text-lg">Processing Your Invoices</h3>
+                    <p className="text-gray-600 dark:text-gray-400">AI is extracting and analyzing data...</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{uploadProgress}%</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Complete</div>
                   </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 dark:text-white mb-1 text-lg md:text-xl">
-                    Choose Export Format
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">
-                    Select how you want your invoice data exported later.
-                  </p>
+                
+                {/* Animated Progress Bar */}
+                <div className="relative w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden shadow-inner">
+                  <div
+                    className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-full rounded-full transition-all duration-700 ease-out relative"
+                    style={{ width: `${uploadProgress}%` }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+                  </div>
+                </div>
+                
+                {processingStatus && (
+                  <div className="mt-4 flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                      {processingStatus}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Success Card - Premium */}
+          {uploadComplete && (
+            <div className="mb-8 relative">
+              <div className="absolute inset-0 bg-green-500/10 rounded-3xl blur"></div>
+              <div className="relative bg-gradient-to-br from-green-50/80 to-emerald-50/80 dark:from-green-900/20 dark:to-emerald-900/20 backdrop-blur-2xl border border-green-200/50 dark:border-green-800/50 rounded-3xl shadow-2xl p-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <CheckCircle2 className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-green-900 dark:text-green-100 text-lg mb-1">
+                      Upload Successful!
+                    </h3>
+                    <p className="text-green-700 dark:text-green-300">
+                      {files.length} invoice{files.length > 1 ? 's' : ''} processed successfully
+                    </p>
+                  </div>
+                  <Link
+                    href="/invoices"
+                    className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-500 dark:to-emerald-500 text-white rounded-xl hover:shadow-lg transition-all font-semibold text-sm flex items-center gap-2 group"
+                  >
+                    View Results 
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </Link>
                 </div>
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <label className={`relative cursor-pointer rounded-2xl border-2 p-4 transition-all duration-300 hover:shadow-md ${
+            </div>
+          )}
+
+          {/* Collapsible Settings - Modern Design */}
+          <details className="mb-8 group">
+            <summary className="cursor-pointer bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-5 hover:bg-white/90 dark:hover:bg-gray-900/90 transition-all duration-300 shadow-lg hover:shadow-xl">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-lg">⚙️</span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-900 dark:text-white text-base">
+                    Export Format Settings
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    Customize how your data will be exported (optional)
+                  </p>
+                </div>
+                <div className="w-6 h-6 text-gray-400 group-open:rotate-180 transition-transform duration-300">
+                  <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </summary>
+            
+            <div className="mt-4 p-5 bg-gray-50/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label className={`cursor-pointer rounded-xl border-2 p-4 transition-all duration-300 hover:scale-105 ${
                   selectedTemplate === 'simple' 
-                    ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 shadow-md' 
-                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-gray-50 dark:hover:bg-gray-800/30'
+                    ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 shadow-lg' 
+                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 bg-white/50 dark:bg-gray-900/50'
                 }`}>
                   <input
                     type="radio"
@@ -416,31 +561,23 @@ export default function UploadPageRobust() {
                     onChange={(e) => handleTemplateChange(e.target.value)}
                     className="sr-only"
                   />
-                  <div className="flex items-start gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center transition-all ${
-                      selectedTemplate === 'simple' 
-                        ? 'border-blue-500 bg-blue-500' 
-                        : 'border-gray-300 dark:border-gray-600'
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                      selectedTemplate === 'simple' ? 'border-blue-500 bg-blue-500 shadow-lg' : 'border-gray-300 dark:border-gray-600'
                     }`}>
-                      {selectedTemplate === 'simple' && (
-                        <div className="w-2 h-2 bg-white rounded-full"></div>
-                      )}
+                      {selectedTemplate === 'simple' && <div className="w-2 h-2 bg-white rounded-full"></div>}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">
-                        Simple (2 sheets)
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        Invoice Summary + Complete Data
-                      </p>
+                      <h4 className="font-bold text-gray-900 dark:text-white">Simple (2 sheets)</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Summary + Complete Data</p>
                     </div>
                   </div>
                 </label>
 
-                <label className={`relative cursor-pointer rounded-2xl border-2 p-4 transition-all duration-300 hover:shadow-md ${
+                <label className={`cursor-pointer rounded-xl border-2 p-4 transition-all duration-300 hover:scale-105 ${
                   selectedTemplate === 'accountant' 
-                    ? 'border-purple-500 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 shadow-md' 
-                    : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600 hover:bg-gray-50 dark:hover:bg-gray-800/30'
+                    ? 'border-purple-500 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 shadow-lg' 
+                    : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600 bg-white/50 dark:bg-gray-900/50'
                 }`}>
                   <input
                     type="radio"
@@ -450,144 +587,61 @@ export default function UploadPageRobust() {
                     onChange={(e) => handleTemplateChange(e.target.value)}
                     className="sr-only"
                   />
-                  <div className="flex items-start gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center transition-all ${
-                      selectedTemplate === 'accountant' 
-                        ? 'border-purple-500 bg-purple-500' 
-                        : 'border-gray-300 dark:border-gray-600'
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                      selectedTemplate === 'accountant' ? 'border-purple-500 bg-purple-500 shadow-lg' : 'border-gray-300 dark:border-gray-600'
                     }`}>
-                      {selectedTemplate === 'accountant' && (
-                        <div className="w-2 h-2 bg-white rounded-full"></div>
-                      )}
+                      {selectedTemplate === 'accountant' && <div className="w-2 h-2 bg-white rounded-full"></div>}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">
-                        Accountant (5 sheets)
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        Summary, Line Items, GST, Vendor Analysis + Data
-                      </p>
+                      <h4 className="font-bold text-gray-900 dark:text-white">Accountant (5 sheets)</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Summary, Items, GST, Analysis + Data</p>
                     </div>
                   </div>
                 </label>
               </div>
             </div>
-          </div>
+          </details>
 
-          {/* Error Message - Enhanced */}
-          {error && (
-            <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-300 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-2xl flex items-center gap-3 shadow-md">
-              <AlertCircle className="w-5 h-5 flex-shrink-0" />
-              <div className="flex-1">
-                <p className="font-semibold text-sm">Upload Failed</p>
-                <p className="text-sm break-words">{error}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Upload Zone - Compact */}
-          <div className="bg-gradient-to-br from-purple-50/40 via-blue-50/40 to-pink-50/40 dark:from-purple-900/10 dark:via-blue-900/10 dark:to-pink-900/10 p-1 rounded-3xl mb-8 animate-in fade-in duration-700" style={{ animationDelay: '200ms' }}>
-            <UploadZone onFileSelect={handleFileSelect} />
-          </div>
-
-          {/* Upload Progress - Enhanced */}
-          {isUploading && (
-            <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500 bg-white dark:bg-gray-900 p-6 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-xl">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="relative">
-                  <Loader2 className="w-5 h-5 text-blue-600 dark:text-blue-400 animate-spin" />
-                </div>
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  Processing your invoices...
-                </span>
-              </div>
-              
-              {/* Progress Bar */}
-              <div className="relative w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden mb-3 shadow-inner">
-                <div
-                  className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-full rounded-full transition-all duration-500 ease-out shadow-lg"
-                  style={{ width: `${uploadProgress}%` }}
-                >
-                  <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
-                </div>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-semibold">
-                  {uploadProgress}% complete
-                </p>
-                {processingStatus && (
-                  <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                    {processingStatus}
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Upload Complete - Enhanced */}
-          {uploadComplete && (
-            <div className="mb-8 animate-in fade-in zoom-in-50 duration-500 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 p-6 rounded-3xl shadow-xl">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
-                  <div className="flex items-center justify-center h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/30">
-                    <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-green-900 dark:text-green-100 mb-1">
-                    Upload Successful
-                  </h3>
-                  <p className="text-green-700 dark:text-green-300 mb-4">
-                    {files.length} invoice{files.length > 1 ? 's' : ''} processed successfully! Redirecting to your invoices...
-                  </p>
-                  <Link
-                    href="/invoices"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-500 dark:to-emerald-500 text-white rounded-xl hover:shadow-lg transition-all font-semibold text-sm"
-                  >
-                    View Invoices <ArrowRight className="w-4 h-4" />
-                  </Link>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Upload Button - Enhanced */}
-          {files.length > 0 && !isUploading && !uploadComplete && (
-            <div className="mb-8 flex justify-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <button
-                onClick={handleUpload}
-                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white rounded-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all font-bold text-lg flex items-center gap-2 shadow-xl"
-              >
-                <Sparkles className="w-5 h-5" />
-                Process {files.length} Invoice{files.length > 1 ? 's' : ''}
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            </div>
-          )}
-
-          {/* Info Cards - Enhanced */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Premium Feature Cards */}
+          <div className="grid grid-cols-3 gap-4 mb-8">
             {[
-              { icon: FileText, title: 'Supported Formats', desc: 'PDF, JPG, PNG up to 10MB' },
-              { icon: Cpu, title: 'AI Extraction', desc: 'Vendor, amounts, dates & GST' },
-              { icon: Zap, title: 'Fast Processing', desc: 'Results in under 10 seconds' }
+              { icon: FileText, title: 'Multiple Formats', desc: 'PDF, JPG, PNG, HEIC', gradient: 'from-blue-500 to-cyan-500' },
+              { icon: Cpu, title: 'AI Extraction', desc: '60+ Fields Auto-detected', gradient: 'from-purple-500 to-pink-500' },
+              { icon: Zap, title: 'Lightning Fast', desc: 'Results in <10 seconds', gradient: 'from-amber-500 to-orange-500' }
             ].map((card, idx) => (
-              <div 
-                key={idx}
-                className="group relative animate-in fade-in slide-in-from-bottom-4 duration-700 cursor-pointer"
-                style={{ animationDelay: `${300 + idx * 100}ms` }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="relative p-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 hover:shadow-lg transition-all duration-300 text-center">
-                  <div className="text-4xl mb-3 flex justify-center">
-                    <card.icon className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+              <div key={idx} className="group relative">
+                <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-20 rounded-2xl blur transition-opacity duration-500" 
+                     style={{ background: `linear-gradient(to right, ${card.gradient.split(' ')[1]}, ${card.gradient.split(' ')[3]})` }}></div>
+                <div className="relative text-center p-4 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                  <div className={`w-10 h-10 bg-gradient-to-br ${card.gradient} rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg group-hover:shadow-xl transition-all`}>
+                    <card.icon className="w-5 h-5 text-white" />
                   </div>
-                  <h3 className="font-bold text-gray-900 dark:text-white mb-2">{card.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">{card.desc}</p>
+                  <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-1">{card.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-xs leading-relaxed">{card.desc}</p>
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Trust Indicators */}
+          <div className="text-center">
+            <div className="inline-flex items-center gap-6 px-6 py-3 bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl rounded-full border border-gray-200/50 dark:border-gray-700/50 shadow-lg">
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-green-500" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">256-bit Encryption</span>
+              </div>
+              <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-blue-500" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">High Accuracy AI</span>
+              </div>
+              <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-purple-500" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Enterprise Security</span>
+              </div>
+            </div>
           </div>
         </div>
         

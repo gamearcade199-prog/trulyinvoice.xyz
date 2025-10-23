@@ -14,7 +14,11 @@ import os
 import re
 import requests
 import io
+import logging
 from app.services.supabase_helper import supabase
+
+# Set up logger
+logger = logging.getLogger(__name__)
 from app.services.invoice_validator import InvoiceValidator, validate_invoice_before_save
 from sqlalchemy.orm import Session
 from app.core.database import get_db
@@ -190,18 +194,23 @@ async def process_document(document_id: str, request: Request):
                         invoice_data['payment_status'] = 'pending'  # Default to pending if invalid or empty
                     
                     # CRITICAL: Ensure invoice_number is NEVER empty or None
-                    invoice_num = invoice_data.get('invoice_number', '').strip()
-                    if not invoice_num:
+                    invoice_num = invoice_data.get('invoice_number')
+                    if not invoice_num or (isinstance(invoice_num, str) and not invoice_num.strip()):
                         # Generate fallback invoice number from document_id
                         invoice_num = f"INV-{document_id[:8].upper()}"
                         print(f"  ⚠️  AI didn't extract invoice_number, using fallback: {invoice_num}")
+                    else:
+                        invoice_num = str(invoice_num).strip()
                     invoice_data['invoice_number'] = invoice_num
                     
                     # Clean up other string fields to remove extra whitespace
                     string_fields = ['vendor_name', 'customer_name', 'vendor_address', 'customer_address']
                     for field in string_fields:
                         if field in invoice_data and invoice_data[field]:
-                            invoice_data[field] = str(invoice_data[field]).strip()
+                            if isinstance(invoice_data[field], str):
+                                invoice_data[field] = invoice_data[field].strip()
+                            else:
+                                invoice_data[field] = str(invoice_data[field]).strip()
 
                 if not invoice_data:
                     print(f"⚠️ AI extraction returned no results")
@@ -339,7 +348,7 @@ async def process_document(document_id: str, request: Request):
     except HTTPException as he:
         # Update document status to failed on HTTP exceptions
         try:
-            supabase.table("documents").update({"status": "failed", "error": str(he.detail)}).eq("id", document_id).execute()
+            supabase.table("documents").update({"status": "failed"}).eq("id", document_id).execute()
         except Exception as update_error:
             logger.warning(f"Failed to update document status after HTTP error: {update_error}")
         raise
@@ -347,7 +356,7 @@ async def process_document(document_id: str, request: Request):
         print(f"  ❌ Processing error: {str(e)}")
         # Update document status to failed on general exceptions
         try:
-            supabase.table("documents").update({"status": "failed", "error": str(e)}).eq("id", document_id).execute()
+            supabase.table("documents").update({"status": "failed"}).eq("id", document_id).execute()
         except Exception as update_error:
             logger.warning(f"Failed to update document status after error: {update_error}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -175,17 +175,31 @@ export default function InvoiceDetailsPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
+        console.error('❌ No access token available')
         alert('Please log in to export Excel')
         return
       }
 
-      const response = await fetch(`http://localhost:8000/api/invoices/${invoiceId}/export-excel`, {
+      console.log('🔄 Starting Excel export...')
+      console.log(`   📋 Invoice ID: ${invoiceId}`)
+      console.log(`   🔐 Token length: ${session.access_token.length}`)
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      console.log(`   📡 API URL: ${apiUrl}`)
+      
+      const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}/export-excel`, {
+        method: 'GET',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
         }
       })
 
+      console.log(`   📊 Response status: ${response.status}`)
+      
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`   ❌ Error response: ${errorText}`)
         throw new Error(`Export failed: ${response.statusText}`)
       }
 
@@ -199,8 +213,9 @@ export default function InvoiceDetailsPage() {
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
+      console.log('✅ Excel exported successfully')
     } catch (error) {
-      console.error('Excel Export error:', error)
+      console.error('❌ Excel Export error:', error)
       alert('Failed to export Excel. Please try again.')
     }
   }
@@ -209,17 +224,31 @@ export default function InvoiceDetailsPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
+        console.error('❌ No access token available')
         alert('Please log in to export PDF')
         return
       }
 
-      const response = await fetch(`http://localhost:8000/api/invoices/${invoiceId}/export-pdf`, {
+      console.log('🔄 Starting PDF export...')
+      console.log(`   📋 Invoice ID: ${invoiceId}`)
+      console.log(`   🔐 Token length: ${session.access_token.length}`)
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      console.log(`   📡 API URL: ${apiUrl}`)
+      
+      const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}/export-pdf`, {
+        method: 'GET',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
         }
       })
 
+      console.log(`   📊 Response status: ${response.status}`)
+      
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`   ❌ Error response: ${errorText}`)
         throw new Error(`Export failed: ${response.statusText}`)
       }
 
@@ -233,8 +262,9 @@ export default function InvoiceDetailsPage() {
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
+      console.log('✅ PDF exported successfully')
     } catch (error) {
-      console.error('PDF Export error:', error)
+      console.error('❌ PDF Export error:', error)
       alert('Failed to export PDF. Please try again.')
     }
   }
@@ -243,17 +273,31 @@ export default function InvoiceDetailsPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
+        console.error('❌ No access token available')
         alert('Please log in to export CSV')
         return
       }
 
-      const response = await fetch(`http://localhost:8000/api/invoices/${invoiceId}/export-csv`, {
+      console.log('🔄 Starting CSV export...')
+      console.log(`   📋 Invoice ID: ${invoiceId}`)
+      console.log(`   🔐 Token length: ${session.access_token.length}`)
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      console.log(`   📡 API URL: ${apiUrl}`)
+      
+      const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}/export-csv`, {
+        method: 'GET',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
         }
       })
 
+      console.log(`   📊 Response status: ${response.status}`)
+      
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`   ❌ Error response: ${errorText}`)
         throw new Error(`Export failed: ${response.statusText}`)
       }
 
@@ -267,8 +311,9 @@ export default function InvoiceDetailsPage() {
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
+      console.log('✅ CSV exported successfully')
     } catch (error) {
-      console.error('CSV Export error:', error)
+      console.error('❌ CSV Export error:', error)
       alert('Failed to export CSV. Please try again.')
     }
   }

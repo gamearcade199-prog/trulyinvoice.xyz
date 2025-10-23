@@ -2,11 +2,15 @@
 Invoices API - Retrieve and manage invoices
 Compatible with existing Supabase invoices table
 """
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Header
 from fastapi.responses import FileResponse
 from typing import List, Dict, Any
 import os
+import logging
 from app.services.supabase_helper import supabase
+
+# Set up logger
+logger = logging.getLogger(__name__)
 from app.services.excel_exporter import ExcelExporter
 from app.services.professional_excel_exporter import ProfessionalInvoiceExporter
 from app.services.html_professional_pdf_exporter import HTMLProfessionalPDFExporter
@@ -128,8 +132,7 @@ async def delete_invoice(invoice_id: str):
 @router.get("/{invoice_id}/export-pdf")
 async def export_invoice_pdf(
     invoice_id: str,
-    current_user_id: str = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    authorization: str = Header(None)
 ):
     """
     🎯 STYLIZED PDF EXPORT (for clients, business owners)
@@ -143,9 +146,32 @@ async def export_invoice_pdf(
     
     Target Users: Clients, Business Owners, Anyone who needs to VIEW
     """
-    # TEMPORARILY DISABLED: Check export permissions (subscriptions table missing)
-    # await check_export_permission(current_user_id, db)
+    print(f"📄 PDF Export endpoint called")
+    print(f"   Invoice ID: {invoice_id}")
+    print(f"   Authorization header: {authorization[:50] if authorization else 'MISSING'}...")
+    
+    # Manual auth validation
+    if not authorization:
+        print("   ❌ No authorization header")
+        raise HTTPException(status_code=401, detail="Missing authorization header")
+    
     try:
+        parts = authorization.split()
+        if len(parts) != 2 or parts[0].lower() != 'bearer':
+            print(f"   ❌ Invalid auth format: {len(parts)} parts")
+            raise HTTPException(status_code=401, detail="Invalid authorization format")
+        
+        token = parts[1]
+        print(f"   🔐 Token received, length: {len(token)}")
+        
+        # Validate token with Supabase
+        response = supabase.auth.get_user(token)
+        user_id = response.user.id if hasattr(response, 'user') and response.user else None
+        if not user_id:
+            print(f"   ❌ Token validation failed")
+            raise HTTPException(status_code=401, detail="Invalid token")
+        print(f"   ✅ User authenticated: {user_id}")
+        
         # Get invoice
         invoices_response = supabase.table("invoices").select("*").eq("id", invoice_id).execute()
         invoices = invoices_response.data
@@ -182,6 +208,8 @@ async def export_invoice_pdf(
             }
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"❌ Export-PDF Error: {str(e)}")
         import traceback
@@ -192,8 +220,7 @@ async def export_invoice_pdf(
 @router.get("/{invoice_id}/export-excel")
 async def export_invoice_excel(
     invoice_id: str,
-    current_user_id: str = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    authorization: str = Header(None)
 ):
     """
     📊 LIGHT-STYLED EXCEL EXPORT (for accountants, SMEs)
@@ -207,10 +234,32 @@ async def export_invoice_excel(
     
     Target Users: Accountants, SMEs, Bookkeepers, Anyone who needs to EDIT/IMPORT
     """
-    # TEMPORARILY DISABLED: Check export permissions (subscriptions table missing)
-    # await check_export_permission(current_user_id, db)
+    print(f"📊 Excel Export endpoint called")
+    print(f"   Invoice ID: {invoice_id}")
+    print(f"   Authorization header: {authorization[:50] if authorization else 'MISSING'}...")
+    
+    # Manual auth validation
+    if not authorization:
+        print("   ❌ No authorization header")
+        raise HTTPException(status_code=401, detail="Missing authorization header")
     
     try:
+        parts = authorization.split()
+        if len(parts) != 2 or parts[0].lower() != 'bearer':
+            print(f"   ❌ Invalid auth format: {len(parts)} parts")
+            raise HTTPException(status_code=401, detail="Invalid authorization format")
+        
+        token = parts[1]
+        print(f"   🔐 Token received, length: {len(token)}")
+        
+        # Validate token with Supabase
+        response = supabase.auth.get_user(token)
+        user_id = response.user.id if hasattr(response, 'user') and response.user else None
+        if not user_id:
+            print(f"   ❌ Token validation failed")
+            raise HTTPException(status_code=401, detail="Invalid token")
+        print(f"   ✅ User authenticated: {user_id}")
+        
         # Get invoice
         invoices_response = supabase.table("invoices").select("*").eq("id", invoice_id).execute()
         invoices = invoices_response.data
@@ -234,9 +283,20 @@ async def export_invoice_excel(
         print(f"   Invoice #: {invoice_data.get('invoice_number')}")
         print(f"   Total: {invoice_data.get('total_amount')}")
 
-        # Export to Excel (accountant-friendly version)
+        # Get user's template preference
+        try:
+            users_response = supabase.table("users").select("export_template").eq("id", user_id).execute()
+            user_template = "accountant"  # Default template
+            if users_response.data and len(users_response.data) > 0:
+                user_template = users_response.data[0].get('export_template', 'accountant')
+            print(f"   📋 Using template: {user_template}")
+        except Exception as e:
+            print(f"   ⚠️ Could not fetch template preference, using default 'accountant': {e}")
+            user_template = "accountant"
+
+        # Export to Excel with user's preferred template
         exporter = AccountantExcelExporter()
-        excel_filename = exporter.export_invoices_bulk([invoice_data])
+        excel_filename = exporter.export_invoices_bulk([invoice_data], template=user_template)
 
         # Return file
         return FileResponse(
@@ -258,8 +318,7 @@ async def export_invoice_excel(
 @router.get("/{invoice_id}/export-csv")
 async def export_invoice_csv(
     invoice_id: str,
-    current_user_id: str = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    authorization: str = Header(None)
 ):
     """
     📄 RAW CSV EXPORT (for developers, ERP/CRM systems)
@@ -273,10 +332,32 @@ async def export_invoice_csv(
     
     Target Users: Developers, ERP Systems, Automation Scripts
     """
-    # TEMPORARILY DISABLED: Check export permissions (subscriptions table missing)
-    # await check_export_permission(current_user_id, db)
-
+    print(f"📋 CSV Export endpoint called")
+    print(f"   Invoice ID: {invoice_id}")
+    print(f"   Authorization header: {authorization[:50] if authorization else 'MISSING'}...")
+    
+    # Manual auth validation
+    if not authorization:
+        print("   ❌ No authorization header")
+        raise HTTPException(status_code=401, detail="Missing authorization header")
+    
     try:
+        parts = authorization.split()
+        if len(parts) != 2 or parts[0].lower() != 'bearer':
+            print(f"   ❌ Invalid auth format: {len(parts)} parts")
+            raise HTTPException(status_code=401, detail="Invalid authorization format")
+        
+        token = parts[1]
+        print(f"   🔐 Token received, length: {len(token)}")
+        
+        # Validate token with Supabase
+        response = supabase.auth.get_user(token)
+        user_id = response.user.id if hasattr(response, 'user') and response.user else None
+        if not user_id:
+            print(f"   ❌ Token validation failed")
+            raise HTTPException(status_code=401, detail="Invalid token")
+        print(f"   ✅ User authenticated: {user_id}")
+        
         # Get invoice
         invoices_response = supabase.table("invoices").select("*").eq("id", invoice_id).execute()
         invoices = invoices_response.data
@@ -313,6 +394,8 @@ async def export_invoice_csv(
             }
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"❌ Export-CSV Error: {str(e)}")
         import traceback
