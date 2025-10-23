@@ -98,14 +98,25 @@ export async function linkTempInvoicesToUser(userId: string) {
   clearTempInvoices()
 }
 
-// Upload invoice without authentication (creates anonymous document)
+// Upload invoice (works for both authenticated and anonymous users)
 export async function uploadInvoiceAnonymous(file: File) {
   try {
-    // Step 1: Upload to storage with anonymous path
-    const anonymousId = `anon_${Date.now()}`
-    const fileName = `anonymous/${anonymousId}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+    // Check if user is logged in
+    const { data: { user } } = await supabase.auth.getUser()
+    const isAuthenticated = !!user
     
-    console.log('📤 Uploading anonymous file:', fileName)
+    // Step 1: Upload to storage (different paths for auth vs anonymous)
+    let fileName: string
+    if (isAuthenticated) {
+      // Authenticated: use user_id/filename
+      fileName = `${user.id}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+      console.log('📤 Uploading authenticated file:', fileName)
+    } else {
+      // Anonymous: use anonymous/anon_timestamp_filename
+      const anonymousId = `anon_${Date.now()}`
+      fileName = `anonymous/${anonymousId}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+      console.log('📤 Uploading anonymous file:', fileName)
+    }
     
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('invoice-documents')
@@ -123,18 +134,25 @@ export async function uploadInvoiceAnonymous(file: File) {
       .from('invoice-documents')
       .getPublicUrl(fileName)
 
-    // Step 3: Create document record (without user_id)
+    // Step 3: Create document record (with user_id if authenticated)
+    const documentData: any = {
+      file_name: file.name,
+      file_size: file.size,
+      file_type: file.type,
+      storage_path: fileName,
+      file_url: publicUrl,
+      status: 'uploaded',
+      uploaded_at: new Date().toISOString()
+    }
+    
+    // Add user_id only if authenticated
+    if (isAuthenticated) {
+      documentData.user_id = user.id
+    }
+
     const { data: docData, error: docError } = await supabase
       .from('documents')
-      .insert({
-        file_name: file.name,
-        file_size: file.size,
-        file_type: file.type,
-        storage_path: fileName,
-        file_url: publicUrl,
-        status: 'uploaded',
-        uploaded_at: new Date().toISOString()
-      })
+      .insert(documentData)
       .select()
       .single()
 
@@ -143,7 +161,7 @@ export async function uploadInvoiceAnonymous(file: File) {
       throw docError
     }
 
-    console.log('✅ Anonymous document created:', docData.id)
+    console.log(isAuthenticated ? '✅ Authenticated document created:' : '✅ Anonymous document created:', docData.id)
 
     // Step 4: Process the document
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
