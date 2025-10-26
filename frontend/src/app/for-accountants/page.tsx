@@ -1,15 +1,4 @@
-import { Metadata } from 'next'
-
-export const metadata: Metadata = {
-  title: 'Invoice Processing for Chartered Accountants | TrulyInvoice',
-  description: 'Automated invoice processing software for CAs and accounting firms. Process 100+ invoices in minutes. GST compliant, Tally integration, 98% accuracy.',
-  keywords: ['accounting software for CAs', 'CA invoice processing', 'accounting automation', 'invoice management for chartered accountants', 'professional accounting software India'],
-  openGraph: {
-    title: 'Invoice Processing for Chartered Accountants | TrulyInvoice',
-    description: 'Automated invoice management for professional accountants',
-    images: ['/og-image-india.jpg'],
-  },
-}
+'use client';
 
 export default function ForAccountantsPage() {
   return (
@@ -87,7 +76,7 @@ export default function ForAccountantsPage() {
                 <p className="text-sm">Annual savings</p>
               </div>
               <div>
-                <div className="text-3xl font-bold text-orange-600">< 1 month</div>
+                <div className="text-3xl font-bold text-orange-600">&lt; 1 month</div>
                 <p className="text-sm">ROI payback period</p>
               </div>
             </div>
