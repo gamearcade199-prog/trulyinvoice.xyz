@@ -1,0 +1,62 @@
+Invoice Number,206
+Invoice Date,2023-09-07
+Due Date,
+Total Amount,1400.9
+Currency,INR
+Vendor Name,HOTEL ANGEL
+Vendor GSTIN,
+Vendor PAN,
+Vendor Email,
+Vendor Phone,+91-69004 64956
+Vendor Address,"NEAR ICICI BANK, STATION ROAD P. O. DULIAJAN 786 602, ASSAM"
+Vendor State,
+Vendor Pincode,
+Customer Name,Raynul Ali
+Customer GSTIN,
+Customer Address,
+Customer State,
+Customer Phone,
+Subtotal,
+Taxable Amount,
+Discount,
+Shipping Charges,
+Other Charges,
+Roundoff,
+CGST,
+SGST,
+IGST,
+UGST,
+CESS,
+Total GST,
+HSN Code,
+SAC Code,
+Place of Supply,
+Bank Name,
+Account Number,
+IFSC Code,
+SWIFT Code,
+Payment Status,pending
+Payment Method,
+Payment Terms,
+PO Number,
+PO Date,
+Invoice Type,
+Supply Type,
+Reverse Charge,False
+VAT,
+Service Tax,
+TDS Amount,
+TCS Amount,
+Bill of Entry,
+Port Code,
+=== EXTRACTION QUALITY ===,
+Processing Time (seconds),
+Quality Score (%),
+Extraction Version,v2.5
+Data Source,gemini-2.5-flash
+,
+
+#,Description,HSN/SAC,Quantity,Rate,Amount,CGST Rate,CGST Amount,SGST Rate,SGST Amount,IGST Rate,IGST Amount,Line Total
+1,"Room, charge for Two days on 5/9/23",N/A,2.00,700.00,1400.00,0.0,0.00,0.0,0.00,0.0,0.00,1400.00
+
+,,,,TOTALS:,0.00,,0.00,,0.00,,0.00,1400.90

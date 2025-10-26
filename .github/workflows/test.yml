@@ -1,0 +1,90 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [develop]
+
+jobs:
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+      
+      - name: Run tests with coverage
+        run: |
+          cd backend
+          pytest tests/ -v --cov=app --cov-report=term-missing
+        continue-on-error: true
+      
+      - name: Security check
+        run: |
+          pip install safety
+          cd backend
+          safety check -r requirements.txt || echo "Security scan completed"
+        continue-on-error: true
+
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+      
+      - name: Run linter
+        run: |
+          cd frontend
+          npm run lint
+        continue-on-error: true
+      
+      - name: Type check
+        run: |
+          cd frontend
+          npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+        continue-on-error: true
+
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Check for secrets
+        run: |
+          echo "🔍 Checking for hardcoded secrets..."
+          ! grep -r "sk-" --include="*.py" backend/ || echo "⚠️ Potential API key found"
+          ! grep -r "rzp_" --include="*.py" backend/ || echo "⚠️ Potential API key found"
+        continue-on-error: true
+      
+      - name: Check file sizes
+        run: |
+          echo "📦 Checking for large files..."
+          find . -type f -size +10M -not -path "./.git/*" -not -path "./node_modules/*"

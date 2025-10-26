@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1da1f2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0d95e8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="600" fill="url(#bg)"/>
+  <text x="600" y="180" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="42" font-weight="bold">
+    TrulyInvoice
+  </text>
+  <text x="600" y="230" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="28">
+    Invoice to Excel Converter for India
+  </text>
+  <text x="600" y="280" text-anchor="middle" fill="#e0f2fe" font-family="Arial, sans-serif" font-size="22">
+    Transform invoices into Excel sheets instantly
+  </text>
+  <text x="600" y="320" text-anchor="middle" fill="#b3e5fc" font-family="Arial, sans-serif" font-size="18">
+    99% accuracy • GST compliant • Free plan available
+  </text>
+  <circle cx="1100" cy="120" r="35" fill="#10b981"/>
+  <path d="M1080 120l15 15L1115 105" stroke="white" stroke-width="5" fill="none"/>
+</svg>

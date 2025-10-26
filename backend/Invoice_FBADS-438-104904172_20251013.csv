@@ -1,0 +1,11 @@
+Invoice Number,FBADS-438-104904172
+Invoice Date,2025-09-07
+Vendor Name,Facebook India Online Services Pvt. Ltd.
+Vendor GSTIN,06AABCF5150G1ZZ
+Payment Status,PAID
+
+#,Description,HSN/SAC,Quantity,Rate,Amount,CGST Rate,CGST Amount,SGST Rate,SGST Amount,IGST Rate,IGST Amount,Line Total
+1,salem engagement reel 1,998365,1.00,760.81,760.81,0.0,0.00,0.0,0.00,0.0,0.00,760.81
+2,salem reach reel 1,998365,1.00,845.70,845.70,0.0,0.00,0.0,0.00,0.0,0.00,845.70
+
+,,,,TOTALS:,1606.51,,0.00,,0.00,,289.17,1895.68

@@ -1,0 +1,10 @@
+Invoice Number,10675/2025-26
+Invoice Date,2025-06-04
+Vendor Name,INNOVATION
+Vendor GSTIN,18ADGPN7690C1ZB
+Payment Status,UNPAID
+
+#,Description,HSN/SAC,Quantity,Rate,Amount,CGST Rate,CGST Amount,SGST Rate,SGST Amount,IGST Rate,IGST Amount,Line Total
+1,1 NOS,95045000,1.00,40000.00,40000.00,0.0,0.00,0.0,0.00,0.0,0.00,40000.00
+
+,,,,TOTALS:,0.00,,0.00,,0.00,,0.00,40000.00

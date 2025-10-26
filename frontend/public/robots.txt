@@ -1,0 +1,35 @@
+# robots.txt - TrulyInvoice Invoice to Excel Converter
+# Allow all search engines to crawl our site
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /test-root/
+Disallow: /debug-invoice-ids/
+Crawl-delay: 0
+
+# Specific rules for Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# Specific rules for Bing
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Allow AI crawlers for better indexing
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+# Sitemap location
+Sitemap: https://trulyinvoice.xyz/sitemap.xml
+Sitemap: https://trulyinvoice.xyz/blog/sitemap.xml

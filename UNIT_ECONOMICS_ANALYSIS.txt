@@ -1,0 +1,36 @@
+TRULYINVOICE.IN UNIT ECONOMICS ANALYSIS
+========================================
+
+CURRENT PRICING PLANS:
+Free: ₹0 for 10 scans = ₹0.00 per scan
+Basic: ₹149 for 80 scans = ₹1.86 per scan
+Pro: ₹299 for 200 scans = ₹1.50 per scan
+Ultra: ₹599 for 500 scans = ₹1.20 per scan
+Max: ₹999 for 1000 scans = ₹1.00 per scan
+
+ACTUAL PROCESSING COSTS:
+AI Cost per scan: ₹0.04
+Infrastructure: ₹0.00
+Total Cost per scan: ₹0.04
+
+PROFIT ANALYSIS:
+Basic Plan: ₹1.86 revenue - ₹0.04 cost = ₹1.82 profit per scan (97.8% margin)
+Pro Plan: ₹1.50 revenue - ₹0.04 cost = ₹1.46 profit per scan (97.3% margin)
+Ultra Plan: ₹1.20 revenue - ₹0.04 cost = ₹1.16 profit per scan (96.7% margin)
+Max Plan: ₹1.00 revenue - ₹0.04 cost = ₹0.96 profit per scan (96.0% margin)
+
+MONTHLY PROFITS:
+Basic: 80 scans × ₹1.82 = ₹145.60 monthly profit
+Pro: 200 scans × ₹1.46 = ₹292 monthly profit
+Ultra: 500 scans × ₹1.16 = ₹580 monthly profit
+Max: 1000 scans × ₹0.96 = ₹960 monthly profit
+
+KEY METRICS:
+Average revenue per scan: ₹1.39
+Average cost per scan: ₹0.04
+Average gross margin: 97.1%
+Cost as % of revenue: 2.9%
+
+CONCLUSION:
+WORLD-CLASS UNIT ECONOMICS!
+97%+ gross margins with massive scalability potential.

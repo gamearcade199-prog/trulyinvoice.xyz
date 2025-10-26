@@ -1,0 +1,10 @@
+Invoice Number,009
+Invoice Date,2023-09-13
+Vendor Name,HOTEL ATITHI
+Vendor GSTIN,
+Payment Status,PAID
+
+#,Description,HSN/SAC,Quantity,Rate,Amount,CGST Rate,CGST Amount,SGST Rate,SGST Amount,IGST Rate,IGST Amount,Line Total
+1,Room Rent,N/A,2.00,600.00,1200.00,0.0,0.00,0.0,0.00,0.0,0.00,1200.00
+
+,,,,TOTALS:,0.00,,0.00,,0.00,,0.00,1200.00

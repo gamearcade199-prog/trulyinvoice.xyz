@@ -1,0 +1,370 @@
+{
+  "document_info": {
+    "file_name": "INNOVATION_Invoice_IN67.pdf",
+    "file_size": 245680,
+    "pages": 1,
+    "invoice_type": {
+      "value": "tax_invoice",
+      "confidence": 0.92,
+      "source": "pattern_match",
+      "needs_review": false
+    },
+    "category": {
+      "value": "B2B",
+      "confidence": 0.85,
+      "source": "pattern_match",
+      "needs_review": false
+    },
+    "transaction_type": {
+      "value": "sale",
+      "confidence": 0.88,
+      "source": "pattern_match",
+      "needs_review": false
+    }
+  },
+  "vendor": {
+    "name": {
+      "value": "INNOVATION",
+      "confidence": 0.95,
+      "source": "ai_extraction",
+      "needs_review": false
+    },
+    "gstin": {
+      "value": "18AABCI4851C1ZB",
+      "confidence": 0.92,
+      "source": "ai_extraction",
+      "needs_review": false
+    },
+    "pan": {
+      "value": "AABCI4851C",
+      "confidence": 0.98,
+      "source": "extracted_from_gstin",
+      "needs_review": false
+    },
+    "state_code": {
+      "value": "18",
+      "confidence": 0.98,
+      "source": "extracted_from_gstin",
+      "needs_review": false
+    },
+    "state_name": {
+      "value": "Assam",
+      "confidence": 0.95,
+      "source": "derived_from_state_code",
+      "needs_review": false
+    }
+  },
+  "invoice_details": {
+    "invoice_number": {
+      "value": "IN67/2025-26",
+      "confidence": 0.95,
+      "source": "ai_extraction",
+      "needs_review": false
+    },
+    "invoice_date": {
+      "value": "2025-06-04",
+      "confidence": 0.92,
+      "source": "ai_extraction",
+      "needs_review": false
+    },
+    "due_date": {
+      "value": null,
+      "confidence": 0.8,
+      "source": "ai_extraction",
+      "needs_review": true
+    },
+    "po_number": {
+      "value": null,
+      "confidence": 0.75,
+      "source": "ai_extraction",
+      "needs_review": true
+    }
+  },
+  "line_items": {
+    "table_structure": {
+      "headers": [
+        "S.No",
+        "Description",
+        "HSN/SAC",
+        "Qty",
+        "Rate",
+        "Amount"
+      ],
+      "column_count": 6,
+      "row_count": 1,
+      "confidence": 0.9
+    },
+    "items": [
+      {
+        "line_number": 1,
+        "description": {
+          "value": "Round Off",
+          "confidence": 0.9,
+          "source": "ai_extraction",
+          "needs_review": false
+        },
+        "hsn_sac": {
+          "value": "95046000",
+          "confidence": 0.85,
+          "source": "ai_extraction",
+          "needs_review": false
+        },
+        "quantity": {
+          "value": 1.0,
+          "confidence": 0.88,
+          "source": "ai_extraction",
+          "needs_review": false
+        },
+        "unit": {
+          "value": "NOS",
+          "confidence": 0.75,
+          "source": "pattern_match",
+          "needs_review": true
+        },
+        "rate": {
+          "value": 40000.0,
+          "confidence": 0.9,
+          "source": "ai_extraction",
+          "needs_review": false
+        },
+        "discount_percent": {
+          "value": 0.0,
+          "confidence": 0.7,
+          "source": "pattern_match",
+          "needs_review": true
+        },
+        "discount_amount": {
+          "value": 0.0,
+          "confidence": 0.7,
+          "source": "calculated",
+          "needs_review": true
+        },
+        "taxable_value": {
+          "value": 40000.0,
+          "confidence": 0.85,
+          "source": "calculated",
+          "needs_review": false
+        },
+        "amount": {
+          "value": 40000.0,
+          "confidence": 0.92,
+          "source": "ai_extraction",
+          "needs_review": false
+        },
+        "cgst_rate": {
+          "value": 9,
+          "confidence": 0.6,
+          "source": "assumed",
+          "needs_review": true
+        },
+        "cgst_amount": {
+          "value": 3600.0,
+          "confidence": 0.75,
+          "source": "calculated",
+          "needs_review": true
+        },
+        "sgst_rate": {
+          "value": 9,
+          "confidence": 0.6,
+          "source": "assumed",
+          "needs_review": true
+        },
+        "sgst_amount": {
+          "value": 3600.0,
+          "confidence": 0.75,
+          "source": "calculated",
+          "needs_review": true
+        },
+        "igst_rate": {
+          "value": 0,
+          "confidence": 0.6,
+          "source": "assumed",
+          "needs_review": true
+        },
+        "igst_amount": {
+          "value": 0,
+          "confidence": 0.95,
+          "source": "calculated",
+          "needs_review": false
+        },
+        "cess_amount": {
+          "value": 0,
+          "confidence": 0.6,
+          "source": "pattern_match",
+          "needs_review": true
+        },
+        "total_amount": {
+          "value": 40000.0,
+          "confidence": 0.92,
+          "source": "ai_extraction",
+          "needs_review": false
+        }
+      }
+    ],
+    "items_summary": {
+      "total_items": 1,
+      "total_quantity": 1.0,
+      "total_taxable_value": 40000.0,
+      "total_tax": 7200.0,
+      "grand_total": 40000.0,
+      "confidence": 0.88
+    }
+  },
+  "tax_details": {
+    "taxable_value": {
+      "value": 33898.31,
+      "confidence": 0.9,
+      "source": "ai_extraction",
+      "needs_review": false
+    },
+    "cgst": {
+      "value": 3050.85,
+      "confidence": 0.88,
+      "source": "pattern_match",
+      "needs_review": false,
+      "rate": 9
+    },
+    "sgst": {
+      "value": 3050.85,
+      "confidence": 0.88,
+      "source": "pattern_match",
+      "needs_review": false,
+      "rate": 9
+    },
+    "igst": {
+      "value": 0,
+      "confidence": 0.85,
+      "source": "pattern_match",
+      "needs_review": false,
+      "rate": 0
+    },
+    "total_tax": {
+      "value": 6101.7,
+      "confidence": 0.9,
+      "source": "calculated",
+      "needs_review": false
+    }
+  },
+  "amounts": {
+    "subtotal": {
+      "value": 33898.31,
+      "confidence": 0.9,
+      "source": "calculated",
+      "needs_review": false
+    },
+    "discount": {
+      "value": 0,
+      "confidence": 0.7,
+      "source": "pattern_match",
+      "needs_review": true
+    },
+    "taxable_amount": {
+      "value": 33898.31,
+      "confidence": 0.9,
+      "source": "calculated",
+      "needs_review": false
+    },
+    "total_tax": {
+      "value": 6101.7,
+      "confidence": 0.9,
+      "source": "calculated",
+      "needs_review": false
+    },
+    "round_off": {
+      "value": 0,
+      "confidence": 0.75,
+      "source": "pattern_match",
+      "needs_review": true
+    },
+    "total_amount": {
+      "value": 40000.0,
+      "confidence": 0.95,
+      "source": "ai_extraction",
+      "needs_review": false
+    },
+    "currency": {
+      "value": "INR",
+      "confidence": 0.98,
+      "source": "ai_extraction",
+      "needs_review": false
+    }
+  },
+  "payment_info": {
+    "status": {
+      "value": "unpaid",
+      "confidence": 0.75,
+      "source": "pattern_match",
+      "needs_review": true
+    },
+    "method": {
+      "value": null,
+      "confidence": 0.0,
+      "source": "not_found",
+      "needs_review": true
+    },
+    "bank_details": {
+      "bank_name": {
+        "value": "State Bank Of India",
+        "confidence": 0.85,
+        "source": "ai_extraction",
+        "needs_review": false
+      },
+      "account_number": {
+        "value": "32838014480",
+        "confidence": 0.8,
+        "source": "ai_extraction",
+        "needs_review": true
+      },
+      "ifsc": {
+        "value": "SBIN0005978",
+        "confidence": 0.88,
+        "source": "ai_extraction",
+        "needs_review": false
+      }
+    }
+  },
+  "validation": {
+    "is_valid": true,
+    "has_warnings": false,
+    "validations": {
+      "gstin": {
+        "valid": true,
+        "message": "Valid GSTIN format",
+        "pan": "AABCI4851C",
+        "state_code": "18"
+      },
+      "mathematics": {
+        "valid": true,
+        "message": "Math check passed (diff: ₹0.01)"
+      },
+      "dates": {
+        "valid": true,
+        "message": "Date logic is correct"
+      },
+      "hsn_sac": {
+        "valid": true,
+        "message": "All HSN/SAC codes are valid"
+      },
+      "gst_rates": {
+        "valid": true,
+        "message": "GST rates are standard"
+      }
+    },
+    "errors": [],
+    "warnings": [],
+    "confidence_score": 0.83
+  },
+  "duplicate_check": {
+    "is_duplicate": false,
+    "invoice_hash": "0cef68f06a40f9fa02dccf4738d14046",
+    "similarity_score": 0.0
+  },
+  "extraction_metadata": {
+    "confidence_score": 0.83,
+    "extraction_method": "enterprise_multi_layer",
+    "processing_time_ms": 1.88,
+    "requires_review": true,
+    "extracted_at": "2025-10-13T11:27:38.623615",
+    "extractor_version": "2.0.0-enterprise"
+  }
+}

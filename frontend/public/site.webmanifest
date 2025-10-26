@@ -1,0 +1,23 @@
+{
+  "name": "TrulyInvoice - AI Invoice Management India",
+  "short_name": "TrulyInvoice",
+  "description": "AI-powered invoice management software for Indian businesses",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "categories": ["business", "finance"],
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": []
+}

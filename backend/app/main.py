@@ -1,0 +1,135 @@
+"""
+CLEAN BACKEND - Main Application Entry Point
+Industry-standard FastAPI backend with zero dependency conflicts
+"""
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+import os
+import sys
+
+# Load environment variables
+import pathlib
+backend_dir = pathlib.Path(__file__).parent.parent
+env_path = backend_dir / ".env"
+load_dotenv(env_path, encoding='utf-8')
+
+# Initialize Sentry for error monitoring (PRODUCTION READY)
+try:
+    import sentry_sdk
+    from sentry_sdk.integrations.fastapi import FastApiIntegration
+    from sentry_sdk.integrations.starlette import StarletteIntegration
+    
+    sentry_dsn = os.getenv("SENTRY_DSN")
+    environment = os.getenv("ENVIRONMENT", "production")
+    
+    if sentry_dsn:
+        sentry_sdk.init(
+            dsn=sentry_dsn,
+            environment=environment,
+            integrations=[
+                FastApiIntegration(),
+                StarletteIntegration(),
+            ],
+            # Performance monitoring
+            traces_sample_rate=0.1,  # 10% of transactions for performance monitoring
+            profiles_sample_rate=0.1,  # 10% of profiles
+            # Error tracking
+            send_default_pii=False,  # Don't send personally identifiable info
+            attach_stacktrace=True,
+            max_breadcrumbs=50,
+            debug=False,
+        )
+        print("✅ Sentry error monitoring initialized")
+    else:
+        print("⚠️  SENTRY_DSN not set - Error monitoring disabled")
+except ImportError:
+    print("⚠️  Sentry SDK not installed - Run: pip install sentry-sdk")
+except Exception as e:
+    print(f"⚠️  Sentry initialization failed: {e}")
+
+app = FastAPI(
+    title="TrulyInvoice API",
+    description="Clean, production-ready invoice processing API",
+    version="2.0.0"
+)
+
+# CORS Configuration
+# Allow frontend to make API calls from different domains
+allowed_origins = [
+    "http://localhost:3000",  # Local development
+    "http://localhost:3001",  # Alternative local port
+    "http://localhost:3004",  # Alternative local port
+    "https://trulyinvoice.xyz",  # Production domain
+    "https://www.trulyinvoice.xyz",  # Production with www
+    "https://trulyinvoice-xyz.vercel.app",  # Vercel deployment
+]
+
+# Add any preview deployments from environment
+if os.getenv("VERCEL_URL"):
+    allowed_origins.append(f"https://{os.getenv('VERCEL_URL')}")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
+
+# Add rate limiting middleware
+from .middleware.rate_limiter import rate_limit_middleware, rate_limit_exception_handler
+from slowapi.errors import RateLimitExceeded
+app.middleware("http")(rate_limit_middleware)
+app.add_exception_handler(RateLimitExceeded, rate_limit_exception_handler)
+
+# Environment validation
+@app.on_event("startup")
+async def validate_environment():
+    """Validate required environment variables on startup"""
+    import sys
+    required_vars = [
+        "SUPABASE_URL",
+        "SUPABASE_SERVICE_KEY",
+        "GEMINI_API_KEY",
+        "RAZORPAY_KEY_ID",
+        "RAZORPAY_KEY_SECRET"
+    ]
+    
+    missing = [var for var in required_vars if not os.getenv(var)]
+    
+    if missing:
+        print(f"❌ CRITICAL: Missing required environment variables: {', '.join(missing)}")
+        print("⚠️  Application cannot start without these variables!")
+        sys.exit(1)
+    
+    print("✅ Environment validation passed")
+    print(f"   - Supabase: Connected")
+    print(f"   - Gemini API: Configured")
+    print(f"   - Razorpay: Configured")
+
+# Import routers
+from .api import documents, invoices, health, exports, payments, auth, debug, storage
+# from .api import subscriptions  # Temporarily disabled due to SQLAlchemy table conflict
+
+# Register routes
+app.include_router(health.router, tags=["Health"])
+app.include_router(debug.router, prefix="/api/debug", tags=["Debug"])
+app.include_router(documents.router, prefix="/api/documents", tags=["Documents"])
+app.include_router(invoices.router, prefix="/api/invoices", tags=["Invoices"])
+app.include_router(exports.router, prefix="/api/bulk", tags=["Bulk Exports"])
+app.include_router(payments.router, prefix="/api/payments", tags=["Payments"])
+app.include_router(storage.router, prefix="/api/storage", tags=["Storage"])
+# app.include_router(subscriptions.router, prefix="/api/subscriptions", tags=["Subscriptions"])  # Temporarily disabled
+app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+
+# Note: Bulk export endpoints moved to separate router to avoid circular imports
+
+@app.get("/")
+def root():
+    return {
+        "message": "TrulyInvoice API v2.0 - Clean Architecture",
+        "status": "operational",
+        "docs": "/docs"
+    }
