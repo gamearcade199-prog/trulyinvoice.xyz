@@ -91,6 +91,7 @@ export default function RazorpayCheckout({
     return () => {
       document.body.removeChild(script)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoOpen])
   
   const openRazorpayCheckout = () => {

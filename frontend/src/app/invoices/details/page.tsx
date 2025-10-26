@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
 import { ArrowLeft, Calendar, DollarSign, Building2, FileText, Edit2, Save, X, Download, FileSpreadsheet, FileImage } from 'lucide-react'
@@ -57,9 +57,10 @@ export default function InvoiceDetailsPage() {
       }
       loadInvoiceData()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [invoiceId])
 
-  const fetchInvoiceDetails = async () => {
+  const fetchInvoiceDetails = useCallback(async () => {
     try {
       setLoading(true)
       console.log('🔍 Fetching invoice:', invoiceId)
@@ -89,7 +90,7 @@ export default function InvoiceDetailsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [invoiceId])
 
   const handleSave = async () => {
     try {
