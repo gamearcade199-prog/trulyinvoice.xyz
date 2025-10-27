@@ -250,8 +250,8 @@ def add_security_middleware(app: FastAPI) -> None:
     print("🔒 Adding security middleware...")
     
     # Order matters! Add in reverse order they should execute
+    # NOTE: Do NOT add CORSEnhancedMiddleware here - use FastAPI's built-in CORSMiddleware in main.py
     app.add_middleware(RequestValidationMiddleware)
-    app.add_middleware(CORSEnhancedMiddleware)
     app.add_middleware(SecurityHeadersMiddleware)
     
     print("✅ Security middleware added")
