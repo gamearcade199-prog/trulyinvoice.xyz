@@ -248,6 +248,38 @@ class RazorpayService:
         if subscription:
             # Update existing subscription
             print(f"✏️ Updating existing subscription")
+            
+            # FIX #5: Distinguish between different update scenarios
+            old_tier = subscription.tier
+            old_period_end = subscription.current_period_end
+            current_time = datetime.utcnow()
+            
+            # Scenario A: Period has ended (renewal)
+            # Example: Previous period ended Oct 26, new payment Oct 27 → Reset scans
+            if current_time >= old_period_end:
+                print(f"   ↻ Renewal detected (old period ended on {old_period_end})")
+                subscription.scans_used_this_period = 0  # Reset for new period
+                is_renewal = True
+            
+            # Scenario B: Same tier, same month (re-subscribe after cancel)
+            # Example: Cancelled Oct 1, re-subscribes Oct 15 → Keep the scans
+            elif old_tier == tier and current_time < old_period_end:
+                print(f"   ✓ Same tier during period (keep scans: {subscription.scans_used_this_period})")
+                # Don't reset scans - they're already at fair level
+                is_renewal = False
+            
+            # Scenario C: Mid-period upgrade (tier changed)
+            # Example: Free→Pro on Oct 15 → Keep scans (user earned them)
+            elif old_tier != tier and current_time < old_period_end:
+                print(f"   ⬆️ Mid-period upgrade from {old_tier} to {tier} (keep scans: {subscription.scans_used_this_period})")
+                # Don't reset scans - customer earned them on the old plan
+                is_renewal = False
+            
+            # Default: Keep existing scans unless explicitly renewed
+            else:
+                print(f"   ? Unknown scenario, keeping scans: {subscription.scans_used_this_period}")
+                is_renewal = False
+            
             subscription.tier = tier
             subscription.status = "active"
             subscription.billing_cycle = billing_cycle
@@ -255,7 +287,6 @@ class RazorpayService:
             subscription.razorpay_payment_id = payment_id
             subscription.current_period_start = current_period_start
             subscription.current_period_end = current_period_end
-            subscription.scans_used_this_period = 0  # Reset scans
             subscription.cancelled_at = None
         else:
             # Create new subscription

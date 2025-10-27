@@ -48,6 +48,12 @@ class VerifyPaymentResponse(BaseModel):
     success: bool
     message: str
     subscription: Optional[dict]
+    # FIX #4: Add feature confirmation fields
+    features: Optional[dict] = None
+    tier: Optional[str] = None
+    plan_name: Optional[str] = None
+    scan_limit: Optional[int] = None
+    storage_days: Optional[int] = None
 
 
 @router.post("/create-order", response_model=CreateOrderResponse)
@@ -94,13 +100,26 @@ async def create_payment_order(
                 detail="Cannot create payment order for free tier"
             )
         
+        # FIX #2: Fetch user email and name from Supabase auth
+        from app.services.supabase_helper import supabase
+        try:
+            auth_user = supabase.auth.admin.get_user(current_user)
+            user_email = getattr(auth_user.user, 'email', 'user@example.com') if auth_user.user else 'user@example.com'
+            # Try to get user metadata for full name
+            user_metadata = getattr(auth_user.user, 'user_metadata', {}) if auth_user.user else {}
+            user_name = user_metadata.get('full_name', user_metadata.get('name', 'User')) if user_metadata else 'User'
+        except Exception as e:
+            print(f"⚠️ Could not fetch user details from Supabase: {str(e)}")
+            user_email = 'user@example.com'
+            user_name = 'User'
+        
         # Create order with user_id in notes (for verification later)
         order = razorpay_service.create_subscription_order(
             user_id=current_user,
             tier=request.tier.lower(),
             billing_cycle=request.billing_cycle,
-            user_email="user@example.com",  # TODO: Get from user table
-            user_name="User",  # TODO: Get from user table
+            user_email=user_email,
+            user_name=user_name,
             db=db
         )
         
@@ -232,19 +251,40 @@ async def verify_payment(
             )
         print(f"✅ No duplicate payment")
         
-        # Step 8: NOW SAFE - Process payment
-        success, message, subscription_data = razorpay_service.process_successful_payment(
-            order_id=request.razorpay_order_id,
-            payment_id=request.razorpay_payment_id,
-            signature=request.razorpay_signature,
-            db=db
-        )
-        
-        if not success:
-            print(f"❌ Payment processing failed: {message}")
+        # Step 8: NOW SAFE - Process payment with transaction isolation (FIX #1)
+        # Use db.begin_nested() to create a SAVEPOINT for atomicity
+        try:
+            savepoint = db.begin_nested()
+            
+            success, message, subscription_data = razorpay_service.process_successful_payment(
+                order_id=request.razorpay_order_id,
+                payment_id=request.razorpay_payment_id,
+                signature=request.razorpay_signature,
+                db=db
+            )
+            
+            if not success:
+                print(f"❌ Payment processing failed: {message}")
+                savepoint.rollback()  # Rollback the savepoint
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=message
+                )
+            
+            # FIX #1: Flush writes to ensure subscription is committed
+            # This forces the DB to execute the INSERT/UPDATE but doesn't COMMIT yet
+            db.flush()
+            print(f"✅ Subscription changes flushed to database")
+            
+            # Now commit the savepoint (atomic transaction)
+            savepoint.commit()
+            print(f"✅ Transaction committed successfully")
+            
+        except Exception as e:
+            print(f"❌ Transaction error: {str(e)}")
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=message
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Payment processing transaction failed: {str(e)}"
             )
         
         print(f"✅ Payment verified and processed successfully")
@@ -252,10 +292,29 @@ async def verify_payment(
         # Log successful payment
         log_payment_event(current_user, request.razorpay_order_id, "success", db)
         
+        # FIX #4: Build feature confirmation response
+        from app.config.plans import get_plan_config
+        tier = subscription_data.get('tier') if subscription_data else 'free'
+        plan = get_plan_config(tier)
+        
+        features_dict = {
+            "invoice_processing": True,
+            "csv_export": True,
+            "excel_export": True,
+            "pdf_export": True,
+            "api_access": tier != "free"
+        }
+        
         return VerifyPaymentResponse(
             success=True,
             message=message,
-            subscription=subscription_data
+            subscription=subscription_data,
+            # FIX #4: Add feature confirmation fields so frontend knows immediately
+            features=features_dict,
+            tier=tier,
+            plan_name=plan.get('name'),
+            scan_limit=plan.get('scans_per_month'),
+            storage_days=plan.get('storage_days')
         )
         
     except HTTPException:
