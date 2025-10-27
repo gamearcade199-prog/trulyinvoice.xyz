@@ -1,9 +1,11 @@
 """
 Application Configuration - Pydantic 2.1.x Compatible
+CRITICAL FIX #4: Environment-Specific Configuration
 """
 
 import os
 from pydantic_settings import BaseSettings
+from typing import List
 
 
 class Settings(BaseSettings):
@@ -13,13 +15,29 @@ class Settings(BaseSettings):
     APP_NAME: str = "TrulyInvoice"
     APP_VERSION: str = "1.0.0"
     
+    # Environment (development, staging, production)
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
+    
     # Database
     DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/trulyinvoice")
+    DATABASE_POOL_SIZE: int = int(os.getenv("DATABASE_POOL_SIZE", "10" if os.getenv("ENVIRONMENT") == "production" else "5"))
+    DATABASE_MAX_OVERFLOW: int = int(os.getenv("DATABASE_MAX_OVERFLOW", "20" if os.getenv("ENVIRONMENT") == "production" else "10"))
     
     # Security
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
+    
+    # Redis Configuration (CRITICAL FIX #3)
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    REDIS_DB: int = int(os.getenv("REDIS_DB", "0"))
+    
+    # Sentry Error Tracking (CRITICAL FIX #2)
+    SENTRY_DSN: str = os.getenv("SENTRY_DSN", "")
+    SENTRY_ENVIRONMENT: str = ENVIRONMENT
+    SENTRY_TRACES_SAMPLE_RATE: float = 0.1 if ENVIRONMENT == "production" else 1.0
+    SENTRY_PROFILES_SAMPLE_RATE: float = 0.1 if ENVIRONMENT == "production" else 0.1
     
     # Razorpay Configuration
     RAZORPAY_KEY_ID: str = os.getenv("RAZORPAY_KEY_ID", "rzp_test_dummy_key")
@@ -58,6 +76,10 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE: int = int(os.getenv("MAX_UPLOAD_SIZE", "10485760"))  # 10MB default
     ALLOWED_FILE_TYPES: str = os.getenv("ALLOWED_FILE_TYPES", "pdf,jpg,jpeg,png")
     
+    # Upload Configuration
+    MAX_UPLOAD_SIZE: int = int(os.getenv("MAX_UPLOAD_SIZE", "10485760"))  # 10MB default
+    ALLOWED_FILE_TYPES: str = os.getenv("ALLOWED_FILE_TYPES", "pdf,jpg,jpeg,png")
+    
     # Plan Limits
     STARTER_SCANS_LIMIT: int = int(os.getenv("STARTER_SCANS_LIMIT", "30"))
     PRO_SCANS_LIMIT: int = int(os.getenv("PRO_SCANS_LIMIT", "200"))
@@ -68,17 +90,38 @@ class Settings(BaseSettings):
     PRO_DATA_RETENTION_DAYS: int = int(os.getenv("PRO_DATA_RETENTION_DAYS", "365"))
     BUSINESS_DATA_RETENTION_DAYS: int = int(os.getenv("BUSINESS_DATA_RETENTION_DAYS", "-1"))  # -1 = unlimited
     
-    # CORS
-    ALLOWED_ORIGINS_STR: str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001,https://trulyinvoice.xyz")
-    
     @property
     def ALLOWED_ORIGINS(self) -> list:
         return [origin.strip() for origin in self.ALLOWED_ORIGINS_STR.split(",")]
+    
+    def validate_production_config(self) -> None:
+        """Validate production configuration (called on startup)"""
+        if self.ENVIRONMENT == "production":
+            if self.SECRET_KEY == "your-secret-key-change-in-production":
+                raise ValueError("⛔ SECRET_KEY must be changed in production!")
+            if self.RAZORPAY_KEY_ID.startswith("rzp_test"):
+                raise ValueError("⛔ Using test Razorpay keys in PRODUCTION!")
+            if not self.SENTRY_DSN:
+                print("⚠️  WARNING: SENTRY_DSN not configured in production!")
+            if not self.REDIS_URL or self.REDIS_URL == "redis://localhost:6379/0":
+                print("⚠️  WARNING: Using local Redis in PRODUCTION!")
     
     class Config:
         env_file = ".env"
         case_sensitive = True
         extra = "ignore"
+
+
+# Create settings instance
+settings = Settings()
+
+# Validate production config on import
+try:
+    settings.validate_production_config()
+    print(f"✅ Configuration loaded for {settings.ENVIRONMENT} environment")
+except ValueError as e:
+    print(f"❌ Configuration Error: {str(e)}")
+    raise
 
 
 settings = Settings()
