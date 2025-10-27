@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 import secrets
 import uuid
+import logging
 
 from app.core.database import get_db
 from app.models import Subscription
@@ -19,6 +20,7 @@ from app.middleware.rate_limiter import check_login_rate_limit, record_failed_lo
 from app.services.supabase_helper import supabase
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 # Request/Response Models
 class UserRegistrationRequest(BaseModel):
@@ -89,13 +91,13 @@ async def setup_new_user(
         # Check rate limit on registration
         allowed, error_msg = check_login_rate_limit(client_ip)
         if not allowed:
-            print(f"🚫 Registration rate limited: {client_ip}")
+            logger.warning(f"Registration rate limited from IP: {client_ip}")
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 detail=error_msg
             )
         
-        print(f"✅ Registration rate check passed: {client_ip} ({request.email})")
+        logger.info(f"Registration rate check passed", extra={"ip": client_ip, "email_domain": request.email.split('@')[1]})
         
         # Check if user already has a subscription in Supabase
         try:
@@ -320,14 +322,14 @@ async def forgot_password(
         # Check rate limit
         allowed, error_msg = check_login_rate_limit(client_ip)
         if not allowed:
-            print(f"🚫 Password reset rate limited: {client_ip}")
+            logger.warning(f"Password reset rate limited from IP: {client_ip}")
             # Don't reveal rate limit for security
             return ForgotPasswordResponse(
                 success=True,
                 message="If an account exists with this email, a reset link will be sent"
             )
         
-        print(f"📧 Password reset requested for: {request.email}")
+        logger.info("Password reset requested", extra={"email_domain": request.email.split('@')[1]})
         
         # Generate secure token
         reset_token = secrets.token_urlsafe(32)
@@ -341,10 +343,7 @@ async def forgot_password(
             # Use Supabase Auth's built-in password reset
             response = supabase.auth.reset_password_for_email(request.email)
             
-            print(f"✅ Password reset link sent to: {request.email}")
-            
-            # Log the request
-            print(f"📝 Password reset logged: {request.email} from {client_ip}")
+            logger.info("Password reset email sent", extra={"email_domain": request.email.split('@')[1]})
             
             return ForgotPasswordResponse(
                 success=True,
@@ -352,7 +351,7 @@ async def forgot_password(
             )
         
         except Exception as e:
-            print(f"⚠️ Supabase password reset: {str(e)}")
+            logger.error(f"Supabase password reset failed: {str(e)}")
             # Return generic message for security
             return ForgotPasswordResponse(
                 success=True,
@@ -360,7 +359,7 @@ async def forgot_password(
             )
     
     except Exception as e:
-        print(f"❌ Password reset error: {str(e)}")
+        logger.error(f"Password reset error: {str(e)}")
         # Return generic message for security
         return ForgotPasswordResponse(
             success=True,
@@ -409,7 +408,7 @@ async def reset_password(
                 detail="Password must be at least 8 characters long"
             )
         
-        print(f"🔑 Processing password reset from {client_ip}")
+        logger.info("Processing password reset", extra={"ip": client_ip})
         
         # Use Supabase Auth to update password
         # Note: This requires the token from the Supabase password reset email
@@ -419,10 +418,7 @@ async def reset_password(
                 'password': request.new_password
             }, jwt=request.token)
             
-            print(f"✅ Password reset successful")
-            
-            # Log the event
-            print(f"📝 Password reset completed from {client_ip}")
+            logger.info("Password reset completed successfully", extra={"ip": client_ip})
             
             return ResetPasswordResponse(
                 success=True,
@@ -430,7 +426,7 @@ async def reset_password(
             )
         
         except Exception as e:
-            print(f"❌ Password update failed: {str(e)}")
+            logger.error(f"Password update failed: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid or expired reset token. Please request a new password reset."
@@ -439,7 +435,7 @@ async def reset_password(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"❌ Password reset error: {str(e)}")
+        logger.error(f"Password reset error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to reset password"
@@ -474,7 +470,7 @@ async def change_password(
                 detail="New password must be at least 8 characters"
             )
         
-        print(f"🔑 Password change requested for user: {current_user}")
+        logger.info("Password change requested", extra={"user_id": current_user[:8]})
         
         try:
             # Update password in Supabase Auth
@@ -482,7 +478,7 @@ async def change_password(
                 'password': new_password
             })
             
-            print(f"✅ Password changed for user: {current_user}")
+            logger.info("Password changed successfully", extra={"user_id": current_user[:8]})
             
             return ResetPasswordResponse(
                 success=True,
@@ -490,7 +486,7 @@ async def change_password(
             )
         
         except Exception as e:
-            print(f"❌ Password change failed: {str(e)}")
+            logger.error(f"Password change failed: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Failed to change password"
@@ -499,8 +495,8 @@ async def change_password(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"❌ Error changing password: {str(e)}")
+        logger.error(f"Error changing password: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error changing password"
+            detail="Failed to change password"
         )

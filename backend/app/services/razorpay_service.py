@@ -334,19 +334,30 @@ class RazorpayService:
         Returns:
             Tuple of (success: bool, message: str)
         """
-        # Verify webhook signature
+        # SECURITY FIX: Webhook signature verification is MANDATORY
         webhook_secret = getattr(settings, 'RAZORPAY_WEBHOOK_SECRET', '')
         
-        if webhook_secret:
-            # Generate signature
-            expected_signature = hmac.new(
-                webhook_secret.encode('utf-8'),
-                str(event).encode('utf-8'),
-                hashlib.sha256
-            ).hexdigest()
-            
-            if not hmac.compare_digest(expected_signature, signature):
-                return False, "Invalid webhook signature"
+        if not webhook_secret:
+            # CRITICAL: Don't process webhooks without secret configured
+            print("🚨 SECURITY: RAZORPAY_WEBHOOK_SECRET not configured - rejecting webhook")
+            return False, "Webhook secret not configured - cannot verify signature"
+        
+        if not signature:
+            print("🚨 SECURITY: Webhook signature missing")
+            return False, "Webhook signature missing"
+        
+        # Generate signature
+        expected_signature = hmac.new(
+            webhook_secret.encode('utf-8'),
+            str(event).encode('utf-8'),
+            hashlib.sha256
+        ).hexdigest()
+        
+        if not hmac.compare_digest(expected_signature, signature):
+            print("🚨 SECURITY: Invalid webhook signature - possible attack")
+            return False, "Invalid webhook signature"
+        
+        print("✅ Webhook signature verified")
         
         # Process event based on type
         event_type = event.get("event")

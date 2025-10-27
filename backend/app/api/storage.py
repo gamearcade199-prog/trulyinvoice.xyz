@@ -3,19 +3,20 @@ API Endpoint for Storage Cleanup
 Allows manual triggering of storage cleanup via API
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from typing import Dict, Any
 from pydantic import BaseModel
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.auth import get_current_user
 from app.services.storage_cleanup import (
     cleanup_user_storage,
-    cleanup_all_storage,
-    cleanup_anonymous_storage,
     get_user_storage_stats
 )
 
 router = APIRouter()
+limiter = Limiter(key_func=get_remote_address)
 
 
 class CleanupResponse(BaseModel):
@@ -32,15 +33,19 @@ class StorageStatsResponse(BaseModel):
 
 
 @router.post("/cleanup/user", response_model=CleanupResponse)
+@limiter.limit("5/hour")
 async def cleanup_user_data(
+    request: Request,
     current_user: str = Depends(get_current_user)
 ):
     """
     Clean up old data for the current user based on their subscription tier
     
     Security: Only authenticated users can cleanup their own data
+    Rate Limited: 5 requests per hour to prevent abuse
     
     Args:
+        request: HTTP request (for rate limiting)
         current_user: Current authenticated user (from JWT token)
     
     Returns:
@@ -81,6 +86,7 @@ async def get_storage_statistics(
     Get storage statistics for the current user
     
     Security: Only authenticated users can view their own stats
+    Rate Limited: 30 requests per minute
     
     Args:
         current_user: Current authenticated user (from JWT token)
@@ -103,56 +109,12 @@ async def get_storage_statistics(
         )
 
 
-# Admin endpoints (would need admin authentication in production)
-@router.post("/cleanup/all", response_model=CleanupResponse)
-async def cleanup_all_users():
-    """
-    Clean up old data for all users based on their subscription tiers
-    
-    Security: This should be restricted to admin users or run via cron job
-    TODO: Add admin authentication
-    
-    Returns:
-        Cleanup results for all users
-    """
-    try:
-        result = cleanup_all_storage()
-        
-        return CleanupResponse(
-            success=True,
-            message="All users storage cleanup completed",
-            details=result
-        )
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Cleanup failed: {str(e)}"
-        )
-
-
-@router.post("/cleanup/anonymous", response_model=CleanupResponse)
-async def cleanup_anonymous_data():
-    """
-    Clean up anonymous uploads older than 24 hours
-    
-    Security: This should be restricted to admin users or run via cron job
-    TODO: Add admin authentication
-    
-    Returns:
-        Cleanup results for anonymous uploads
-    """
-    try:
-        result = cleanup_anonymous_storage()
-        
-        return CleanupResponse(
-            success=True,
-            message="Anonymous uploads cleanup completed",
-            details=result
-        )
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Cleanup failed: {str(e)}"
-        )
+# Admin endpoints REMOVED for security
+# These operations should only be run via scheduled cron jobs or backend scripts
+# NOT exposed as public API endpoints to prevent unauthorized data deletion
+#
+# To run cleanup manually:
+# 1. SSH into server
+# 2. Run: python -c "from app.services.storage_cleanup import cleanup_all_storage; cleanup_all_storage()"
+#
+# Or set up a cron job in Render dashboard to run cleanup_script.py daily
