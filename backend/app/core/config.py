@@ -76,6 +76,9 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE: int = int(os.getenv("MAX_UPLOAD_SIZE", "10485760"))  # 10MB default
     ALLOWED_FILE_TYPES: str = os.getenv("ALLOWED_FILE_TYPES", "pdf,jpg,jpeg,png")
     
+    # CORS Configuration
+    ALLOWED_ORIGINS_STR: str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001,https://trulyinvoice.xyz,https://www.trulyinvoice.xyz")
+    
     # Upload Configuration
     MAX_UPLOAD_SIZE: int = int(os.getenv("MAX_UPLOAD_SIZE", "10485760"))  # 10MB default
     ALLOWED_FILE_TYPES: str = os.getenv("ALLOWED_FILE_TYPES", "pdf,jpg,jpeg,png")
