@@ -139,19 +139,30 @@ async def validate_environment():
     print(f"   - Razorpay: Configured")
 
 # Import routers
-from .api import documents, invoices, health, exports, payments, auth, debug, storage
-# from .api import subscriptions  # Temporarily disabled due to SQLAlchemy table conflict
+# Import API routers
+import os
+environment = os.getenv("ENVIRONMENT", "development")
+
+# Import core routers
+from .api import documents, invoices, health, exports, payments, auth, storage
 
 # Register routes
 app.include_router(health.router, tags=["Health"])
-app.include_router(debug.router, prefix="/api/debug", tags=["Debug"])
 app.include_router(documents.router, prefix="/api/documents", tags=["Documents"])
 app.include_router(invoices.router, prefix="/api/invoices", tags=["Invoices"])
 app.include_router(exports.router, prefix="/api/bulk", tags=["Bulk Exports"])
 app.include_router(payments.router, prefix="/api/payments", tags=["Payments"])
 app.include_router(storage.router, prefix="/api/storage", tags=["Storage"])
-# app.include_router(subscriptions.router, prefix="/api/subscriptions", tags=["Subscriptions"])  # Temporarily disabled
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+
+# Debug endpoints only in development
+if environment != "production":
+    try:
+        from .api import debug
+        app.include_router(debug.router, prefix="/api/debug", tags=["Debug"])
+        print("⚠️  Debug endpoints enabled (development mode)")
+    except ImportError:
+        print("ℹ️  Debug module not available")
 
 # Note: Bulk export endpoints moved to separate router to avoid circular imports
 

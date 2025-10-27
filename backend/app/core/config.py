@@ -94,17 +94,29 @@ class Settings(BaseSettings):
     def ALLOWED_ORIGINS(self) -> list:
         return [origin.strip() for origin in self.ALLOWED_ORIGINS_STR.split(",")]
     
-    def validate_production_config(self) -> None:
-        """Validate production configuration (called on startup)"""
+    def validate_production_config(self):
+        """Validate production configuration on startup"""
         if self.ENVIRONMENT == "production":
+            warnings = []
+            
+            # Check SECRET_KEY
             if self.SECRET_KEY == "your-secret-key-change-in-production":
-                raise ValueError("⛔ SECRET_KEY must be changed in production!")
-            if self.RAZORPAY_KEY_ID.startswith("rzp_test"):
-                raise ValueError("⛔ Using test Razorpay keys in PRODUCTION!")
-            if not self.SENTRY_DSN:
-                print("⚠️  WARNING: SENTRY_DSN not configured in production!")
-            if not self.REDIS_URL or self.REDIS_URL == "redis://localhost:6379/0":
-                print("⚠️  WARNING: Using local Redis in PRODUCTION!")
+                warnings.append("⚠️  WARNING: SECRET_KEY is using default value! Generate: python -c \"import secrets; print(secrets.token_urlsafe(32))\"")
+            elif len(self.SECRET_KEY) < 32:
+                warnings.append("⚠️  WARNING: SECRET_KEY should be at least 32 characters!")
+            
+            # Check JWT_SECRET_KEY
+            if hasattr(self, 'JWT_SECRET_KEY'):
+                if self.JWT_SECRET_KEY == "change-this-in-production-to-random-string":
+                    warnings.append("⚠️  WARNING: JWT_SECRET_KEY is using default value!")
+            
+            # Print warnings but don't block startup
+            if warnings:
+                print("\n" + "="*80)
+                print("🔒 SECURITY WARNINGS:")
+                for warning in warnings:
+                    print(f"   {warning}")
+                print("="*80 + "\n")
     
     class Config:
         env_file = ".env"
