@@ -50,10 +50,14 @@ class RazorpayService:
         Returns:
             Order details from Razorpay
         """
+        # Check if Razorpay keys are properly configured
+        if self.key_id == 'rzp_test_dummy_key' or self.key_secret == 'dummy_secret':
+            raise Exception("🔴 ERROR: Razorpay keys not configured! Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET environment variables with your live keys from https://dashboard.razorpay.com/app/settings/api-keys")
+        
         if not self.client:
-            # Return mock order for development
+            # Return mock order for development if keys exist
             return {
-                "id": f"order_mock_{datetime.utcnow().timestamp()}",
+                "id": f"order_mock_{int(datetime.utcnow().timestamp())}",
                 "entity": "order",
                 "amount": amount,
                 "amount_paid": 0,
