@@ -11,9 +11,32 @@ const PLAN_PRICES: Record<string, number> = {
 
 export async function POST(req: NextRequest) {
   try {
+    // Debug: Log environment variables
+    console.log('Creating order - RAZORPAY_KEY_ID:', process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ? 'Set' : 'Not set');
+    console.log('Creating order - RAZORPAY_KEY_SECRET:', process.env.RAZORPAY_KEY_SECRET ? 'Set' : 'Not set');
+
+    const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+    if (!keyId) {
+      console.error('❌ RAZORPAY_KEY_ID not found in environment variables');
+      return NextResponse.json({ 
+        error: 'Razorpay key not configured',
+        details: 'RAZORPAY_KEY_ID missing from environment'
+      }, { status: 500 });
+    }
+
+    if (!keySecret) {
+      console.error('❌ RAZORPAY_KEY_SECRET not found in environment variables');
+      return NextResponse.json({ 
+        error: 'Razorpay secret not configured',
+        details: 'RAZORPAY_KEY_SECRET missing from environment'
+      }, { status: 500 });
+    }
+
     const razorpay = new Razorpay({
-      key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID!,
-      key_secret: process.env.RAZORPAY_KEY_SECRET!,
+      key_id: keyId,
+      key_secret: keySecret,
     });
 
     const body = await req.json();
@@ -61,14 +84,15 @@ export async function POST(req: NextRequest) {
     const order = await razorpay.orders.create(options);
     
     // Return order details with key_id for client
+    console.log('✅ Order created:', order.id);
     return NextResponse.json({
       order_id: order.id,
       amount_paise: order.amount,
       currency: order.currency,
-      key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID,
+      key_id: keyId, // IMPORTANT: Always return the key_id so client-side checkout works
     });
   } catch (error) {
-    console.error('Payment order error:', error);
+    console.error('❌ Payment order error:', error);
     return NextResponse.json({ 
       error: 'Error creating order',
       details: error instanceof Error ? error.message : 'Unknown error'

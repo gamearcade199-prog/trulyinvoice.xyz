@@ -48,6 +48,27 @@ except ImportError:
 except Exception as e:
     print(f"⚠️  Sentry initialization failed: {e}")
 
+# Initialize Redis Connection (FIX #3 & #10)
+try:
+    from app.core.caching import get_redis_client
+    from app.core.redis_limiter import get_rate_limiter
+    
+    # Test Redis connection
+    redis_client = get_redis_client()
+    if redis_client:
+        print("✅ Redis cache layer initialized")
+        redis_client.ping()
+    else:
+        print("⚠️  Redis unavailable - Using fallback in-memory caching")
+    
+    # Initialize rate limiter
+    rate_limiter = get_rate_limiter()
+    print("✅ Redis rate limiter initialized")
+except ImportError:
+    print("⚠️  Redis SDK not installed - Run: pip install redis")
+except Exception as e:
+    print(f"⚠️  Redis initialization warning: {e}")
+
 app = FastAPI(
     title="TrulyInvoice API",
     description="Clean, production-ready invoice processing API",
@@ -83,6 +104,14 @@ from .middleware.rate_limiter import rate_limit_middleware, rate_limit_exception
 from slowapi.errors import RateLimitExceeded
 app.middleware("http")(rate_limit_middleware)
 app.add_exception_handler(RateLimitExceeded, rate_limit_exception_handler)
+
+# Add Security Headers Middleware (FIX #8)
+try:
+    from app.middleware.security_headers import add_security_middleware
+    add_security_middleware(app)
+    print("✅ Security headers middleware initialized")
+except Exception as e:
+    print(f"⚠️  Security headers initialization warning: {e}")
 
 # Environment validation
 @app.on_event("startup")
