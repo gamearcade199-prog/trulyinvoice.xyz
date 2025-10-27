@@ -95,15 +95,8 @@ const nextConfig = {
     ]
   },
   
-  // API rewrites
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/:path*',
-      },
-    ]
-  },
+  // NOTE: Removed API rewrites - let frontend routes handle themselves
+  // Backend API calls use NEXT_PUBLIC_API_URL directly in code
   
   // Trailing slash (important for SEO consistency)
   trailingSlash: false,
