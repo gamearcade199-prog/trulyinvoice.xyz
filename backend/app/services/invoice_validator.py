@@ -151,6 +151,23 @@ class InvoiceValidator:
                     except ValueError:
                         errors.append(f"{date_field} invalid format: '{date_value}' (expected YYYY-MM-DD)")
             
+            # ============ DATE LOGIC VALIDATION ============
+            # Check that due_date is not before invoice_date
+            if 'invoice_date' in cleaned_data and 'due_date' in cleaned_data:
+                inv_date_val = cleaned_data.get('invoice_date')
+                due_date_val = cleaned_data.get('due_date')
+                
+                if inv_date_val and due_date_val:
+                    try:
+                        # Parse to datetime objects for comparison
+                        inv_dt = datetime.strptime(inv_date_val, '%Y-%m-%d') if isinstance(inv_date_val, str) else inv_date_val
+                        due_dt = datetime.strptime(due_date_val, '%Y-%m-%d') if isinstance(due_date_val, str) else due_date_val
+                        
+                        if due_dt < inv_dt:
+                            errors.append(f"due_date ({due_date_val}) cannot be before invoice_date ({inv_date_val})")
+                    except (ValueError, TypeError):
+                        pass  # Already caught by individual field validation
+            
             # ============ CONFIDENCE SCORE VALIDATION ============
             confidence_fields = [
                 'confidence_score', 'vendor_confidence', 'amount_confidence',
