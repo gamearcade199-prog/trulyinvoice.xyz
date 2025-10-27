@@ -12,17 +12,24 @@ load_dotenv(env_path, encoding='utf-8')
 
 # Get environment variables with fallbacks for deployment
 supabase_url = os.getenv("SUPABASE_URL")
-supabase_key = os.getenv("SUPABASE_SERVICE_KEY")
+# Try SERVICE_KEY first (for backend), fallback to SUPABASE_KEY (for client)
+supabase_key = os.getenv("SUPABASE_SERVICE_KEY") or os.getenv("SUPABASE_KEY")
 
-# Validate required environment variables
+# Print warning if Supabase is not configured
 if not supabase_url:
-    raise ValueError("SUPABASE_URL environment variable is required")
+    print("⚠️ WARNING: SUPABASE_URL not configured - Supabase operations will fail")
+    supabase_url = "https://placeholder.supabase.co"
 
 if not supabase_key:
-    raise ValueError("SUPABASE_SERVICE_KEY environment variable is required")
+    print("⚠️ WARNING: SUPABASE_SERVICE_KEY or SUPABASE_KEY not configured - using placeholder")
+    supabase_key = "placeholder_key"
 
-# Create official Supabase client
-supabase: Client = create_client(
-    supabase_url=supabase_url,
-    supabase_key=supabase_key
-)
+# Create official Supabase client (non-blocking, will fail gracefully at runtime if keys missing)
+try:
+    supabase: Client = create_client(
+        supabase_url=supabase_url,
+        supabase_key=supabase_key
+    )
+except Exception as e:
+    print(f"⚠️ WARNING: Failed to initialize Supabase client: {e}")
+    supabase = None

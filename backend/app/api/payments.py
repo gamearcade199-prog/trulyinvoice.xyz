@@ -112,17 +112,21 @@ async def create_payment_order(
             )
 
         # FIX #2: Fetch user email and name from Supabase auth
-        from app.services.supabase_helper import supabase
+        user_email = 'user@example.com'
+        user_name = 'User'
+        
         try:
-            auth_user = supabase.auth.admin.get_user(current_user)
-            user_email = getattr(auth_user.user, 'email', 'user@example.com') if auth_user.user else 'user@example.com'
-            # Try to get user metadata for full name
-            user_metadata = getattr(auth_user.user, 'user_metadata', {}) if auth_user.user else {}
-            user_name = user_metadata.get('full_name', user_metadata.get('name', 'User')) if user_metadata else 'User'
+            from app.services.supabase_helper import supabase
+            if supabase:  # Only try if Supabase client is available
+                auth_user = supabase.auth.admin.get_user(current_user)
+                if auth_user and auth_user.user:
+                    user_email = getattr(auth_user.user, 'email', 'user@example.com') or 'user@example.com'
+                    # Try to get user metadata for full name
+                    user_metadata = getattr(auth_user.user, 'user_metadata', {}) or {}
+                    user_name = user_metadata.get('full_name', user_metadata.get('name', 'User')) or 'User'
         except Exception as e:
             print(f"⚠️ Could not fetch user details from Supabase: {str(e)}")
-            user_email = 'user@example.com'
-            user_name = 'User'
+            # Continue with default values
         
         # RATE LIMIT: Use Redis rate limiter per-user based on their current tier
         try:
