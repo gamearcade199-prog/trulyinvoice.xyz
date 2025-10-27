@@ -8,8 +8,6 @@ from sqlalchemy.orm import Session
 from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 
 from app.core.database import get_db
 from app.services.razorpay_service import razorpay_service
@@ -23,8 +21,8 @@ from app.core.caching import get_redis_client
 
 router = APIRouter()
 
-# Rate limiter for payment endpoints
-limiter = Limiter(key_func=get_remote_address)
+# Note: Using custom Redis-based rate limiting instead of SlowAPI
+# See get_rate_limiter() usage in endpoint functions below
 
 
 # Request/Response Models
@@ -67,7 +65,6 @@ class VerifyPaymentResponse(BaseModel):
 
 
 @router.post("/create-order", response_model=CreateOrderResponse)
-@limiter.limit("10/minute")  # Rate limit: 10 order creations per minute per IP
 async def create_payment_order(
     request_obj: Request,  # Changed from 'request' to avoid conflict
     create_request: CreateOrderRequest,
@@ -78,7 +75,7 @@ async def create_payment_order(
     Create Razorpay payment order for subscription.
     
     Security: Only authenticated users can create orders for themselves.
-    Rate Limited: 10 requests per minute per IP to prevent abuse.
+    Rate Limited: Custom Redis-based rate limiting with tier-specific limits.
     
     Args:
         request_obj: FastAPI request object
