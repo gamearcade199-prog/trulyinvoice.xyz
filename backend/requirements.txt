@@ -47,6 +47,9 @@ pyotp==2.9.0
 # Rate Limiting
 slowapi==0.1.9
 
+# Redis for caching and rate limiting
+redis>=5.0.0
+
 # Error Monitoring & Tracking
 sentry-sdk[fastapi]==1.40.6
 
