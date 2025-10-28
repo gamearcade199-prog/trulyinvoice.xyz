@@ -26,9 +26,12 @@ from openpyxl.formatting.rule import CellIsRule, FormulaRule
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 import json
+import logging
 import re
 import hashlib
 from decimal import Decimal, ROUND_HALF_UP
+
+logger = logging.getLogger(__name__)
 
 
 class AccountantExcelExporter:
@@ -270,7 +273,8 @@ class AccountantExcelExporter:
         if isinstance(cleaned.get('line_items'), str):
             try:
                 cleaned['line_items'] = json.loads(cleaned['line_items'])
-            except:
+            except (json.JSONDecodeError, ValueError, TypeError) as e:
+                logger.warning(f"Failed to parse line_items: {e}")
                 cleaned['line_items'] = []
 
         # Ensure line_items is list
@@ -285,7 +289,8 @@ class AccountantExcelExporter:
             if cleaned.get(field) is not None:
                 try:
                     cleaned[field] = float(cleaned[field])
-                except:
+                except (ValueError, TypeError) as e:
+                    logger.warning(f"Failed to convert {field} to float: {e}")
                     cleaned[field] = 0.0
             else:
                 cleaned[field] = 0.0  # Ensure None values become 0.0

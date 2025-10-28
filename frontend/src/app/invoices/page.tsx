@@ -33,6 +33,9 @@ export default function InvoicesPageClean() {
   const [showRowExportDropdown, setShowRowExportDropdown] = useState<{[key: string]: boolean}>({})
   const [showMobileExportDropdown, setShowMobileExportDropdown] = useState<{[key: string]: boolean}>({})
   const [userExportTemplate, setUserExportTemplate] = useState('simple')
+  const [currentPage, setCurrentPage] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const INVOICES_PER_PAGE = 20
 
   useEffect(() => {
     fetchInvoices()
@@ -43,9 +46,14 @@ export default function InvoicesPageClean() {
       try {
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
-          const savedTemplate = localStorage.getItem(`export_template_${user.id}`)
-          if (savedTemplate && ['simple', 'accountant', 'analyst', 'compliance'].includes(savedTemplate)) {
-            setUserExportTemplate(savedTemplate)
+          try {
+            const savedTemplate = localStorage.getItem(`export_template_${user.id}`)
+            if (savedTemplate && ['simple', 'accountant', 'analyst', 'compliance'].includes(savedTemplate)) {
+              setUserExportTemplate(savedTemplate)
+            }
+          } catch (storageError) {
+            // localStorage not available (Safari private mode, quota exceeded, etc.)
+            // Use default template
           }
         }
       } catch (error) {
@@ -76,21 +84,21 @@ export default function InvoicesPageClean() {
     return () => document.removeEventListener('click', handleClickOutside)
   }, [])
 
-  const fetchInvoices = async () => {
+  const fetchInvoices = async (page: number = 0) => {
     try {
       setLoading(true)
       
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        console.log('No user logged in')
         setLoading(false)
         return
       }
 
-      console.log('Fetching completed invoices for user:', user.id)
+      const from = page * INVOICES_PER_PAGE
+      const to = from + INVOICES_PER_PAGE - 1
 
-      // Fetch ONLY user's invoices (removed .or(user_id.is.null) to exclude dummy data)
-      const { data: invoicesData, error: invoicesError } = await supabase
+      // Fetch paginated user invoices
+      const { data: invoicesData, error: invoicesError, count } = await supabase
         .from('invoices')
         .select(`
           *,
@@ -99,22 +107,28 @@ export default function InvoicesPageClean() {
             file_url,
             file_name
           )
-        `)
+        `, { count: 'exact' })
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
+        .range(from, to)
 
       if (invoicesError) {
-        console.error('Error fetching invoices:', invoicesError)
         setInvoices([])
         return
       }
 
-      console.log('Fetched invoices:', invoicesData?.length || 0)
-      console.log('Sample invoice data:', invoicesData?.[0]) // DEBUG: See actual invoice structure
-      setInvoices(invoicesData || [])
+      // Append to existing invoices if loading more pages
+      if (page === 0) {
+        setInvoices(invoicesData || [])
+      } else {
+        setInvoices(prev => [...prev, ...(invoicesData || [])])
+      }
+      
+      // Check if there are more invoices to load
+      const totalFetched = (page + 1) * INVOICES_PER_PAGE
+      setHasMore((count || 0) > totalFetched)
       
     } catch (error) {
-      console.error('Fetch error:', error)
       setInvoices([])
     } finally {
       setLoading(false)
@@ -125,7 +139,6 @@ export default function InvoicesPageClean() {
     try {
       exportInvoicesToCSV(invoices)
     } catch (error) {
-      console.error('Export error:', error)
       alert('Failed to export invoices')
     }
   }
@@ -134,9 +147,14 @@ export default function InvoicesPageClean() {
     try {
       exportInvoicesToCSV([invoice])
     } catch (error) {
-      console.error('Export error:', error)
       alert('Failed to export invoice')
     }
+  }
+
+  const loadMoreInvoices = () => {
+    const nextPage = currentPage + 1
+    setCurrentPage(nextPage)
+    fetchInvoices(nextPage)
   }
 
   const handleExcelExport = async () => {
@@ -517,10 +535,14 @@ export default function InvoicesPageClean() {
                   try {
                     const { data: { user } } = await supabase.auth.getUser()
                     if (user) {
-                      localStorage.setItem(`export_template_${user.id}`, newTemplate)
+                      try {
+                        localStorage.setItem(`export_template_${user.id}`, newTemplate)
+                      } catch (storageError) {
+                        // localStorage not available - silent fail
+                      }
                     }
                   } catch (error) {
-                    console.error('Error saving template preference:', error)
+                    // Silent fail - preference not critical
                   }
                 }}
                 className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"

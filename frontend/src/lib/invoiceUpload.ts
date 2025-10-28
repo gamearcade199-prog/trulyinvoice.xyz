@@ -40,9 +40,8 @@ export function storeTempInvoice(data: TempInvoiceData) {
     const existing = getTempInvoices()
     existing.push(data)
     localStorage.setItem(TEMP_INVOICE_KEY, JSON.stringify(existing))
-    console.log('✅ Temp invoice stored:', data)
   } catch (error) {
-    console.error('❌ Failed to store temp invoice:', error)
+    // Silent fail - localStorage might be disabled
   }
 }
 
@@ -52,7 +51,6 @@ export function getTempInvoices(): TempInvoiceData[] {
     const stored = localStorage.getItem(TEMP_INVOICE_KEY)
     return stored ? JSON.parse(stored) : []
   } catch (error) {
-    console.error('❌ Failed to get temp invoices:', error)
     return []
   }
 }
@@ -61,9 +59,8 @@ export function getTempInvoices(): TempInvoiceData[] {
 export function clearTempInvoices() {
   try {
     localStorage.removeItem(TEMP_INVOICE_KEY)
-    console.log('✅ Temp invoices cleared')
   } catch (error) {
-    console.error('❌ Failed to clear temp invoices:', error)
+    // Silent fail
   }
 }
 
@@ -71,8 +68,6 @@ export function clearTempInvoices() {
 export async function linkTempInvoicesToUser(userId: string) {
   const tempInvoices = getTempInvoices()
   if (tempInvoices.length === 0) return
-
-  console.log(`🔗 Linking ${tempInvoices.length} temp invoices to user:`, userId)
   
   for (const tempInvoice of tempInvoices) {
     try {
@@ -84,13 +79,11 @@ export async function linkTempInvoicesToUser(userId: string) {
           .eq('id', tempInvoice.documentId)
 
         if (error) {
-          console.error('❌ Failed to link document:', error)
-        } else {
-          console.log('✅ Document linked:', tempInvoice.documentId)
+          // Silent fail - user can re-upload if needed
         }
       }
     } catch (error) {
-      console.error('❌ Error linking invoice:', error)
+      // Silent fail - non-critical
     }
   }
 
@@ -108,8 +101,10 @@ export async function uploadInvoiceAnonymous(file: File) {
     console.log(isAuthenticated ? '📤 Uploading as authenticated user' : '📤 Uploading anonymously')
     
     // Get API URL
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-    console.log('🔗 API URL:', apiUrl)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    if (!apiUrl) {
+      throw new Error('NEXT_PUBLIC_API_URL environment variable is not configured')
+    }
     
     // Get session token for authenticated requests
     const { data: { session } } = await supabase.auth.getSession()
@@ -256,13 +251,12 @@ export async function uploadInvoiceAnonymous(file: File) {
       }
     }
   } catch (error: any) {
-    console.error('❌ Upload failed:', error)
     
     // Enhanced error reporting
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
       return {
         success: false,
-        error: `Cannot connect to server at ${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}. Please ensure the backend is running.`
+        error: `Cannot connect to server. Please ensure the backend is running.`
       }
     }
     

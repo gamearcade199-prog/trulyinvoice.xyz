@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 from app.services.invoice_validator import InvoiceValidator, validate_invoice_before_save
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.middleware.subscription import check_subscription
+from app.middleware.subscription import check_subscription, increment_usage
 
 # Load environment variables for AI services
 import pathlib
@@ -288,36 +288,18 @@ async def process_document(document_id: str, request: Request):
             invoice_id = created_invoice.get('id')
             print(f"  ✅ Invoice created: {invoice_id}")
             
-            # Increment scan count for the user
+            # CRITICAL FIX: Increment subscription usage for quota enforcement
+            # This ensures users cannot bypass their plan limits
             if not is_anonymous:
                 try:
-                    # Update usage tracking in Supabase (using usage_logs table)
-                    current_month = datetime.now().strftime("%Y-%m")
-
-                    # Check if usage record exists
-                    usage_response = supabase.table("usage_logs").select("*").eq("user_id", user_id).eq("month", current_month).execute()
-
-                    if usage_response.data:
-                        # Update existing record
-                        current_count = usage_response.data[0].get("scans_used", 0)
-                        supabase.table("usage_logs").update({
-                            "scans_used": current_count + 1,
-                            "updated_at": datetime.now().isoformat()
-                        }).eq("user_id", user_id).eq("month", current_month).execute()
+                    success = await increment_usage(user_id, 1)
+                    if success:
+                        print(f"  ✅ Scan count incremented for user {user_id} in subscriptions table")
                     else:
-                        # Create new record
-                        supabase.table("usage_logs").insert({
-                            "user_id": user_id,
-                            "month": current_month,
-                            "scans_used": 1,
-                            "created_at": datetime.now().isoformat(),
-                            "updated_at": datetime.now().isoformat()
-                        }).execute()
-
-                    print(f"  📊 Scan count incremented for user {user_id}")
+                        logger.warning(f"  ⚠️ Failed to increment scan count for user {user_id}")
                 except Exception as e:
-                    print(f"  ⚠️ Warning: Failed to increment scan count: {str(e)}")
-                    # Don't fail the whole process just because scan count update failed
+                    logger.error(f"  ❌ Error incrementing scan count: {str(e)}")
+                    # Don't fail the whole process, but log the error for monitoring
             
             # Verify invoice was created
             print(f"  🔍 Verifying invoice exists...")

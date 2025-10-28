@@ -2,8 +2,8 @@
 // This file configures comprehensive analytics tracking for invoice-to-excel conversion
 
 export const trackingConfig = {
-  // Google Analytics 4 - Replace with your actual GA4 measurement ID
-  googleAnalyticsId: 'G-XXXXXXXXXX', // Replace with your GA4 measurement ID
+  // Google Analytics 4 - Production ID
+  googleAnalyticsId: 'G-WDF15FK02Z',
 
   // Google Tag Manager (optional)
   gtmId: 'GTM-XXXXXXX', // Replace with your GTM container ID

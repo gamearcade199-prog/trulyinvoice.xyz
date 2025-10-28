@@ -1,5 +1,5 @@
-// Comprehensive sitemap generation for TrulyInvoice - Invoice to Excel Converter
-// Includes all existing pages with proper SEO priorities and change frequencies
+// Comprehensive sitemap generation for TrulyInvoice - Multi-Format Invoice Converter
+// Includes all pages with proper SEO priorities and change frequencies
 
 import { MetadataRoute } from 'next'
 
@@ -24,13 +24,41 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/features`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
-      priority: 0.8,
+      priority: 0.9,
     },
+  ]
+
+  // Export format landing pages - HIGHEST PRIORITY for organic traffic
+  const exportPages = [
     {
-      url: `${baseUrl}/features/invoice-to-excel-converter`,
+      url: `${baseUrl}/export/excel`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
-      priority: 0.8,
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/export/tally`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/export/quickbooks`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/export/zoho-books`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.95,
+    },
+    {
+      url: `${baseUrl}/export/csv`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.9,
     },
   ]
 
@@ -105,40 +133,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ]
   
   const locationPages = cities.map(city => ({
-    url: `${baseUrl}/invoice-software/${city}`,
+    url: `${baseUrl}/invoice-converter/${city}`,
     lastModified: new Date(),
     changeFrequency: 'monthly' as const,
-    priority: 0.8,
+    priority: 0.7,
   }))
 
-  // User dashboard and functionality pages - low priority (behind login)
-  const userPages = [
-    {
-      url: `${baseUrl}/dashboard`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.3,
-    },
-    {
-      url: `${baseUrl}/invoices`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.3,
-    },
-    {
-      url: `${baseUrl}/upload`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.3,
-    },
-  ]
+  // Remove dashboard and user pages from sitemap (behind login, no SEO value)
+  // User dashboard pages should be blocked by robots.txt
 
   // Combine all pages
   return [
     ...corePages,
+    ...exportPages,
     ...authPages,
     ...legalPages,
     ...locationPages,
-    ...userPages,
   ]
 }

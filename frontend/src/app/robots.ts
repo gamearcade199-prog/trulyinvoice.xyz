@@ -1,4 +1,4 @@
-// Comprehensive robots.txt configuration for TrulyInvoice - Invoice to Excel Converter
+// Comprehensive robots.txt configuration for TrulyInvoice - Multi-Format Invoice Converter
 import { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
@@ -13,16 +13,17 @@ export default function robots(): MetadataRoute.Robots {
           '/admin/',
           '/_next/',
           '/private/',
-          '/debug-',
-          '/test',
-          '/temp',
-          '/admin',
-          '/private',
-          '/internal',
-          '/staging',
-          '/dev',
-          '/beta',
-          '/preview',
+          '/checkout/',
+          '/payment/',
+          '/subscription/',
+          '/debug-*',
+          '/test*',
+          '/temp*',
+          '/internal*',
+          '/staging*',
+          '/dev*',
+          '/beta*',
+          '/preview*',
         ],
       },
       {

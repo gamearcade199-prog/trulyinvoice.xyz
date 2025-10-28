@@ -19,6 +19,7 @@ const Footer = dynamic(() => import('@/components/Footer'), { loading: () => nul
 import UpgradeModal from '@/components/UpgradeModal'
 import { useQuotaModal } from '@/hooks/useQuotaModal'
 import Breadcrumb from '@/components/Breadcrumb'
+import TrulyInvoiceLogo from '@/components/TrulyInvoiceLogo'
 
 export default function HomePage() {
   const { theme, toggleTheme } = useTheme()
@@ -165,12 +166,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between h-12">
             {/* Logo */}
             <Link href="/" aria-label="TrulyInvoice Homepage">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                  <FileText className="w-4 h-4 text-white" />
-                </div>
-                <span className="text-lg font-bold text-gray-900 dark:text-white">TrulyInvoice</span>
-              </div>
+              <TrulyInvoiceLogo size="md" />
             </Link>
 
             {/* Desktop Navigation */}

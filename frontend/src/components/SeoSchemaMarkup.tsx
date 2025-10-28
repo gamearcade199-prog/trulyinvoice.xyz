@@ -1,6 +1,7 @@
 /**
  * SEO Schema Markup Component
  * Generates all necessary JSON-LD structured data for better search ranking
+ * Covers: Excel, Tally, QuickBooks, Zoho Books, CSV export formats
  */
 
 export const FAQSchema = () => {
@@ -10,18 +11,114 @@ export const FAQSchema = () => {
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "How accurate is TrulyInvoice for Indian GST invoices?",
+        "name": "How do I convert an invoice to Excel, Tally, QuickBooks, or Zoho Books?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "TrulyInvoice achieves 98% accuracy for Indian GST invoices, automatically extracting GSTIN, PAN, invoice numbers, line items, tax details, and amounts. Our AI is specifically trained on Indian invoice formats."
+          "text": "Simply upload your invoice (PDF, JPG, or PNG) to TrulyInvoice. Our AI will automatically extract all data and you can export to: Excel (formatted sheets), Tally XML (with auto-ledgers), QuickBooks IIF/CSV, Zoho Books CSV (37 columns), or bulk CSV for accountants."
         }
       },
       {
         "@type": "Question",
-        "name": "What invoice formats does TrulyInvoice support?",
+        "name": "Can I export invoices directly to Tally ERP 9 or Tally Prime?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "We support PDF invoices, scanned images (JPG, PNG), and handwritten invoices. Our AI can process invoices in any Indian format, including GST invoices, proforma invoices, and purchase orders."
+          "text": "Yes! TrulyInvoice generates Tally XML files compatible with both Tally ERP 9 and Tally Prime. The XML includes auto-ledger creation, GSTIN-based place of supply detection for all 37 Indian states, and proper voucher entries. Just import the XML file in Tally using Gateway > Import > Vouchers."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does it support QuickBooks Desktop (IIF) and QuickBooks Online (CSV)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Absolutely! We provide dual format support. For QuickBooks Desktop, download the IIF file with proper debit/credit entries. For QuickBooks Online, download the CSV file. Both formats include vendor details, invoice amounts, dates, and tax calculations ready for import."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How many columns does the Zoho Books CSV export have?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Our Zoho Books export includes 37 comprehensive columns: Customer Name, Invoice Number, Invoice Date, Due Date, Payment Terms, Item Name, Item Description, Quantity, Unit, Rate, Discount %, Tax %, Amount, Billing Address, Shipping Address, Notes, Terms & Conditions, and more. Fully compatible with Zoho Books import requirements."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I bulk export multiple invoices at once?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! Our Pro and Ultra plans support bulk processing. Upload multiple invoices and export them all as: (1) Individual Excel files, (2) Single Tally XML with multiple vouchers, (3) Consolidated QuickBooks IIF/CSV, (4) Merged Zoho Books CSV, or (5) Accountant-friendly bulk CSV with all invoices in one sheet."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does it extract GSTIN, HSN codes, and calculate CGST/SGST/IGST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! Our AI automatically extracts GSTIN numbers, validates them, detects place of supply from GSTIN state codes, extracts HSN/SAC codes, and calculates CGST/SGST (intra-state) or IGST (inter-state) based on buyer-seller locations. All exports include proper GST breakdowns."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What invoice formats are supported for conversion?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "TrulyInvoice supports PDF invoices, scanned images (JPG, PNG), photographed invoices, and handwritten bills. We handle Indian invoice formats including GST invoices, tax invoices, proforma invoices, purchase orders, supplier bills, vendor invoices, and expense receipts."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How accurate is the invoice data extraction?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Our AI achieves 99% accuracy for Indian invoices. We extract vendor names, GSTIN, invoice numbers, dates, line items, quantities, rates, HSN codes, tax rates, CGST/SGST/IGST amounts, totals, and payment terms. Smart validation catches errors before export."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I export invoices to Tally with auto-ledger creation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! Our Tally XML export automatically creates party ledgers, GST ledgers (CGST, SGST, IGST), and expense ledgers. The system detects place of supply from GSTIN state codes (covering all 37 states), normalizes vendor names to Title Case, and handles zero-GST invoices correctly."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is there a free plan for invoice conversion?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! Our free plan allows 10 invoice conversions per month with full access to Excel, Tally, QuickBooks, Zoho Books, and CSV exports. No credit card required. Perfect for small businesses and freelancers. Upgrade anytime for unlimited conversions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can accountants and CA firms use this for client invoices?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Absolutely! TrulyInvoice is designed for chartered accountants, accounting firms, and professional bookkeepers. Bulk process client invoices, export to their preferred accounting software (Tally/QuickBooks/Zoho Books), and save 90% of manual data entry time. Our accountant Excel export includes separate sheets for summary, details, GST analysis, and reconciliation."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How long does it take to convert an invoice?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Most invoices are processed in under 5 seconds. Even complex invoices with multiple line items and GST calculations are converted instantly. Bulk processing of 50+ invoices typically completes in under 2 minutes."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does TrulyInvoice work with scanned or photographed invoices?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! Our AI uses advanced OCR technology to extract data from scanned documents and mobile phone photos. Even low-quality images or handwritten invoices can be processed with high accuracy."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I customize the export format for my accounting software?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! We support multiple export formats: Excel (with custom templates), Tally XML (ERP 9/Prime compatible), QuickBooks IIF (Desktop) and CSV (Online), Zoho Books CSV (37 columns), and generic CSV. Each format is optimized for direct import into the respective software."
         }
       },
       {
@@ -29,63 +126,7 @@ export const FAQSchema = () => {
         "name": "Is my invoice data secure with TrulyInvoice?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes, your data is completely secure. We use bank-level encryption, comply with Indian data protection laws, and never store your invoices after processing. All data is hosted on secure Supabase servers."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Can I integrate TrulyInvoice with Tally or QuickBooks?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes! We provide direct integration with Tally, QuickBooks, and Excel. You can export converted invoices directly to your accounting software with a single click."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "How much does TrulyInvoice cost?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "TrulyInvoice offers a free plan with 10 conversions per month. Paid plans start from ₹299/month for 100 conversions, ₹799/month for unlimited conversions. No credit card required for free trial."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Can I extract GSTIN from invoices automatically?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes! Our AI automatically identifies and extracts GSTIN from invoices. We can extract GST numbers, PAN, invoice dates, amounts, line items, and all other relevant fields automatically."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Do you support bulk invoice processing?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Absolutely! You can upload and process up to 100 invoices at once with our bulk processing feature. Get all your invoices converted to Excel in minutes, not hours."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What happens to my uploaded invoices?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Your invoices are never stored on our servers. They are processed in real-time and permanently deleted after extraction. We have a zero-retention policy for your documents."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Is TrulyInvoice suitable for accountants and CA firms?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes, TrulyInvoice is designed for chartered accountants, accounting firms, and professional bookkeepers. It significantly reduces data entry time and improves accuracy in invoice processing."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Can I try TrulyInvoice for free before paying?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes! We offer a completely free trial with 10 invoices per month. No credit card required to start. Upgrade to a paid plan anytime to process unlimited invoices."
+          "text": "Yes! We use bank-level encryption, comply with Indian data protection laws, and have a zero-retention policy. Invoices are processed in real-time and immediately deleted after export. All data is hosted on secure Supabase servers with RLS policies."
         }
       }
     ]
@@ -105,10 +146,10 @@ export const SoftwareAppSchema = () => {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "TrulyInvoice",
-    "alternateName": "Invoice to Excel Converter India",
-    "description": "AI-powered invoice to Excel converter for Indian businesses. Convert PDF and image invoices to Excel in seconds with 98% accuracy. GST compliant, GSTIN extraction, Tally integration.",
+    "alternateName": "Invoice to Excel Tally QuickBooks Zoho Books CSV Converter India",
+    "description": "AI-powered invoice converter for Indian businesses. Export to Excel, Tally XML (ERP 9/Prime), QuickBooks IIF/CSV, Zoho Books CSV (37 columns), Bulk CSV. 99% accuracy. GST compliant, GSTIN extraction, auto-ledger creation.",
     "applicationCategory": "BusinessApplication",
-    "applicationSubCategory": "Data Extraction Software",
+    "applicationSubCategory": "Invoice Data Extraction & Multi-Format Export",
     "operatingSystem": "Web",
     "url": "https://trulyinvoice.xyz",
     "image": "https://trulyinvoice.xyz/og-image-india.jpg",
@@ -120,7 +161,7 @@ export const SoftwareAppSchema = () => {
       "@type": "AggregateOffer",
       "priceCurrency": "INR",
       "lowPrice": "0",
-      "highPrice": "799",
+      "highPrice": "599",
       "offerCount": "4",
       "offers": [
         {
@@ -128,30 +169,30 @@ export const SoftwareAppSchema = () => {
           "name": "Free Plan",
           "price": "0",
           "priceCurrency": "INR",
-          "description": "10 invoices per month"
+          "description": "10 invoices/month - Excel, Tally, QuickBooks, Zoho, CSV exports"
         },
         {
           "@type": "Offer",
-          "name": "Starter Plan",
+          "name": "Basic Plan",
+          "price": "149",
+          "priceCurrency": "INR",
+          "description": "80 invoices/month - All export formats included"
+        },
+        {
+          "@type": "Offer",
+          "name": "Pro Plan",
           "price": "299",
           "priceCurrency": "INR",
-          "description": "100 invoices per month"
+          "description": "300 invoices/month - Bulk processing enabled"
         },
         {
           "@type": "Offer",
-          "name": "Professional Plan",
-          "price": "799",
+          "name": "Ultra Plan",
+          "price": "599",
           "priceCurrency": "INR",
-          "description": "Unlimited invoices"
+          "description": "Unlimited invoices - Priority support"
         }
       ]
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "ratingCount": "127",
-      "bestRating": "5",
-      "worstRating": "1"
     },
     "author": {
       "@type": "Organization",
@@ -167,17 +208,24 @@ export const SoftwareAppSchema = () => {
       }
     },
     "downloadUrl": "https://trulyinvoice.xyz",
-    "fileFormat": ["PDF", "JPG", "PNG"],
+    "fileFormat": ["PDF", "JPG", "PNG", "Excel (XLSX)", "CSV", "XML (Tally)", "IIF (QuickBooks)"],
     "featureList": [
-      "AI-powered invoice scanning",
-      "98% accurate data extraction",
-      "Excel export functionality",
+      "AI-powered invoice scanning with 99% accuracy",
+      "Excel export with formulas and multi-sheet structure",
+      "Tally XML export with auto-ledger creation",
+      "QuickBooks IIF export for Desktop",
+      "QuickBooks CSV export for Online",
+      "Zoho Books CSV export with 37 columns",
+      "Bulk CSV export for accountants",
       "GST compliant processing",
-      "GSTIN extraction",
+      "GSTIN extraction and validation",
+      "Place of supply detection (37 Indian states)",
+      "HSN/SAC code extraction",
+      "CGST/SGST/IGST calculation",
       "Bulk invoice processing",
       "Indian invoice format support",
-      "Tally integration",
-      "QuickBooks integration",
+      "Vendor name normalization",
+      "Zero-GST invoice handling",
       "Bank-level security",
       "Zero data retention policy",
       "Free trial available"
@@ -189,14 +237,14 @@ export const SoftwareAppSchema = () => {
     },
     "audience": {
       "@type": "BusinessAudience",
-      "audienceType": "Small and Medium Businesses, Traders, Retailers, Manufacturers, Accountants, Chartered Accountants, CA Firms",
+      "audienceType": "Small Businesses, Medium Businesses, Traders, Retailers, Distributors, Manufacturers, Wholesalers, Exporters, Importers, Accountants, Chartered Accountants, CA Firms, Bookkeepers, MSME, SME",
       "geographicArea": {
         "@type": "Country",
         "name": "India"
       }
     },
     "softwareVersion": "2.0",
-    "releaseNotes": "Enhanced AI for GST invoice processing, bulk processing, and better accuracy"
+    "releaseNotes": "Enhanced AI for multi-format export: Excel, Tally XML with auto-ledgers, QuickBooks IIF/CSV, Zoho Books 37-column CSV, bulk CSV. Improved GST validation and place of supply detection for all 37 Indian states."
   };
 
   return (
@@ -217,8 +265,8 @@ export const OrganizationSchema = () => {
     "url": "https://trulyinvoice.xyz",
     "logo": "https://trulyinvoice.xyz/logo.png",
     "description": "AI-powered invoice to Excel converter for Indian businesses",
-    "email": "support@trulyinvoice.xyz",
-    "telephone": "+91-XXXXXXXXXX",
+    "email": "infotrulybot@gmail.com",
+    "telephone": "+91-9101361482",
     "address": {
       "@type": "PostalAddress",
       "addressCountry": "IN",

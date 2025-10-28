@@ -175,17 +175,15 @@ export default function InvoiceDetailsPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
-        console.error('❌ No access token available')
         alert('Please log in to export Excel')
         return
       }
 
-      console.log('🔄 Starting Excel export...')
-      console.log(`   📋 Invoice ID: ${invoiceId}`)
-      console.log(`   🔐 Token length: ${session.access_token.length}`)
-
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      console.log(`   📡 API URL: ${apiUrl}`)
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL
+      if (!apiUrl) {
+        alert('API URL not configured')
+        return
+      }
       
       const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}/export-excel`, {
         method: 'GET',
@@ -194,12 +192,8 @@ export default function InvoiceDetailsPage() {
           'Content-Type': 'application/json'
         }
       })
-
-      console.log(`   📊 Response status: ${response.status}`)
       
       if (!response.ok) {
-        const errorText = await response.text()
-        console.error(`   ❌ Error response: ${errorText}`)
         throw new Error(`Export failed: ${response.statusText}`)
       }
 
@@ -233,8 +227,11 @@ export default function InvoiceDetailsPage() {
       console.log(`   📋 Invoice ID: ${invoiceId}`)
       console.log(`   🔐 Token length: ${session.access_token.length}`)
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      console.log(`   📡 API URL: ${apiUrl}`)
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL
+      if (!apiUrl) {
+        alert('API URL not configured')
+        return
+      }
       
       const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}/export-csv`, {
         method: 'GET',

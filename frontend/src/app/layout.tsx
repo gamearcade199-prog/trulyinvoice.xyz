@@ -232,6 +232,9 @@ export default function RootLayout({
   return (
     <html lang="en-IN" suppressHydrationWarning>
       <head>
+        {/* Google Analytics - Load in head for proper tracking */}
+        <GoogleAnalytics />
+        
         {/* Preconnect to important third-party origins */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -269,7 +272,6 @@ export default function RootLayout({
         `}} /> */}
       </head>
       <body className={inter.className}>
-        <GoogleAnalytics />
         <TrackingWrapper />
         <ThemeProvider>
           {children}

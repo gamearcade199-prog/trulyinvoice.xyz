@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List
 from app.services.supabase_helper import supabase
-from app.services.excel_exporter_v2 import ProfessionalExcelExporterV2
+from app.services.accountant_excel_exporter import AccountantExcelExporter
 from app.services.csv_exporter_v2 import ProfessionalCSVExporterV2
 from app.auth import get_current_user
 
@@ -42,7 +42,7 @@ async def bulk_export_excel(request: BulkExportRequest, current_user_id: str = D
             print(f"   Invoice {idx+1}: {invoice.get('vendor_name', 'Unknown')}")
         
         # Export to Excel
-        exporter = ProfessionalExcelExporterV2()
+        exporter = AccountantExcelExporter()
         excel_filename = exporter.export_invoices_bulk(invoices)
         
         print(f"✅ Bulk Excel export successful: {excel_filename}")

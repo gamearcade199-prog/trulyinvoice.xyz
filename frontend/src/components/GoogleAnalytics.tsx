@@ -17,11 +17,9 @@ function GoogleAnalyticsInner() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    if (!trackingConfig.googleAnalyticsId || trackingConfig.googleAnalyticsId === 'G-XXXXXXXXXX') {
-      return
-    }
-
-    const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '')
+  if (!trackingConfig.googleAnalyticsId) {
+    return
+  }    const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '')
 
     // Track page view
     if (window.gtag) {
@@ -38,11 +36,9 @@ function GoogleAnalyticsInner() {
 // Main component wrapped in Suspense
 export default function GoogleAnalytics() {
   // Don't render anything if GA ID is not configured
-  if (!trackingConfig.googleAnalyticsId || trackingConfig.googleAnalyticsId === 'G-XXXXXXXXXX') {
-    return null
-  }
-
-  return (
+    if (!trackingConfig.googleAnalyticsId) {
+      return null
+    }  return (
     <>
       {/* Google Analytics Script */}
       <script

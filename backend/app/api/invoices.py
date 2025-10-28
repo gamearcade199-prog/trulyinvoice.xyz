@@ -11,20 +11,12 @@ from app.services.supabase_helper import supabase
 
 # Set up logger
 logger = logging.getLogger(__name__)
-from app.services.excel_exporter import ExcelExporter
-from app.services.professional_excel_exporter import ProfessionalInvoiceExporter
-from app.services.html_professional_pdf_exporter import HTMLProfessionalPDFExporter
 from app.services.accountant_excel_exporter import AccountantExcelExporter
-from app.services.csv_exporter import CSVExporter
 from app.config.plans import check_feature_access
 from app.services.usage_tracker import UsageTracker
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.auth import get_current_user
-# 🚀 NEW BULLETPROOF EXPORTERS - GEMINI COMPATIBLE (temporarily disabled)
-# from app.services.bulletproof_excel_exporter import BulletproofExcelExporter
-# from app.services.bulletproof_pdf_exporter import BulletproofPDFExporter
-# from app.services.bulletproof_csv_exporter import BulletproofCSVExporter
 
 router = APIRouter()
 
@@ -194,9 +186,11 @@ async def export_invoice_pdf(
         print(f"   Vendor: {invoice_data.get('vendor_name')}")
         print(f"   Invoice #: {invoice_data.get('invoice_number')}")
         
-        # Export to PDF using HTML-based professional exporter
-        exporter = HTMLProfessionalPDFExporter()
-        pdf_filename = exporter.export_invoice(invoice_data)
+        # PDF export is currently disabled - return error
+        raise HTTPException(
+            status_code=503,
+            detail="PDF export is currently disabled. Please use Excel or CSV export instead."
+        )
         
         # Return file
         return FileResponse(
@@ -380,8 +374,9 @@ async def export_invoice_csv(
         print(f"   Vendor: {invoice_data.get('vendor_name')}")
         print(f"   Invoice #: {invoice_data.get('invoice_number')}")
         
-        # Export to CSV
-        exporter = CSVExporter()
+        # Export to CSV using Professional CSV Exporter V2
+        from backend.app.services.csv_exporter_v2 import ProfessionalCSVExporterV2
+        exporter = ProfessionalCSVExporterV2()
         csv_filename = exporter.export_invoice(invoice_data)
         
         # Return file
@@ -436,9 +431,10 @@ async def export_invoices_excel(
         if not invoices:
             raise HTTPException(status_code=404, detail="No invoices found")
         
-        # Export to Excel
-        exporter = ExcelExporter()
-        filename = exporter.export_invoices(invoices)
+        # Export to Excel using Accountant Excel Exporter
+        from backend.app.services.accountant_excel_exporter import AccountantExcelExporter
+        exporter = AccountantExcelExporter()
+        filename = exporter.export_invoices_bulk(invoices)
         
         # Return file
         return FileResponse(
