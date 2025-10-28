@@ -140,6 +140,17 @@ export async function exportInvoicesToTallyXML(invoices: any[]) {
     }
   }
 
+  // Helper function to escape XML entities
+  const escapeXml = (str: string): string => {
+    if (!str) return ''
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;')
+  }
+
   // Generate Tally XML structure with proper GST compliance
   const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
 <ENVELOPE>
@@ -196,22 +207,22 @@ ${invoices.map(invoice => {
       const itemIGST = hasIGST ? itemGST : 0
 
       return `            <ALLLEDGERENTRIES.LIST>
-              <LEDGERNAME>Purchase @ ${gstRate}% - ${itemName}</LEDGERNAME>
+              <LEDGERNAME>Purchase @ ${gstRate}% - ${escapeXml(itemName)}</LEDGERNAME>
               <GSTCLASS/>
               <AMOUNT>${(-itemAmount).toFixed(2)}</AMOUNT>
             </ALLLEDGERENTRIES.LIST>
 ${itemCGST > 0 ? `            <ALLLEDGERENTRIES.LIST>
-              <LEDGERNAME>CGST Input @ ${(gstRate/2).toFixed(1)}% - ${itemName}</LEDGERNAME>
+              <LEDGERNAME>CGST Input @ ${(gstRate/2).toFixed(1)}% - ${escapeXml(itemName)}</LEDGERNAME>
               <GSTCLASS/>
               <AMOUNT>${(-itemCGST).toFixed(2)}</AMOUNT>
             </ALLLEDGERENTRIES.LIST>` : ''}
 ${itemSGST > 0 ? `            <ALLLEDGERENTRIES.LIST>
-              <LEDGERNAME>SGST Input @ ${(gstRate/2).toFixed(1)}% - ${itemName}</LEDGERNAME>
+              <LEDGERNAME>SGST Input @ ${(gstRate/2).toFixed(1)}% - ${escapeXml(itemName)}</LEDGERNAME>
               <GSTCLASS/>
               <AMOUNT>${(-itemSGST).toFixed(2)}</AMOUNT>
             </ALLLEDGERENTRIES.LIST>` : ''}
 ${itemIGST > 0 ? `            <ALLLEDGERENTRIES.LIST>
-              <LEDGERNAME>IGST Input @ ${gstRate}% - ${itemName}</LEDGERNAME>
+              <LEDGERNAME>IGST Input @ ${gstRate}% - ${escapeXml(itemName)}</LEDGERNAME>
               <GSTCLASS/>
               <AMOUNT>${(-itemIGST).toFixed(2)}</AMOUNT>
             </ALLLEDGERENTRIES.LIST>` : ''}`
@@ -222,20 +233,20 @@ ${itemIGST > 0 ? `            <ALLLEDGERENTRIES.LIST>
             <VOUCHERTYPENAME>Purchase</VOUCHERTYPENAME>
             <DATE>${formatDate(invoice.invoice_date)}</DATE>
             <DUEDATE>${formatDate(invoice.due_date)}</DUEDATE>
-            <NARRATION>Purchase Invoice - ${invoice.vendor_name || 'Vendor'} | GSTIN: ${invoice.gstin || 'N/A'} | GST Rate: ${gstRate}% | HSN/SAC: ${hsnCode} | Place of Supply: ${placeOfSupply} | GST Treatment: ${gstTreatment} | Reverse Charge: ${reverseCharge}${hasMultipleItems ? ` | Multi-Item Invoice (${lineItems.length} items)` : ''}${tdsApplicable === 'Yes' ? ` | TDS Applicable: ${tdsPercentage}% (₹${tdsAmount.toFixed(2)})` : ''}${isCompositionDealer ? ' | Composition Scheme Dealer' : ''}</NARRATION>
-            <PARTYLEDGERNAME>${invoice.vendor_name || 'Vendor'}</PARTYLEDGERNAME>
+            <NARRATION>Purchase Invoice - ${escapeXml(invoice.vendor_name || 'Vendor')} | GSTIN: ${escapeXml(invoice.gstin || 'N/A')} | GST Rate: ${gstRate}% | HSN/SAC: ${escapeXml(hsnCode)} | Place of Supply: ${escapeXml(placeOfSupply)} | GST Treatment: ${escapeXml(gstTreatment)} | Reverse Charge: ${escapeXml(reverseCharge)}${hasMultipleItems ? ` | Multi-Item Invoice (${lineItems.length} items)` : ''}${tdsApplicable === 'Yes' ? ` | TDS Applicable: ${tdsPercentage}% (₹${tdsAmount.toFixed(2)})` : ''}${isCompositionDealer ? ' | Composition Scheme Dealer' : ''}</NARRATION>
+            <PARTYLEDGERNAME>${escapeXml(invoice.vendor_name || 'Vendor')}</PARTYLEDGERNAME>
             <VOUCHERAMOUNT>${(invoice.total_amount || 0).toFixed(2)}</VOUCHERAMOUNT>
-            <PARTYMAILINGNAME>${invoice.vendor_name || 'Vendor'}</PARTYMAILINGNAME>
+            <PARTYMAILINGNAME>${escapeXml(invoice.vendor_name || 'Vendor')}</PARTYMAILINGNAME>
             <PARTYADDRESS.LIST>
-              <PARTYADDRESS>GSTIN: ${invoice.gstin || 'N/A'}</PARTYADDRESS>
-              <PARTYADDRESS>Place of Supply: ${placeOfSupply}</PARTYADDRESS>
+              <PARTYADDRESS>GSTIN: ${escapeXml(invoice.gstin || 'N/A')}</PARTYADDRESS>
+              <PARTYADDRESS>Place of Supply: ${escapeXml(placeOfSupply)}</PARTYADDRESS>
             </PARTYADDRESS.LIST>
             <ALLLEDGERENTRIES.LIST>
-              <LEDGERNAME>${invoice.vendor_name || 'Vendor'}</LEDGERNAME>
+              <LEDGERNAME>${escapeXml(invoice.vendor_name || 'Vendor')}</LEDGERNAME>
               <GSTCLASS/>
               <AMOUNT>${(invoice.total_amount || 0).toFixed(2)}</AMOUNT>
               <BILLALLOCATIONS.LIST>
-                <NAME>${invoice.invoice_number || 'N/A'}</NAME>
+                <NAME>${escapeXml(invoice.invoice_number || 'N/A')}</NAME>
                 <BILLTYPE>New Ref</BILLTYPE>
                 <AMOUNT>${(invoice.total_amount || 0).toFixed(2)}</AMOUNT>
               </BILLALLOCATIONS.LIST>
@@ -245,24 +256,24 @@ ${itemEntries}
   } else {
     // Single-item invoice (existing logic)
     return `          <VOUCHER VCHTYPE="Purchase" ACTION="Create">
-            <VOUCHERNUMBER>${invoice.invoice_number || 'N/A'}</VOUCHERNUMBER>
+            <VOUCHERNUMBER>${escapeXml(invoice.invoice_number || 'N/A')}</VOUCHERNUMBER>
             <VOUCHERTYPENAME>Purchase</VOUCHERTYPENAME>
             <DATE>${formatDate(invoice.invoice_date)}</DATE>
             <DUEDATE>${formatDate(invoice.due_date)}</DUEDATE>
-            <NARRATION>Purchase Invoice - ${invoice.vendor_name || 'Vendor'} | GSTIN: ${invoice.gstin || 'N/A'} | GST Rate: ${gstRate}% | HSN/SAC: ${hsnCode} | Place of Supply: ${placeOfSupply} | GST Treatment: ${gstTreatment} | Reverse Charge: ${reverseCharge}</NARRATION>
-            <PARTYLEDGERNAME>${invoice.vendor_name || 'Vendor'}</PARTYLEDGERNAME>
+            <NARRATION>Purchase Invoice - ${escapeXml(invoice.vendor_name || 'Vendor')} | GSTIN: ${escapeXml(invoice.gstin || 'N/A')} | GST Rate: ${gstRate}% | HSN/SAC: ${escapeXml(hsnCode)} | Place of Supply: ${escapeXml(placeOfSupply)} | GST Treatment: ${escapeXml(gstTreatment)} | Reverse Charge: ${escapeXml(reverseCharge)}</NARRATION>
+            <PARTYLEDGERNAME>${escapeXml(invoice.vendor_name || 'Vendor')}</PARTYLEDGERNAME>
             <VOUCHERAMOUNT>${(invoice.total_amount || 0).toFixed(2)}</VOUCHERAMOUNT>
-            <PARTYMAILINGNAME>${invoice.vendor_name || 'Vendor'}</PARTYMAILINGNAME>
+            <PARTYMAILINGNAME>${escapeXml(invoice.vendor_name || 'Vendor')}</PARTYMAILINGNAME>
             <PARTYADDRESS.LIST>
-              <PARTYADDRESS>GSTIN: ${invoice.gstin || 'N/A'}</PARTYADDRESS>
-              <PARTYADDRESS>Place of Supply: ${placeOfSupply}</PARTYADDRESS>
+              <PARTYADDRESS>GSTIN: ${escapeXml(invoice.gstin || 'N/A')}</PARTYADDRESS>
+              <PARTYADDRESS>Place of Supply: ${escapeXml(placeOfSupply)}</PARTYADDRESS>
             </PARTYADDRESS.LIST>
             <ALLLEDGERENTRIES.LIST>
-              <LEDGERNAME>${invoice.vendor_name || 'Vendor'}</LEDGERNAME>
+              <LEDGERNAME>${escapeXml(invoice.vendor_name || 'Vendor')}</LEDGERNAME>
               <GSTCLASS/>
               <AMOUNT>${(invoice.total_amount || 0).toFixed(2)}</AMOUNT>
               <BILLALLOCATIONS.LIST>
-                <NAME>${invoice.invoice_number || 'N/A'}</NAME>
+                <NAME>${escapeXml(invoice.invoice_number || 'N/A')}</NAME>
                 <BILLTYPE>New Ref</BILLTYPE>
                 <AMOUNT>${(invoice.total_amount || 0).toFixed(2)}</AMOUNT>
               </BILLALLOCATIONS.LIST>

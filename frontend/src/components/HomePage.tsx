@@ -28,6 +28,7 @@ export default function HomePage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [progress, setProgress] = useState(0)
   const [showSignupModal, setShowSignupModal] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [extractedData, setExtractedData] = useState<any>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [processingError, setProcessingError] = useState('')
@@ -123,6 +124,8 @@ export default function HomePage() {
           setIsProcessing(false)
           if (!isLoggedIn) {
             setShowSignupModal(true)
+          } else {
+            setShowSuccessModal(true)
           }
         }, 500)
       } else {
@@ -807,19 +810,22 @@ export default function HomePage() {
             </div>
 
             <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 rounded-xl p-4 md:p-6 mb-4 md:mb-6">
-              <h4 className="font-semibold text-sm md:text-base text-gray-900 dark:text-white mb-2 md:mb-3">Extracted Data Preview:</h4>
-              <div className="space-y-1.5 md:space-y-2 text-xs md:text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Vendor:</span>
-                  <span className="font-semibold text-gray-900 dark:text-white truncate">{extractedData?.vendor_name || extractedData?.vendor || 'Not found'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Amount:</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{extractedData?.total_amount || extractedData?.amount || 'Not found'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Invoice #:</span>
-                  <span className="font-semibold text-gray-900 dark:text-white truncate">{extractedData?.invoice_number || extractedData?.invoiceNumber || 'Not found'}</span>
+              <h4 className="font-semibold text-sm md:text-base text-gray-900 dark:text-white mb-3 md:mb-4">Extracted Amount:</h4>
+              <div className="text-center mb-4">
+                <p className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
+                  {getCurrencySymbol('INR')} {formatCurrency(extractedData?.total_amount || extractedData?.amount || 0, 'INR')}
+                </p>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                  From {extractedData?.vendor_name || extractedData?.vendor || 'Vendor'}
+                </p>
+              </div>
+              <div className="border-t border-gray-200 dark:border-gray-600 pt-3">
+                <h5 className="font-medium text-xs md:text-sm text-gray-700 dark:text-gray-300 mb-2">Additional Details:</h5>
+                <div className="space-y-1 text-xs md:text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Invoice #:</span>
+                    <span className="font-semibold text-gray-900 dark:text-white truncate">{extractedData?.invoice_number || extractedData?.invoiceNumber || 'Not found'}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -843,6 +849,67 @@ export default function HomePage() {
 
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3 md:mt-4">
               ✨ 10 free scans per month • Forever free plan
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal for Logged-in Users */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl max-w-md w-full p-6 md:p-8 relative transition-colors max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="absolute top-3 right-3 md:top-4 md:right-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              aria-label="Close success modal"
+            >
+              <X className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
+            </button>
+
+            <div className="text-center mb-4 md:mb-6">
+              <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
+                <CheckCircle2 className="w-8 h-8 md:w-10 md:h-10 text-white" />
+              </div>
+              <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                Invoice Processed Successfully! 🎉
+              </h3>
+              <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
+                Your invoice has been extracted and saved to your dashboard.
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 rounded-xl p-4 md:p-6 mb-4 md:mb-6">
+              <h4 className="font-semibold text-sm md:text-base text-gray-900 dark:text-white mb-2 md:mb-3">Extracted Amount:</h4>
+              <div className="text-center">
+                <p className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
+                  {getCurrencySymbol('INR')} {formatCurrency(extractedData?.total_amount || extractedData?.amount || 0, 'INR')}
+                </p>
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
+                  From {extractedData?.vendor_name || extractedData?.vendor || 'Vendor'}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2 md:space-y-3">
+              <Link
+                href="/dashboard"
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-500 dark:to-purple-500 text-white py-2.5 md:py-3 rounded-xl font-semibold text-sm md:text-base hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                aria-label="View invoice in dashboard"
+              >
+                <span className="truncate">View in Dashboard</span> <ArrowRight className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
+              </Link>
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2.5 md:py-3 rounded-xl font-semibold text-sm md:text-base hover:bg-gray-50 dark:hover:bg-gray-600 transition-all"
+                aria-label="Continue uploading more invoices"
+              >
+                Upload Another Invoice
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3 md:mt-4">
+              💡 You can export this invoice to Excel, Tally, or other formats from your dashboard
             </p>
           </div>
         </div>

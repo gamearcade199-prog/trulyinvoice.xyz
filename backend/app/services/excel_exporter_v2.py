@@ -108,9 +108,9 @@ class ProfessionalExcelExporterV2:
         total_amount = sum(float(inv.get('total_amount', 0)) for inv in invoices)
         total_paid = sum(float(inv.get('paid_amount', 0)) for inv in invoices)
         total_pending = total_amount - total_paid
-        total_cgst = sum(float(inv.get('cgst', 0)) for inv in invoices)
-        total_sgst = sum(float(inv.get('sgst', 0)) for inv in invoices)
-        total_igst = sum(float(inv.get('igst', 0)) for inv in invoices)
+        total_cgst = sum(float(inv.get('cgst') or 0) for inv in invoices)
+        total_sgst = sum(float(inv.get('sgst') or 0) for inv in invoices)
+        total_igst = sum(float(inv.get('igst') or 0) for inv in invoices)
         
         metrics = [
             ('Total Invoices', total_invoices, ''),
