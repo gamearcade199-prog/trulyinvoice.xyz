@@ -105,8 +105,8 @@ class ProfessionalExcelExporterV2:
         
         # Metrics
         total_invoices = len(invoices)
-        total_amount = sum(float(inv.get('total_amount', 0)) for inv in invoices)
-        total_paid = sum(float(inv.get('paid_amount', 0)) for inv in invoices)
+        total_amount = sum(float(inv.get('total_amount') or 0) for inv in invoices)
+        total_paid = sum(float(inv.get('paid_amount') or 0) for inv in invoices)
         total_pending = total_amount - total_paid
         total_cgst = sum(float(inv.get('cgst') or 0) for inv in invoices)
         total_sgst = sum(float(inv.get('sgst') or 0) for inv in invoices)
@@ -176,18 +176,18 @@ class ProfessionalExcelExporterV2:
             ws.cell(row=row_idx, column=3).value = invoice.get('due_date', '-')
             ws.cell(row=row_idx, column=4).value = invoice.get('vendor_name', '-')
             ws.cell(row=row_idx, column=5).value = invoice.get('customer_name', '-')
-            ws.cell(row=row_idx, column=6).value = float(invoice.get('subtotal', 0))
-            ws.cell(row=row_idx, column=7).value = float(invoice.get('discount', 0))
-            ws.cell(row=row_idx, column=8).value = float(invoice.get('cgst', 0))
-            ws.cell(row=row_idx, column=9).value = float(invoice.get('sgst', 0))
-            ws.cell(row=row_idx, column=10).value = float(invoice.get('igst', 0))
-            ws.cell(row=row_idx, column=11).value = float(invoice.get('total_amount', 0))
+            ws.cell(row=row_idx, column=6).value = float(invoice.get('subtotal') or 0)
+            ws.cell(row=row_idx, column=7).value = float(invoice.get('discount') or 0)
+            ws.cell(row=row_idx, column=8).value = float(invoice.get('cgst') or 0)
+            ws.cell(row=row_idx, column=9).value = float(invoice.get('sgst') or 0)
+            ws.cell(row=row_idx, column=10).value = float(invoice.get('igst') or 0)
+            ws.cell(row=row_idx, column=11).value = float(invoice.get('total_amount') or 0)
             ws.cell(row=row_idx, column=12).value = invoice.get('payment_status', '-')
-            ws.cell(row=row_idx, column=13).value = float(invoice.get('paid_amount', 0))
+            ws.cell(row=row_idx, column=13).value = float(invoice.get('paid_amount') or 0)
             
             # Balance calculation
-            total = float(invoice.get('total_amount', 0))
-            paid = float(invoice.get('paid_amount', 0))
+            total = float(invoice.get('total_amount') or 0)
+            paid = float(invoice.get('paid_amount') or 0)
             balance = total - paid
             ws.cell(row=row_idx, column=14).value = balance
             
@@ -243,14 +243,14 @@ class ProfessionalExcelExporterV2:
                 ws.cell(row=row, column=1).value = invoice.get('invoice_number', '-')
                 ws.cell(row=row, column=2).value = line_idx
                 ws.cell(row=row, column=3).value = item.get('description', '-')
-                ws.cell(row=row, column=4).value = float(item.get('quantity', 0))
+                ws.cell(row=row, column=4).value = float(item.get('quantity') or 0)
                 ws.cell(row=row, column=5).value = item.get('unit', 'pcs')
-                ws.cell(row=row, column=6).value = float(item.get('rate', 0))
-                ws.cell(row=row, column=7).value = float(item.get('amount', 0))
-                ws.cell(row=row, column=8).value = float(item.get('tax_rate', 18))
-                ws.cell(row=row, column=9).value = float(item.get('tax_amount', 0))
+                ws.cell(row=row, column=6).value = float(item.get('rate') or 0)
+                ws.cell(row=row, column=7).value = float(item.get('amount') or 0)
+                ws.cell(row=row, column=8).value = float(item.get('tax_rate') or 18)
+                ws.cell(row=row, column=9).value = float(item.get('tax_amount') or 0)
                 
-                total = float(item.get('amount', 0)) + float(item.get('tax_amount', 0))
+                total = float(item.get('amount') or 0) + float(item.get('tax_amount') or 0)
                 ws.cell(row=row, column=10).value = total
                 
                 for col in [4, 6, 7, 8, 9, 10]:
@@ -303,13 +303,13 @@ class ProfessionalExcelExporterV2:
             ws.cell(row=4, column=col).font = Font(bold=True)
         
         # Calculate taxes
-        total_cgst = sum(float(inv.get('cgst', 0)) for inv in invoices)
-        total_sgst = sum(float(inv.get('sgst', 0)) for inv in invoices)
-        total_igst = sum(float(inv.get('igst', 0)) for inv in invoices)
+        total_cgst = sum(float(inv.get('cgst') or 0) for inv in invoices)
+        total_sgst = sum(float(inv.get('sgst') or 0) for inv in invoices)
+        total_igst = sum(float(inv.get('igst') or 0) for inv in invoices)
         
-        cgst_invoices = sum(1 for inv in invoices if float(inv.get('cgst', 0)) > 0)
-        sgst_invoices = sum(1 for inv in invoices if float(inv.get('sgst', 0)) > 0)
-        igst_invoices = sum(1 for inv in invoices if float(inv.get('igst', 0)) > 0)
+        cgst_invoices = sum(1 for inv in invoices if float(inv.get('cgst') or 0) > 0)
+        sgst_invoices = sum(1 for inv in invoices if float(inv.get('sgst') or 0) > 0)
+        igst_invoices = sum(1 for inv in invoices if float(inv.get('igst') or 0) > 0)
         
         taxes = [
             ('CGST (9%)', total_cgst, cgst_invoices),
@@ -352,8 +352,8 @@ class ProfessionalExcelExporterV2:
         for invoice in invoices:
             ws.cell(row=row, column=1).value = invoice.get('invoice_number', '-')
             
-            total = float(invoice.get('total_amount', 0))
-            paid = float(invoice.get('paid_amount', 0))
+            total = float(invoice.get('total_amount') or 0)
+            paid = float(invoice.get('paid_amount') or 0)
             balance = total - paid
             
             ws.cell(row=row, column=2).value = total
