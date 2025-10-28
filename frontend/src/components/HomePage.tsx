@@ -331,9 +331,11 @@ export default function HomePage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
           <div className="max-w-4xl mx-auto text-center">
             {/* AI Badge */}
-            <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-full text-sm font-semibold mb-6 backdrop-blur-sm border border-blue-200/50 dark:border-blue-800/50">
-              <Sparkles className="w-4 h-4" />
-              AI-Powered
+            <div className="mt-6 flex justify-center">
+              <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md text-white/95 px-4 py-2 rounded-full text-sm font-medium shadow-lg border border-white/10 hover:bg-white/10 transition-all duration-300">
+                <Sparkles className="w-4 h-4 text-yellow-200" />
+                AI-Powered
+              </div>
             </div>
             
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 dark:text-gray-50 mb-4 leading-tight">
