@@ -1,0 +1,40 @@
+﻿INVOICE DETAILS
+Invoice Number,INV/2025/001
+Invoice Date,2025-01-15
+Due Date,2025-02-15
+Status,Pending
+Reference Number,-
+
+VENDOR INFORMATION
+Vendor Name,TechCorp Solutions Pvt Ltd
+Vendor Address,N/A
+Vendor GSTIN,27AABCT1234K1Z5
+Vendor PAN,AABCT1234K
+Vendor Email,-
+Vendor Phone,-
+
+CUSTOMER INFORMATION
+Customer Name,ABC Industries Limited
+Customer Address,N/A
+Customer GSTIN,29AABCS1234L1Z6
+Customer PAN,-
+Customer Email,-
+Customer Phone,-
+
+LINE ITEMS
+S.No,Description,Quantity,Unit,Rate (₹),Amount (₹),Tax Rate (%),Tax Amount (₹),Total (₹)
+1,Software Development Services,1,pcs,"38,135.59","38,135.59",18%,"6,864.41","45,000.00"
+
+TAX SUMMARY
+Subtotal (₹),"38,135.59"
+Discount (₹),0.00
+CGST (9%) (₹),"3,432.20"
+SGST (9%) (₹),"3,432.20"
+IGST (18%) (₹),0.00
+TOTAL AMOUNT (₹),"45,000.00"
+
+ADDITIONAL INFORMATION
+Currency,INR
+Language,English
+Created Date,2025-10-28 16:58:30
+Document Type,INVOICE

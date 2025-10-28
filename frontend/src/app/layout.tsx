@@ -19,13 +19,17 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL('https://trulyinvoice.xyz'),
   
-  // Basic metadata - Invoice to Excel focus
+  // Basic metadata - Multi-Export Invoice Converter
   title: {
-    default: 'TrulyInvoice - Convert Invoice to Excel Instantly | AI-Powered Converter',
-    template: '%s | TrulyInvoice - Invoice to Excel Converter',
+    default: 'TrulyInvoice - Convert Invoice to Excel, Tally, QuickBooks, Zoho Books | AI-Powered Converter',
+    template: '%s | TrulyInvoice - Multi-Export Invoice Converter',
   },
-  description: 'AI-powered invoice to Excel converter with 99% accuracy. Convert PDFs & images instantly. GST compliant. Free plan available.',
-  keywords: ['convert invoice to excel', 'invoice to excel converter', 'AI invoice extraction', 'pdf to excel converter', 'GST invoice to excel', 'indian invoice processing'],
+  description: 'AI-powered invoice converter with 99% accuracy. Export to Excel, CSV, Tally ERP 9, QuickBooks India, Zoho Books. GST compliant, instant processing. Free plan available.',
+  keywords: [
+    'convert invoice to excel', 'invoice to excel converter', 'AI invoice extraction', 'pdf to excel converter', 'GST invoice to excel', 'indian invoice processing',
+    'export invoice to tally', 'tally invoice import', 'quickbooks india integration', 'zoho books csv export', 'bulk csv export', 'accounting software export',
+    'invoice to tally converter', 'quickbooks invoice import', 'zoho books integration', 'csv invoice export', 'erp invoice import'
+  ],
   
   // Author and publisher
   authors: [{ name: 'TrulyInvoice Team' }],
@@ -56,26 +60,26 @@ export const metadata: Metadata = {
     },
   },
   
-  // Open Graph (for Facebook, LinkedIn) - Invoice to Excel focus
+  // Open Graph (for Facebook, LinkedIn) - Multi-Export focus
   openGraph: {
     type: 'website',
     locale: 'en_IN',
     url: 'https://trulyinvoice.xyz',
     siteName: 'TrulyInvoice',
-    title: 'Convert Invoice to Excel Instantly | AI-Powered Converter',
-    description: 'Transform any invoice into perfect Excel sheets with 99% accuracy. GST compliant, automatic processing. Free plan available.',
+    title: 'Convert Invoice to Excel, Tally, QuickBooks, Zoho Books | AI-Powered Converter',
+    description: 'Transform any invoice into Excel, Tally, QuickBooks, or Zoho Books with 99% accuracy. GST compliant, automatic processing. Free plan available.',
     images: [
       {
         url: '/og-image-india.jpg',
         width: 1200,
         height: 630,
-        alt: 'TrulyInvoice - Convert Invoice to Excel Instantly',
+        alt: 'TrulyInvoice - Convert Invoice to Excel, Tally, QuickBooks, Zoho Books',
       },
       {
         url: '/og-image-square.jpg',
         width: 1200,
         height: 1200,
-        alt: 'TrulyInvoice Logo - Invoice to Excel Converter',
+        alt: 'TrulyInvoice Logo - Multi-Export Invoice Converter',
       },
     ],
   },
@@ -83,8 +87,8 @@ export const metadata: Metadata = {
   // Twitter Card
   twitter: {
     card: 'summary_large_image',
-    title: 'Convert Invoice to Excel | TrulyInvoice',
-    description: 'AI-powered invoice to Excel converter with 99% accuracy. GST compliant, instant processing.',
+    title: 'Convert Invoice to Excel, Tally, QuickBooks, Zoho | TrulyInvoice',
+    description: 'AI-powered invoice converter with 99% accuracy. Export to Excel, Tally, QuickBooks, Zoho Books. GST compliant, instant processing.',
     creator: '@TrulyInvoice',
     images: ['/twitter-image.jpg'],
   },
@@ -143,8 +147,8 @@ export default function RootLayout({
     '@type': 'SoftwareApplication',
     '@id': 'https://trulyinvoice.xyz',
     name: 'TrulyInvoice',
-    alternateName: 'Invoice to Excel Converter',
-    description: 'AI-powered invoice to Excel converter with 99% accuracy. Convert PDFs and images to Excel sheets instantly. GST compliant, perfect for Indian businesses.',
+    alternateName: 'Multi-Export Invoice Converter',
+    description: 'AI-powered invoice converter with 99% accuracy. Export to Excel, CSV, Tally ERP 9, QuickBooks India, Zoho Books. GST compliant, perfect for Indian businesses.',
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web Browser, iOS, Android',
     url: 'https://trulyinvoice.xyz',
@@ -177,6 +181,10 @@ export default function RootLayout({
       'AI-powered invoice scanning',
       '99% accurate data extraction',
       'Excel export functionality',
+      'CSV export for bulk processing',
+      'Tally ERP 9 integration',
+      'QuickBooks India compatibility',
+      'Zoho Books CSV export',
       'GST compliant processing',
       'Bulk invoice processing',
       'Indian invoice format support'

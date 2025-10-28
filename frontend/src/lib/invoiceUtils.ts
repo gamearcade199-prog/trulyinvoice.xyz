@@ -95,11 +95,33 @@ export async function exportInvoicesToExcel(invoices: any[]) {
 }
 
 /**
- * Export invoices to Tally XML format
+ * Export invoices to Tally XML format (India GST Compliant)
  */
 export async function exportInvoicesToTallyXML(invoices: any[]) {
   if (invoices.length === 0) {
     alert('No invoices to export')
+    return
+  }
+
+  // Validate invoices for required GST fields
+  const validationErrors: string[] = []
+  invoices.forEach((invoice, index) => {
+    if (!invoice.invoice_number) {
+      validationErrors.push(`Invoice ${index + 1}: Missing invoice number`)
+    }
+    if (!invoice.vendor_name) {
+      validationErrors.push(`Invoice ${index + 1}: Missing vendor name`)
+    }
+    if (!invoice.total_amount || invoice.total_amount <= 0) {
+      validationErrors.push(`Invoice ${index + 1}: Invalid total amount`)
+    }
+    if (!invoice.invoice_date) {
+      validationErrors.push(`Invoice ${index + 1}: Missing invoice date`)
+    }
+  })
+
+  if (validationErrors.length > 0) {
+    alert(`Export validation failed:\n${validationErrors.join('\n')}`)
     return
   }
 
@@ -118,7 +140,7 @@ export async function exportInvoicesToTallyXML(invoices: any[]) {
     }
   }
 
-  // Generate Tally XML structure
+  // Generate Tally XML structure with proper GST compliance
   const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
 <ENVELOPE>
   <HEADER>
@@ -132,18 +154,112 @@ export async function exportInvoicesToTallyXML(invoices: any[]) {
       <REQUESTDATA>
         <TALLYMESSAGE xmlns:UDF="TallyUDF">
 ${invoices.map(invoice => {
-  const taxAmount = (invoice.cgst || 0) + (invoice.sgst || 0) + (invoice.igst || 0)
-  const subtotal = invoice.subtotal || (invoice.total_amount ? invoice.total_amount - taxAmount : 0)
+  const cgst = invoice.cgst || 0
+  const sgst = invoice.sgst || 0
+  const igst = invoice.igst || 0
+  const totalGST = cgst + sgst + igst
+  const subtotal = invoice.subtotal || (invoice.total_amount ? invoice.total_amount - totalGST : 0)
+  const gstRate = totalGST > 0 ? Math.round((totalGST / subtotal) * 100) : 0
 
-  return `          <VOUCHER VCHTYPE="Purchase" ACTION="Create">
+  // Determine GST type and ledgers
+  const hasIGST = igst > 0
+  const gstType = hasIGST ? 'IGST' : 'CGST+SGST'
+
+  // Use dynamic HSN/SAC code from database, fallback to default
+  const hsnCode = invoice.hsn_code || invoice.sac_code || '9983'
+  const itemDescription = invoice.supply_type === 'Service' ? 'Service' : 'Goods'
+  const placeOfSupply = invoice.place_of_supply || 'Maharashtra'
+
+    // Determine GST treatment
+    const hasGSTIN = invoice.gstin && invoice.gstin.trim() !== ''
+    const gstTreatment = hasGSTIN ? 'Taxable' : 'Consumer'
+    const reverseCharge = invoice.reverse_charge ? 'Yes' : 'No'
+    const tdsApplicable = invoice.tds_amount && invoice.tds_amount > 0 ? 'Yes' : 'No'
+    const tdsAmount = invoice.tds_amount || 0
+    const tdsPercentage = invoice.tds_percentage || 0
+    const isCompositionDealer = invoice.vendor_type === 'Composition' || invoice.vendor_type === 'composition'
+    const compositionScheme = isCompositionDealer ? 'Yes' : 'No'  // Check if this is a multi-item invoice
+  const lineItems = invoice.line_items || []
+  const hasMultipleItems = lineItems.length > 1
+
+  if (hasMultipleItems) {
+    // Multi-item invoice: create separate entries for each item
+    const itemEntries = lineItems.map((item: any, index: number) => {
+      const itemHSN = item.hsn_code || item.sac_code || hsnCode
+      const itemName = item.item_name || item.description || `Item ${index + 1}`
+      const itemQty = item.quantity || 1
+      const itemRate = item.rate || item.unit_price || 0
+      const itemAmount = item.amount || (itemQty * itemRate)
+      const itemGST = item.gst_amount || (itemAmount * gstRate / 100)
+      const itemCGST = hasIGST ? 0 : itemGST / 2
+      const itemSGST = hasIGST ? 0 : itemGST / 2
+      const itemIGST = hasIGST ? itemGST : 0
+
+      return `            <ALLLEDGERENTRIES.LIST>
+              <LEDGERNAME>Purchase @ ${gstRate}% - ${itemName}</LEDGERNAME>
+              <GSTCLASS/>
+              <AMOUNT>${(-itemAmount).toFixed(2)}</AMOUNT>
+            </ALLLEDGERENTRIES.LIST>
+${itemCGST > 0 ? `            <ALLLEDGERENTRIES.LIST>
+              <LEDGERNAME>CGST Input @ ${(gstRate/2).toFixed(1)}% - ${itemName}</LEDGERNAME>
+              <GSTCLASS/>
+              <AMOUNT>${(-itemCGST).toFixed(2)}</AMOUNT>
+            </ALLLEDGERENTRIES.LIST>` : ''}
+${itemSGST > 0 ? `            <ALLLEDGERENTRIES.LIST>
+              <LEDGERNAME>SGST Input @ ${(gstRate/2).toFixed(1)}% - ${itemName}</LEDGERNAME>
+              <GSTCLASS/>
+              <AMOUNT>${(-itemSGST).toFixed(2)}</AMOUNT>
+            </ALLLEDGERENTRIES.LIST>` : ''}
+${itemIGST > 0 ? `            <ALLLEDGERENTRIES.LIST>
+              <LEDGERNAME>IGST Input @ ${gstRate}% - ${itemName}</LEDGERNAME>
+              <GSTCLASS/>
+              <AMOUNT>${(-itemIGST).toFixed(2)}</AMOUNT>
+            </ALLLEDGERENTRIES.LIST>` : ''}`
+    }).join('\n')
+
+    return `          <VOUCHER VCHTYPE="Purchase" ACTION="Create">
             <VOUCHERNUMBER>${invoice.invoice_number || 'N/A'}</VOUCHERNUMBER>
             <VOUCHERTYPENAME>Purchase</VOUCHERTYPENAME>
             <DATE>${formatDate(invoice.invoice_date)}</DATE>
-            <NARRATION>Purchase Invoice - ${invoice.vendor_name || 'Vendor'}</NARRATION>
+            <DUEDATE>${formatDate(invoice.due_date)}</DUEDATE>
+            <NARRATION>Purchase Invoice - ${invoice.vendor_name || 'Vendor'} | GSTIN: ${invoice.gstin || 'N/A'} | GST Rate: ${gstRate}% | HSN/SAC: ${hsnCode} | Place of Supply: ${placeOfSupply} | GST Treatment: ${gstTreatment} | Reverse Charge: ${reverseCharge}${hasMultipleItems ? ` | Multi-Item Invoice (${lineItems.length} items)` : ''}${tdsApplicable === 'Yes' ? ` | TDS Applicable: ${tdsPercentage}% (₹${tdsAmount.toFixed(2)})` : ''}${isCompositionDealer ? ' | Composition Scheme Dealer' : ''}</NARRATION>
             <PARTYLEDGERNAME>${invoice.vendor_name || 'Vendor'}</PARTYLEDGERNAME>
             <VOUCHERAMOUNT>${(invoice.total_amount || 0).toFixed(2)}</VOUCHERAMOUNT>
+            <PARTYMAILINGNAME>${invoice.vendor_name || 'Vendor'}</PARTYMAILINGNAME>
+            <PARTYADDRESS.LIST>
+              <PARTYADDRESS>GSTIN: ${invoice.gstin || 'N/A'}</PARTYADDRESS>
+              <PARTYADDRESS>Place of Supply: ${placeOfSupply}</PARTYADDRESS>
+            </PARTYADDRESS.LIST>
             <ALLLEDGERENTRIES.LIST>
               <LEDGERNAME>${invoice.vendor_name || 'Vendor'}</LEDGERNAME>
+              <GSTCLASS/>
+              <AMOUNT>${(invoice.total_amount || 0).toFixed(2)}</AMOUNT>
+              <BILLALLOCATIONS.LIST>
+                <NAME>${invoice.invoice_number || 'N/A'}</NAME>
+                <BILLTYPE>New Ref</BILLTYPE>
+                <AMOUNT>${(invoice.total_amount || 0).toFixed(2)}</AMOUNT>
+              </BILLALLOCATIONS.LIST>
+            </ALLLEDGERENTRIES.LIST>
+${itemEntries}
+          </VOUCHER>`
+  } else {
+    // Single-item invoice (existing logic)
+    return `          <VOUCHER VCHTYPE="Purchase" ACTION="Create">
+            <VOUCHERNUMBER>${invoice.invoice_number || 'N/A'}</VOUCHERNUMBER>
+            <VOUCHERTYPENAME>Purchase</VOUCHERTYPENAME>
+            <DATE>${formatDate(invoice.invoice_date)}</DATE>
+            <DUEDATE>${formatDate(invoice.due_date)}</DUEDATE>
+            <NARRATION>Purchase Invoice - ${invoice.vendor_name || 'Vendor'} | GSTIN: ${invoice.gstin || 'N/A'} | GST Rate: ${gstRate}% | HSN/SAC: ${hsnCode} | Place of Supply: ${placeOfSupply} | GST Treatment: ${gstTreatment} | Reverse Charge: ${reverseCharge}</NARRATION>
+            <PARTYLEDGERNAME>${invoice.vendor_name || 'Vendor'}</PARTYLEDGERNAME>
+            <VOUCHERAMOUNT>${(invoice.total_amount || 0).toFixed(2)}</VOUCHERAMOUNT>
+            <PARTYMAILINGNAME>${invoice.vendor_name || 'Vendor'}</PARTYMAILINGNAME>
+            <PARTYADDRESS.LIST>
+              <PARTYADDRESS>GSTIN: ${invoice.gstin || 'N/A'}</PARTYADDRESS>
+              <PARTYADDRESS>Place of Supply: ${placeOfSupply}</PARTYADDRESS>
+            </PARTYADDRESS.LIST>
+            <ALLLEDGERENTRIES.LIST>
+              <LEDGERNAME>${invoice.vendor_name || 'Vendor'}</LEDGERNAME>
+              <GSTCLASS/>
               <AMOUNT>${(invoice.total_amount || 0).toFixed(2)}</AMOUNT>
               <BILLALLOCATIONS.LIST>
                 <NAME>${invoice.invoice_number || 'N/A'}</NAME>
@@ -152,14 +268,27 @@ ${invoices.map(invoice => {
               </BILLALLOCATIONS.LIST>
             </ALLLEDGERENTRIES.LIST>
             <ALLLEDGERENTRIES.LIST>
-              <LEDGERNAME>Purchase Account</LEDGERNAME>
+              <LEDGERNAME>Purchase @ ${gstRate}%</LEDGERNAME>
+              <GSTCLASS/>
               <AMOUNT>${(-subtotal).toFixed(2)}</AMOUNT>
             </ALLLEDGERENTRIES.LIST>
-${taxAmount > 0 ? `            <ALLLEDGERENTRIES.LIST>
-              <LEDGERNAME>Input GST</LEDGERNAME>
-              <AMOUNT>${(-taxAmount).toFixed(2)}</AMOUNT>
+${cgst > 0 ? `            <ALLLEDGERENTRIES.LIST>
+              <LEDGERNAME>CGST Input @ ${(gstRate/2).toFixed(1)}%</LEDGERNAME>
+              <GSTCLASS/>
+              <AMOUNT>${(-cgst).toFixed(2)}</AMOUNT>
+            </ALLLEDGERENTRIES.LIST>` : ''}
+${sgst > 0 ? `            <ALLLEDGERENTRIES.LIST>
+              <LEDGERNAME>SGST Input @ ${(gstRate/2).toFixed(1)}%</LEDGERNAME>
+              <GSTCLASS/>
+              <AMOUNT>${(-sgst).toFixed(2)}</AMOUNT>
+            </ALLLEDGERENTRIES.LIST>` : ''}
+${igst > 0 ? `            <ALLLEDGERENTRIES.LIST>
+              <LEDGERNAME>IGST Input @ ${gstRate}%</LEDGERNAME>
+              <GSTCLASS/>
+              <AMOUNT>${(-igst).toFixed(2)}</AMOUNT>
             </ALLLEDGERENTRIES.LIST>` : ''}
           </VOUCHER>`
+  }
 }).join('\n')}
         </TALLYMESSAGE>
       </REQUESTDATA>
@@ -173,7 +302,7 @@ ${taxAmount > 0 ? `            <ALLLEDGERENTRIES.LIST>
   const url = URL.createObjectURL(blob)
 
   link.setAttribute('href', url)
-  link.setAttribute('download', `invoices_tally_${new Date().toISOString().split('T')[0]}.xml`)
+  link.setAttribute('download', `invoices_tally_gst_compliant_${new Date().toISOString().split('T')[0]}.xml`)
   link.style.visibility = 'hidden'
 
   document.body.appendChild(link)
@@ -182,7 +311,7 @@ ${taxAmount > 0 ? `            <ALLLEDGERENTRIES.LIST>
 }
 
 /**
- * Export invoices to QuickBooks CSV format
+ * Export invoices to QuickBooks CSV format (India GST Compliant)
  */
 export async function exportInvoicesToQuickBooksCSV(invoices: any[]) {
   if (invoices.length === 0) {
@@ -190,15 +319,55 @@ export async function exportInvoicesToQuickBooksCSV(invoices: any[]) {
     return
   }
 
-  // QuickBooks CSV headers
+  // Validate invoices for required GST fields
+  const validationErrors: string[] = []
+  invoices.forEach((invoice, index) => {
+    if (!invoice.invoice_number) {
+      validationErrors.push(`Invoice ${index + 1}: Missing invoice number`)
+    }
+    if (!invoice.vendor_name) {
+      validationErrors.push(`Invoice ${index + 1}: Missing vendor name`)
+    }
+    if (!invoice.total_amount || invoice.total_amount <= 0) {
+      validationErrors.push(`Invoice ${index + 1}: Invalid total amount`)
+    }
+    if (!invoice.invoice_date) {
+      validationErrors.push(`Invoice ${index + 1}: Missing invoice date`)
+    }
+  })
+
+  if (validationErrors.length > 0) {
+    alert(`Export validation failed:\n${validationErrors.join('\n')}`)
+    return
+  }
+
+  // QuickBooks India CSV headers (GST compliant)
   const headers = [
     'Invoice No',
-    'Date',
+    'Invoice Date',
+    'Due Date',
     'Customer Name',
+    'GSTIN',
     'Item',
+    'HSN/SAC',
+    'Quantity',
+    'Rate',
     'Amount',
-    'GST',
-    'Total'
+    'CGST Rate',
+    'CGST Amount',
+    'SGST Rate',
+    'SGST Amount',
+    'IGST Rate',
+    'IGST Amount',
+    'Total GST',
+    'Total Amount',
+    'Place of Supply',
+    'Invoice Type',
+    'Reverse Charge (RCM)',
+    'TDS Applicable',
+    'TDS Percentage',
+    'TDS Amount',
+    'Composition Scheme'
   ]
 
   // Helper function for consistent date formatting (MM/DD/YYYY for QuickBooks)
@@ -217,25 +386,116 @@ export async function exportInvoicesToQuickBooksCSV(invoices: any[]) {
   }
 
   // Convert invoices to CSV rows
-  const rows = invoices.map(invoice => {
-    const taxAmount = (invoice.cgst || 0) + (invoice.sgst || 0) + (invoice.igst || 0)
-    const subtotal = invoice.subtotal || (invoice.total_amount ? invoice.total_amount - taxAmount : 0)
+  const rows: any[] = []
 
-    return [
-      invoice.invoice_number || '',
-      formatDate(invoice.invoice_date),
-      invoice.vendor_name || '',
-      'Invoice Processing', // Generic item description
-      subtotal.toFixed(2),
-      taxAmount.toFixed(2),
-      (invoice.total_amount || 0).toFixed(2)
-    ]
+  invoices.forEach(invoice => {
+    const cgst = invoice.cgst || 0
+    const sgst = invoice.sgst || 0
+    const igst = invoice.igst || 0
+    const totalGST = cgst + sgst + igst
+    const subtotal = invoice.subtotal || (invoice.total_amount ? invoice.total_amount - totalGST : 0)
+
+    // Calculate GST rates
+    const cgstRate = subtotal > 0 ? ((cgst / subtotal) * 100).toFixed(2) : '0.00'
+    const sgstRate = subtotal > 0 ? ((sgst / subtotal) * 100).toFixed(2) : '0.00'
+    const igstRate = subtotal > 0 ? ((igst / subtotal) * 100).toFixed(2) : '0.00'
+
+    // Determine invoice type
+    const hasGSTIN = invoice.gstin && invoice.gstin.trim() !== ''
+    const invoiceType = hasGSTIN ? 'B2B' : 'B2C'
+
+    // Use dynamic HSN/SAC code from database, fallback to default
+    const hsnCode = invoice.hsn_code || invoice.sac_code || '9983'
+    const placeOfSupply = invoice.place_of_supply || 'Maharashtra'
+    const itemDescription = invoice.supply_type === 'Service' ? 'Invoice Processing Service' : 'Goods'
+    const reverseCharge = invoice.reverse_charge ? 'Yes' : 'No'
+    const tdsApplicable = invoice.tds_amount && invoice.tds_amount > 0 ? 'Yes' : 'No'
+    const tdsAmount = invoice.tds_amount || 0
+    const tdsPercentage = invoice.tds_percentage || 0
+    const isCompositionDealer = invoice.vendor_type === 'Composition' || invoice.vendor_type === 'composition'
+    const compositionScheme = isCompositionDealer ? 'Yes' : 'No'
+
+    // Check if this is a multi-item invoice
+    const lineItems = invoice.line_items || []
+    const hasMultipleItems = lineItems.length > 1
+
+    if (hasMultipleItems) {
+      // Multi-item invoice: create one row per item
+      lineItems.forEach((item: any, index: number) => {
+        const itemHSN = item.hsn_code || item.sac_code || hsnCode
+        const itemName = item.item_name || item.description || `${itemDescription} ${index + 1}`
+        const itemQty = item.quantity || 1
+        const itemRate = item.rate || item.unit_price || (item.amount || 0) / itemQty
+        const itemAmount = item.amount || (itemQty * itemRate)
+        const itemGST = item.gst_amount || (itemAmount * (totalGST / subtotal))
+        const itemCGST = igst > 0 ? 0 : itemGST / 2
+        const itemSGST = igst > 0 ? 0 : itemGST / 2
+        const itemIGST = igst > 0 ? itemGST : 0
+
+        rows.push([
+          invoice.invoice_number || '',
+          formatDate(invoice.invoice_date),
+          formatDate(invoice.due_date),
+          invoice.vendor_name || '',
+          invoice.gstin || '',
+          itemName,
+          itemHSN,
+          itemQty.toString(),
+          itemRate.toFixed(2),
+          itemAmount.toFixed(2),
+          (itemCGST / itemAmount * 100).toFixed(2),
+          itemCGST.toFixed(2),
+          (itemSGST / itemAmount * 100).toFixed(2),
+          itemSGST.toFixed(2),
+          (itemIGST / itemAmount * 100).toFixed(2),
+          itemIGST.toFixed(2),
+          itemGST.toFixed(2),
+          (itemAmount + itemGST).toFixed(2),
+          placeOfSupply,
+          invoiceType,
+          reverseCharge,
+          tdsApplicable,
+          tdsPercentage.toFixed(2),
+          tdsAmount.toFixed(2),
+          compositionScheme
+        ])
+      })
+    } else {
+      // Single-item invoice (existing logic)
+      rows.push([
+        invoice.invoice_number || '',
+        formatDate(invoice.invoice_date),
+        formatDate(invoice.due_date),
+        invoice.vendor_name || '',
+        invoice.gstin || '',
+        itemDescription,
+        hsnCode,
+        '1', // Quantity
+        subtotal.toFixed(2), // Rate
+        subtotal.toFixed(2), // Amount
+        cgstRate,
+        cgst.toFixed(2),
+        sgstRate,
+        sgst.toFixed(2),
+        igstRate,
+        igst.toFixed(2),
+        totalGST.toFixed(2),
+        (invoice.total_amount || 0).toFixed(2),
+        placeOfSupply,
+        invoiceType,
+        reverseCharge,
+        tdsApplicable,
+        tdsPercentage.toFixed(2),
+        tdsAmount.toFixed(2),
+        compositionScheme
+      ])
+    }
   })
 
   // Combine headers and rows
   const csvContent = [
     headers.join(','),
-    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ...rows.map((row: any[]) => row.map((cell: any) => `"${cell}"`).join(','))
   ].join('\n')
 
   // Create blob and download
@@ -244,7 +504,7 @@ export async function exportInvoicesToQuickBooksCSV(invoices: any[]) {
   const url = URL.createObjectURL(blob)
 
   link.setAttribute('href', url)
-  link.setAttribute('download', `invoices_quickbooks_${new Date().toISOString().split('T')[0]}.csv`)
+  link.setAttribute('download', `invoices_quickbooks_india_gst_${new Date().toISOString().split('T')[0]}.csv`)
   link.style.visibility = 'hidden'
 
   document.body.appendChild(link)
@@ -253,7 +513,7 @@ export async function exportInvoicesToQuickBooksCSV(invoices: any[]) {
 }
 
 /**
- * Export invoices to Zoho Books CSV format
+ * Export invoices to Zoho Books CSV format (India GST Compliant)
  */
 export async function exportInvoicesToZohoBooksCSV(invoices: any[]) {
   if (invoices.length === 0) {
@@ -261,16 +521,59 @@ export async function exportInvoicesToZohoBooksCSV(invoices: any[]) {
     return
   }
 
-  // Zoho Books CSV headers
+  // Validate invoices for required GST fields
+  const validationErrors: string[] = []
+  invoices.forEach((invoice, index) => {
+    if (!invoice.invoice_number) {
+      validationErrors.push(`Invoice ${index + 1}: Missing invoice number`)
+    }
+    if (!invoice.vendor_name) {
+      validationErrors.push(`Invoice ${index + 1}: Missing vendor name`)
+    }
+    if (!invoice.total_amount || invoice.total_amount <= 0) {
+      validationErrors.push(`Invoice ${index + 1}: Invalid total amount`)
+    }
+    if (!invoice.invoice_date) {
+      validationErrors.push(`Invoice ${index + 1}: Missing invoice date`)
+    }
+  })
+
+  if (validationErrors.length > 0) {
+    alert(`Export validation failed:\n${validationErrors.join('\n')}`)
+    return
+  }
+
+  // Zoho Books India CSV headers (GST compliant)
   const headers = [
     'Invoice Number',
     'Invoice Date',
+    'Due Date',
     'Customer Name',
+    'GSTIN',
+    'Place of Supply',
     'Item Name',
+    'HSN/SAC',
+    'Item Type',
     'Quantity',
     'Rate',
-    'GST',
-    'Total'
+    'Discount',
+    'Tax Rate',
+    'CGST Rate',
+    'CGST Amount',
+    'SGST Rate',
+    'SGST Amount',
+    'IGST Rate',
+    'IGST Amount',
+    'Total GST',
+    'Item Total',
+    'Invoice Total',
+    'GST Treatment',
+    'Invoice Type',
+    'Reverse Charge (RCM)',
+    'TDS Applicable',
+    'TDS Percentage',
+    'TDS Amount',
+    'Composition Scheme'
   ]
 
   // Helper function for consistent date formatting (DD/MM/YYYY for Zoho)
@@ -289,28 +592,129 @@ export async function exportInvoicesToZohoBooksCSV(invoices: any[]) {
   }
 
   // Convert invoices to CSV rows
-  const rows = invoices.map(invoice => {
-    const taxAmount = (invoice.cgst || 0) + (invoice.sgst || 0) + (invoice.igst || 0)
-    const subtotal = invoice.subtotal || (invoice.total_amount ? invoice.total_amount - taxAmount : 0)
-    const quantity = 1 // Default quantity
-    const rate = subtotal.toFixed(2) // Rate per unit
+  const rows: any[] = []
 
-    return [
-      invoice.invoice_number || '',
-      formatDate(invoice.invoice_date),
-      invoice.vendor_name || '',
-      'Invoice Processing Service', // Item description
-      quantity.toString(),
-      rate,
-      taxAmount.toFixed(2),
-      (invoice.total_amount || 0).toFixed(2)
-    ]
+  invoices.forEach(invoice => {
+    const cgst = invoice.cgst || 0
+    const sgst = invoice.sgst || 0
+    const igst = invoice.igst || 0
+    const totalGST = cgst + sgst + igst
+    const subtotal = invoice.subtotal || (invoice.total_amount ? invoice.total_amount - totalGST : 0)
+
+    // Calculate GST rates
+    const cgstRate = subtotal > 0 ? ((cgst / subtotal) * 100).toFixed(2) : '0.00'
+    const sgstRate = subtotal > 0 ? ((sgst / subtotal) * 100).toFixed(2) : '0.00'
+    const igstRate = subtotal > 0 ? ((igst / subtotal) * 100).toFixed(2) : '0.00'
+    const overallGSTRate = subtotal > 0 ? ((totalGST / subtotal) * 100).toFixed(2) : '0.00'
+
+    // Determine GST treatment and invoice type
+    const hasGSTIN = invoice.gstin && invoice.gstin.trim() !== ''
+    const gstTreatment = hasGSTIN ? 'Taxable' : 'Consumer'
+    const invoiceType = hasGSTIN ? 'B2B' : 'B2C'
+
+    // Use dynamic HSN/SAC code from database, fallback to default
+    const hsnCode = invoice.hsn_code || invoice.sac_code || '9983'
+    const placeOfSupply = invoice.place_of_supply || 'Maharashtra'
+    const itemType = invoice.supply_type || 'Service' // Goods or Service
+    const itemName = itemType === 'Service' ? 'Invoice Processing Service' : 'Goods'
+    const reverseCharge = invoice.reverse_charge ? 'Yes' : 'No'
+    const tdsApplicable = invoice.tds_amount && invoice.tds_amount > 0 ? 'Yes' : 'No'
+    const tdsAmount = invoice.tds_amount || 0
+    const tdsPercentage = invoice.tds_percentage || 0
+    const isCompositionDealer = invoice.vendor_type === 'Composition' || invoice.vendor_type === 'composition'
+    const compositionScheme = isCompositionDealer ? 'Yes' : 'No'
+
+    // Check if this is a multi-item invoice
+    const lineItems = invoice.line_items || []
+    const hasMultipleItems = lineItems.length > 1
+
+    if (hasMultipleItems) {
+      // Multi-item invoice: create one row per item
+      lineItems.forEach((item: any, index: number) => {
+        const itemHSN = item.hsn_code || item.sac_code || hsnCode
+        const itemNameActual = item.item_name || item.description || `${itemName} ${index + 1}`
+        const itemTypeActual = item.item_type || itemType
+        const itemQty = item.quantity || 1
+        const itemRate = item.rate || item.unit_price || (item.amount || 0) / itemQty
+        const itemAmount = item.amount || (itemQty * itemRate)
+        const itemDiscount = item.discount || 0
+        const itemGST = item.gst_amount || (itemAmount * (totalGST / subtotal))
+        const itemCGST = igst > 0 ? 0 : itemGST / 2
+        const itemSGST = igst > 0 ? 0 : itemGST / 2
+        const itemIGST = igst > 0 ? itemGST : 0
+
+        rows.push([
+          invoice.invoice_number || '',
+          formatDate(invoice.invoice_date),
+          formatDate(invoice.due_date),
+          invoice.vendor_name || '',
+          invoice.gstin || '',
+          placeOfSupply,
+          itemNameActual,
+          itemHSN,
+          itemTypeActual,
+          itemQty.toString(),
+          itemRate.toFixed(2),
+          itemDiscount.toFixed(2),
+          (itemGST / itemAmount * 100).toFixed(2), // Tax Rate
+          (itemCGST / itemAmount * 100).toFixed(2),
+          itemCGST.toFixed(2),
+          (itemSGST / itemAmount * 100).toFixed(2),
+          itemSGST.toFixed(2),
+          (itemIGST / itemAmount * 100).toFixed(2),
+          itemIGST.toFixed(2),
+          itemGST.toFixed(2),
+          itemAmount.toFixed(2), // Item Total (before GST)
+          (itemAmount + itemGST).toFixed(2),
+          gstTreatment,
+          invoiceType,
+          reverseCharge,
+          tdsApplicable,
+          tdsPercentage.toFixed(2),
+          tdsAmount.toFixed(2),
+          compositionScheme
+        ])
+      })
+    } else {
+      // Single-item invoice (existing logic)
+      rows.push([
+        invoice.invoice_number || '',
+        formatDate(invoice.invoice_date),
+        formatDate(invoice.due_date),
+        invoice.vendor_name || '',
+        invoice.gstin || '',
+        placeOfSupply,
+        itemName,
+        hsnCode,
+        itemType,
+        '1', // Quantity
+        subtotal.toFixed(2), // Rate
+        '0.00', // Discount
+        overallGSTRate, // Tax Rate
+        cgstRate,
+        cgst.toFixed(2),
+        sgstRate,
+        sgst.toFixed(2),
+        igstRate,
+        igst.toFixed(2),
+        totalGST.toFixed(2),
+        subtotal.toFixed(2), // Item Total (before GST)
+        (invoice.total_amount || 0).toFixed(2),
+        gstTreatment,
+        invoiceType,
+        reverseCharge,
+        tdsApplicable,
+        tdsPercentage.toFixed(2),
+        tdsAmount.toFixed(2),
+        compositionScheme
+      ])
+    }
   })
 
   // Combine headers and rows
   const csvContent = [
     headers.join(','),
-    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ...rows.map((row: any[]) => row.map((cell: any) => `"${cell}"`).join(','))
   ].join('\n')
 
   // Create blob and download
@@ -319,7 +723,7 @@ export async function exportInvoicesToZohoBooksCSV(invoices: any[]) {
   const url = URL.createObjectURL(blob)
 
   link.setAttribute('href', url)
-  link.setAttribute('download', `invoices_zoho_books_${new Date().toISOString().split('T')[0]}.csv`)
+  link.setAttribute('download', `invoices_zoho_books_india_gst_${new Date().toISOString().split('T')[0]}.csv`)
   link.style.visibility = 'hidden'
 
   document.body.appendChild(link)
