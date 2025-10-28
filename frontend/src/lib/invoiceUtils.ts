@@ -95,6 +95,239 @@ export async function exportInvoicesToExcel(invoices: any[]) {
 }
 
 /**
+ * Export invoices to Tally XML format
+ */
+export async function exportInvoicesToTallyXML(invoices: any[]) {
+  if (invoices.length === 0) {
+    alert('No invoices to export')
+    return
+  }
+
+  // Helper function for consistent date formatting (DD-MM-YYYY for Tally)
+  const formatDate = (dateString: string | null | undefined): string => {
+    if (!dateString) return ''
+    try {
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) return ''
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = date.getFullYear()
+      return `${day}-${month}-${year}`
+    } catch {
+      return ''
+    }
+  }
+
+  // Generate Tally XML structure
+  const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<ENVELOPE>
+  <HEADER>
+    <TALLYREQUEST>Import Data</TALLYREQUEST>
+  </HEADER>
+  <BODY>
+    <IMPORTDATA>
+      <REQUESTDESC>
+        <REPORTNAME>Vouchers</REPORTNAME>
+      </REQUESTDESC>
+      <REQUESTDATA>
+        <TALLYMESSAGE xmlns:UDF="TallyUDF">
+${invoices.map(invoice => {
+  const taxAmount = (invoice.cgst || 0) + (invoice.sgst || 0) + (invoice.igst || 0)
+  const subtotal = invoice.subtotal || (invoice.total_amount ? invoice.total_amount - taxAmount : 0)
+
+  return `          <VOUCHER VCHTYPE="Purchase" ACTION="Create">
+            <VOUCHERNUMBER>${invoice.invoice_number || 'N/A'}</VOUCHERNUMBER>
+            <VOUCHERTYPENAME>Purchase</VOUCHERTYPENAME>
+            <DATE>${formatDate(invoice.invoice_date)}</DATE>
+            <NARRATION>Purchase Invoice - ${invoice.vendor_name || 'Vendor'}</NARRATION>
+            <PARTYLEDGERNAME>${invoice.vendor_name || 'Vendor'}</PARTYLEDGERNAME>
+            <VOUCHERAMOUNT>${(invoice.total_amount || 0).toFixed(2)}</VOUCHERAMOUNT>
+            <ALLLEDGERENTRIES.LIST>
+              <LEDGERNAME>${invoice.vendor_name || 'Vendor'}</LEDGERNAME>
+              <AMOUNT>${(invoice.total_amount || 0).toFixed(2)}</AMOUNT>
+              <BILLALLOCATIONS.LIST>
+                <NAME>${invoice.invoice_number || 'N/A'}</NAME>
+                <BILLTYPE>New Ref</BILLTYPE>
+                <AMOUNT>${(invoice.total_amount || 0).toFixed(2)}</AMOUNT>
+              </BILLALLOCATIONS.LIST>
+            </ALLLEDGERENTRIES.LIST>
+            <ALLLEDGERENTRIES.LIST>
+              <LEDGERNAME>Purchase Account</LEDGERNAME>
+              <AMOUNT>${(-subtotal).toFixed(2)}</AMOUNT>
+            </ALLLEDGERENTRIES.LIST>
+${taxAmount > 0 ? `            <ALLLEDGERENTRIES.LIST>
+              <LEDGERNAME>Input GST</LEDGERNAME>
+              <AMOUNT>${(-taxAmount).toFixed(2)}</AMOUNT>
+            </ALLLEDGERENTRIES.LIST>` : ''}
+          </VOUCHER>`
+}).join('\n')}
+        </TALLYMESSAGE>
+      </REQUESTDATA>
+    </IMPORTDATA>
+  </BODY>
+</ENVELOPE>`
+
+  // Create blob and download
+  const blob = new Blob([xmlContent], { type: 'application/xml;charset=utf-8;' })
+  const link = document.createElement('a')
+  const url = URL.createObjectURL(blob)
+
+  link.setAttribute('href', url)
+  link.setAttribute('download', `invoices_tally_${new Date().toISOString().split('T')[0]}.xml`)
+  link.style.visibility = 'hidden'
+
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+/**
+ * Export invoices to QuickBooks CSV format
+ */
+export async function exportInvoicesToQuickBooksCSV(invoices: any[]) {
+  if (invoices.length === 0) {
+    alert('No invoices to export')
+    return
+  }
+
+  // QuickBooks CSV headers
+  const headers = [
+    'Invoice No',
+    'Date',
+    'Customer Name',
+    'Item',
+    'Amount',
+    'GST',
+    'Total'
+  ]
+
+  // Helper function for consistent date formatting (MM/DD/YYYY for QuickBooks)
+  const formatDate = (dateString: string | null | undefined): string => {
+    if (!dateString) return ''
+    try {
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) return ''
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const day = String(date.getDate()).padStart(2, '0')
+      const year = date.getFullYear()
+      return `${month}/${day}/${year}`
+    } catch {
+      return ''
+    }
+  }
+
+  // Convert invoices to CSV rows
+  const rows = invoices.map(invoice => {
+    const taxAmount = (invoice.cgst || 0) + (invoice.sgst || 0) + (invoice.igst || 0)
+    const subtotal = invoice.subtotal || (invoice.total_amount ? invoice.total_amount - taxAmount : 0)
+
+    return [
+      invoice.invoice_number || '',
+      formatDate(invoice.invoice_date),
+      invoice.vendor_name || '',
+      'Invoice Processing', // Generic item description
+      subtotal.toFixed(2),
+      taxAmount.toFixed(2),
+      (invoice.total_amount || 0).toFixed(2)
+    ]
+  })
+
+  // Combine headers and rows
+  const csvContent = [
+    headers.join(','),
+    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+  ].join('\n')
+
+  // Create blob and download
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  const url = URL.createObjectURL(blob)
+
+  link.setAttribute('href', url)
+  link.setAttribute('download', `invoices_quickbooks_${new Date().toISOString().split('T')[0]}.csv`)
+  link.style.visibility = 'hidden'
+
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+/**
+ * Export invoices to Zoho Books CSV format
+ */
+export async function exportInvoicesToZohoBooksCSV(invoices: any[]) {
+  if (invoices.length === 0) {
+    alert('No invoices to export')
+    return
+  }
+
+  // Zoho Books CSV headers
+  const headers = [
+    'Invoice Number',
+    'Invoice Date',
+    'Customer Name',
+    'Item Name',
+    'Quantity',
+    'Rate',
+    'GST',
+    'Total'
+  ]
+
+  // Helper function for consistent date formatting (DD/MM/YYYY for Zoho)
+  const formatDate = (dateString: string | null | undefined): string => {
+    if (!dateString) return ''
+    try {
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) return ''
+      const day = String(date.getDate()).padStart(2, '0')
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = date.getFullYear()
+      return `${day}/${month}/${year}`
+    } catch {
+      return ''
+    }
+  }
+
+  // Convert invoices to CSV rows
+  const rows = invoices.map(invoice => {
+    const taxAmount = (invoice.cgst || 0) + (invoice.sgst || 0) + (invoice.igst || 0)
+    const subtotal = invoice.subtotal || (invoice.total_amount ? invoice.total_amount - taxAmount : 0)
+    const quantity = 1 // Default quantity
+    const rate = subtotal.toFixed(2) // Rate per unit
+
+    return [
+      invoice.invoice_number || '',
+      formatDate(invoice.invoice_date),
+      invoice.vendor_name || '',
+      'Invoice Processing Service', // Item description
+      quantity.toString(),
+      rate,
+      taxAmount.toFixed(2),
+      (invoice.total_amount || 0).toFixed(2)
+    ]
+  })
+
+  // Combine headers and rows
+  const csvContent = [
+    headers.join(','),
+    ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+  ].join('\n')
+
+  // Create blob and download
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  const url = URL.createObjectURL(blob)
+
+  link.setAttribute('href', url)
+  link.setAttribute('download', `invoices_zoho_books_${new Date().toISOString().split('T')[0]}.csv`)
+  link.style.visibility = 'hidden'
+
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+/**
  * Bulk update payment status
  */
 export async function bulkUpdatePaymentStatus(

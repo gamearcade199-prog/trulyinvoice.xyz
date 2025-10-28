@@ -13,7 +13,7 @@ import {
   ChevronDown
 } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
-import { exportInvoicesToCSV } from '@/lib/invoiceUtils'
+import { exportInvoicesToCSV, exportInvoicesToTallyXML, exportInvoicesToQuickBooksCSV, exportInvoicesToZohoBooksCSV } from '@/lib/invoiceUtils'
 import { formatCurrency } from '@/lib/currency'
 import ConfidenceIndicator from '@/components/ConfidenceIndicator'
 
@@ -313,7 +313,7 @@ export default function InvoicesPageClean() {
     }))
   }
 
-  const handleMainExport = (format: 'excel' | 'csv') => {
+  const handleMainExport = (format: 'excel' | 'csv' | 'tally' | 'quickbooks' | 'zoho') => {
     console.log('Export format selected:', format)
     setShowMainExportDropdown(false)
     switch(format) {
@@ -323,10 +323,19 @@ export default function InvoicesPageClean() {
       case 'csv':
         handleExport()
         break
+      case 'tally':
+        exportInvoicesToTallyXML(invoices)
+        break
+      case 'quickbooks':
+        exportInvoicesToQuickBooksCSV(invoices)
+        break
+      case 'zoho':
+        exportInvoicesToZohoBooksCSV(invoices)
+        break
     }
   }
 
-  const handleBulkExport = (format: 'excel' | 'csv') => {
+  const handleBulkExport = (format: 'excel' | 'csv' | 'tally' | 'quickbooks' | 'zoho') => {
     setShowBulkExportDropdown(false)
     switch(format) {
       case 'excel':
@@ -335,10 +344,22 @@ export default function InvoicesPageClean() {
       case 'csv':
         exportSelectedInvoices()
         break
+      case 'tally':
+        const selectedForTally = invoices.filter(inv => selectedInvoices.has(inv.id))
+        exportInvoicesToTallyXML(selectedForTally)
+        break
+      case 'quickbooks':
+        const selectedForQuickBooks = invoices.filter(inv => selectedInvoices.has(inv.id))
+        exportInvoicesToQuickBooksCSV(selectedForQuickBooks)
+        break
+      case 'zoho':
+        const selectedForZoho = invoices.filter(inv => selectedInvoices.has(inv.id))
+        exportInvoicesToZohoBooksCSV(selectedForZoho)
+        break
     }
   }
 
-  const handleRowExport = (invoice: any, format: 'excel' | 'csv') => {
+  const handleRowExport = (invoice: any, format: 'excel' | 'csv' | 'tally' | 'quickbooks' | 'zoho') => {
     setShowRowExportDropdown({})
     switch(format) {
       case 'excel':
@@ -347,10 +368,19 @@ export default function InvoicesPageClean() {
       case 'csv':
         exportSingleInvoice(invoice)
         break
+      case 'tally':
+        exportInvoicesToTallyXML([invoice])
+        break
+      case 'quickbooks':
+        exportInvoicesToQuickBooksCSV([invoice])
+        break
+      case 'zoho':
+        exportInvoicesToZohoBooksCSV([invoice])
+        break
     }
   }
 
-  const handleMobileExport = (invoice: any, format: 'excel' | 'csv') => {
+  const handleMobileExport = (invoice: any, format: 'excel' | 'csv' | 'tally' | 'quickbooks' | 'zoho') => {
     setShowMobileExportDropdown({})
     switch(format) {
       case 'excel':
@@ -358,6 +388,15 @@ export default function InvoicesPageClean() {
         break
       case 'csv':
         exportSingleInvoice(invoice)
+        break
+      case 'tally':
+        exportInvoicesToTallyXML([invoice])
+        break
+      case 'quickbooks':
+        exportInvoicesToQuickBooksCSV([invoice])
+        break
+      case 'zoho':
+        exportInvoicesToZohoBooksCSV([invoice])
         break
     }
   }
@@ -542,7 +581,7 @@ export default function InvoicesPageClean() {
                   <ChevronDown className="w-4 h-4" />
                 </button>
                 {showMainExportDropdown && (
-                  <div className="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                  <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
                     <button
                       onClick={() => handleMainExport('excel')}
                       className="w-full text-left px-4 py-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-t-lg font-semibold"
@@ -551,9 +590,27 @@ export default function InvoicesPageClean() {
                     </button>
                     <button
                       onClick={() => handleMainExport('csv')}
-                      className="w-full text-left px-4 py-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-b-lg"
+                      className="w-full text-left px-4 py-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 font-semibold"
                     >
                       CSV
+                    </button>
+                    <button
+                      onClick={() => handleMainExport('tally')}
+                      className="w-full text-left px-4 py-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 font-semibold"
+                    >
+                      Tally XML
+                    </button>
+                    <button
+                      onClick={() => handleMainExport('quickbooks')}
+                      className="w-full text-left px-4 py-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 font-semibold"
+                    >
+                      QuickBooks CSV
+                    </button>
+                    <button
+                      onClick={() => handleMainExport('zoho')}
+                      className="w-full text-left px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-b-lg font-semibold"
+                    >
+                      Zoho Books CSV
                     </button>
                   </div>
                 )}
@@ -582,7 +639,7 @@ export default function InvoicesPageClean() {
                   <ChevronDown className="w-4 h-4" />
                 </button>
                 {showBulkExportDropdown && (
-                  <div className="absolute left-0 mt-2 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                  <div className="absolute left-0 mt-2 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
                     <button
                       onClick={() => handleBulkExport('excel')}
                       className="w-full text-left px-4 py-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-t-lg font-semibold"
@@ -591,9 +648,27 @@ export default function InvoicesPageClean() {
                     </button>
                     <button
                       onClick={() => handleBulkExport('csv')}
-                      className="w-full text-left px-4 py-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-b-lg"
+                      className="w-full text-left px-4 py-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 font-semibold"
                     >
                       CSV
+                    </button>
+                    <button
+                      onClick={() => handleBulkExport('tally')}
+                      className="w-full text-left px-4 py-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 font-semibold"
+                    >
+                      Tally XML
+                    </button>
+                    <button
+                      onClick={() => handleBulkExport('quickbooks')}
+                      className="w-full text-left px-4 py-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 font-semibold"
+                    >
+                      QuickBooks CSV
+                    </button>
+                    <button
+                      onClick={() => handleBulkExport('zoho')}
+                      className="w-full text-left px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-b-lg font-semibold"
+                    >
+                      Zoho Books CSV
                     </button>
                   </div>
                 )}
@@ -720,7 +795,7 @@ export default function InvoicesPageClean() {
                               <ChevronDown className="w-3 h-3 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                             </button>
                             {showRowExportDropdown[invoice.id] && (
-                              <div className="absolute right-0 mt-1 w-24 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
+                              <div className="absolute right-0 mt-1 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
                                 <button
                                   onClick={() => handleRowExport(invoice, 'excel')}
                                   className="w-full text-left px-3 py-2 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-t-lg font-semibold"
@@ -729,9 +804,27 @@ export default function InvoicesPageClean() {
                                 </button>
                                 <button
                                   onClick={() => handleRowExport(invoice, 'csv')}
-                                  className="w-full text-left px-3 py-2 text-xs text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-b-lg"
+                                  className="w-full text-left px-3 py-2 text-xs text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 font-semibold"
                                 >
                                   CSV
+                                </button>
+                                <button
+                                  onClick={() => handleRowExport(invoice, 'tally')}
+                                  className="w-full text-left px-3 py-2 text-xs text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 font-semibold"
+                                >
+                                  Tally
+                                </button>
+                                <button
+                                  onClick={() => handleRowExport(invoice, 'quickbooks')}
+                                  className="w-full text-left px-3 py-2 text-xs text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 font-semibold"
+                                >
+                                  QuickBooks
+                                </button>
+                                <button
+                                  onClick={() => handleRowExport(invoice, 'zoho')}
+                                  className="w-full text-left px-3 py-2 text-xs text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-b-lg font-semibold"
+                                >
+                                  Zoho
                                 </button>
                               </div>
                             )}
@@ -831,9 +924,27 @@ export default function InvoicesPageClean() {
                           </button>
                           <button
                             onClick={() => handleMobileExport(invoice, 'csv')}
-                            className="w-full text-left px-3 py-2 text-sm text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-b-lg"
+                            className="w-full text-left px-3 py-2 text-sm text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 font-semibold"
                           >
                             CSV
+                          </button>
+                          <button
+                            onClick={() => handleMobileExport(invoice, 'tally')}
+                            className="w-full text-left px-3 py-2 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 font-semibold"
+                          >
+                            Tally XML
+                          </button>
+                          <button
+                            onClick={() => handleMobileExport(invoice, 'quickbooks')}
+                            className="w-full text-left px-3 py-2 text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 font-semibold"
+                          >
+                            QuickBooks
+                          </button>
+                          <button
+                            onClick={() => handleMobileExport(invoice, 'zoho')}
+                            className="w-full text-left px-3 py-2 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-b-lg font-semibold"
+                          >
+                            Zoho Books
                           </button>
                         </div>
                       )}
