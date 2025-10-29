@@ -16,7 +16,7 @@ const blogPosts = [
   {
     slug: 'extract-gst-from-invoices-automatically',
     title: 'How to Extract GST from Invoices Automatically in 5 Seconds (2025)',
-    excerpt: 'Stop wasting 5 minutes per invoice on manual GST extraction. Learn how Indian accountants automate GSTIN, tax amounts, and invoice data extraction with 98% accuracy.',
+    excerpt: 'Stop wasting 5 minutes per invoice on manual GST extraction. Learn how Indian accountants automate GSTIN, tax amounts, and invoice data extraction with 99% accuracy.',
     date: '2025-10-28',
     category: 'GST Compliance',
     readTime: '8 min read',

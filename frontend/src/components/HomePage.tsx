@@ -328,9 +328,9 @@ export default function HomePage() {
           <div className="max-w-4xl mx-auto text-center">
             {/* AI Badge */}
             <div className="mt-6 flex justify-center">
-              <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md text-white/95 px-4 py-2 rounded-full text-sm font-medium shadow-lg border border-white/10 hover:bg-white/10 transition-all duration-300">
-                <Sparkles className="w-4 h-4 text-yellow-200" />
-                AI-Powered
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg shadow-blue-500/30 dark:shadow-blue-500/20 hover:shadow-xl hover:scale-105 transition-all duration-300">
+                <Sparkles className="w-4 h-4" fill="currentColor" />
+                AI-Powered • 99% Accuracy
               </div>
             </div>
             
@@ -521,7 +521,7 @@ export default function HomePage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-green-500 font-bold mt-1">✓</span>
-                    <span>98% accuracy - AI reads better than humans</span>
+                    <span>99% accuracy - AI reads better than humans</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-green-500 font-bold mt-1">✓</span>
@@ -577,7 +577,7 @@ export default function HomePage() {
               {[
                 {
                   icon: Sparkles,
-                  title: '98% Accurate',
+                  title: '99% Accurate',
                   description: 'Industry-leading accuracy for Indian invoice formats'
                 },
                 {
@@ -705,7 +705,7 @@ export default function HomePage() {
           {/* Additional short testimonial bar */}
           <div className="mt-10 md:mt-16 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto">
             <div className="bg-white dark:bg-gray-700 p-4 md:p-6 rounded-xl shadow border border-gray-200 dark:border-gray-600 text-center">
-              <p className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">98%</p>
+              <p className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">99%</p>
               <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Accuracy Rate</p>
             </div>
             <div className="bg-white dark:bg-gray-700 p-4 md:p-6 rounded-xl shadow border border-gray-200 dark:border-gray-600 text-center">

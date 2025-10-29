@@ -71,7 +71,7 @@ export default function BlogPost() {
           Modern AI tools specifically trained on Indian GST invoices offer the best solution for 2025. These tools provide:
         </p>
         <ul>
-          <li>98% accuracy specifically for GST invoices</li>
+          <li>99% accuracy specifically for GST invoices</li>
           <li>Automatic GSTIN and PAN extraction</li>
           <li>Bulk processing (100+ invoices at once)</li>
           <li>Direct integration with Tally, QuickBooks, and Excel</li>
@@ -119,9 +119,9 @@ export default function BlogPost() {
             </tr>
             <tr>
               <td className="border p-2">Accuracy</td>
-              <td className="border p-2">95-98%</td>
+              <td className="border p-2">93-96%</td>
               <td className="border p-2">70-80%</td>
-              <td className="border p-2">98-99%</td>
+              <td className="border p-2">99%</td>
             </tr>
             <tr>
               <td className="border p-2">Cost</td>
@@ -182,7 +182,7 @@ export default function BlogPost() {
 
         <h2>Conclusion</h2>
         <p>
-          In 2025, automatic GST invoice extraction using AI is not just an option—it's a necessity. Businesses that continue with manual entry or basic Excel tools will fall behind on efficiency and accuracy. AI-powered extraction saves 80% of processing time, maintains 98%+ accuracy, and costs less than the manual labor it replaces.
+          In 2025, automatic GST invoice extraction using AI is not just an option—it's a necessity. Businesses that continue with manual entry or basic Excel tools will fall behind on efficiency and accuracy. AI-powered extraction saves 80% of processing time, maintains 99%+ accuracy, and costs less than the manual labor it replaces.
         </p>
         <p>
           For Indian businesses processing invoices, switching to automatic extraction is the fastest way to improve efficiency, reduce compliance risks, and scale your accounting operations.

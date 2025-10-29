@@ -145,7 +145,7 @@ export default function ZohoBooksCSVExportTutorialPage() {
                 </tr>
                 <tr>
                   <td className="px-6 py-4 whitespace-nowrap font-medium">Accuracy</td>
-                  <td className="px-6 py-4">95-98%</td>
+                  <td className="px-6 py-4">93-96%</td>
                   <td className="px-6 py-4 text-green-600 font-semibold">99%</td>
                 </tr>
                 <tr>

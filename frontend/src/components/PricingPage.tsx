@@ -64,7 +64,7 @@ export default function PricingPage() {
       unitCost: '₹1.50 per scan',
       features: [
         '200 scans per month',
-        '98% AI accuracy',
+        '99% AI accuracy',
         'Bulk upload (10 invoices)',
         'Custom export templates',
         '30-day storage',

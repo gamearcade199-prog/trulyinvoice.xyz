@@ -470,7 +470,7 @@ export default function BlogPost() {
                   <p className="font-semibold text-green-600 mb-2">✅ Pros:</p>
                   <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
                     <li>• <strong>Fastest:</strong> 5-10 seconds per invoice</li>
-                    <li>• <strong>Most accurate:</strong> 98%+ (trained on Indian invoices)</li>
+                    <li>• <strong>Most accurate:</strong> 99%+ (trained on Indian invoices)</li>
                     <li>• Works with PDFs, scans, photos, handwritten</li>
                     <li>• Bulk processing (100+ at once)</li>
                     <li>• GST validation built-in</li>
@@ -483,7 +483,7 @@ export default function BlogPost() {
                   <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
                     <li>• Monthly subscription cost</li>
                     <li>• Requires internet connection</li>
-                    <li>• Not 100% perfect (but 98%+ is industry-leading)</li>
+                    <li>• Not 100% perfect (but 99%+ is industry-leading)</li>
                   </ul>
                 </div>
               </div>
@@ -551,7 +551,7 @@ export default function BlogPost() {
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="flex-shrink-0 mt-1" size={24} />
                 <div>
-                  <p className="font-semibold mb-1">98% Accurate</p>
+                  <p className="font-semibold mb-1">99% Accurate</p>
                   <p className="text-sm opacity-90">Guaranteed or refund</p>
                 </div>
               </div>

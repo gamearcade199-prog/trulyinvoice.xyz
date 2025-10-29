@@ -504,7 +504,7 @@ export default function BlogPost() {
               <p className="text-gray-700 dark:text-gray-300">
                 <strong>A:</strong> AI accuracy is <strong>98-99%</strong>—actually higher than human accuracy (92-95%). 
                 Plus, you get a quick review screen before exporting. The AI highlights low-confidence fields (rare) for manual verification. 
-                We also offer a <strong>money-back guarantee</strong> if accuracy is below 98%.
+                We also offer a <strong>money-back guarantee</strong> if accuracy is below 99%.
               </p>
             </div>
 

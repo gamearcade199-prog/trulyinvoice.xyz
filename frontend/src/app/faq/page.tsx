@@ -17,7 +17,7 @@ const faqs = [
     questions: [
       {
         q: 'How accurate is TrulyInvoice for Indian GST invoices?',
-        a: 'TrulyInvoice achieves 98% accuracy for Indian GST invoices, automatically extracting GSTIN, PAN, invoice numbers, line items, tax details, and amounts. Our AI is specifically trained on 10,000+ Indian invoice samples.',
+        a: 'TrulyInvoice achieves 99% accuracy for Indian GST invoices, automatically extracting GSTIN, PAN, invoice numbers, line items, tax details, and amounts. Our AI is specifically trained on 10,000+ Indian invoice samples.',
       },
       {
         q: 'What invoice formats does TrulyInvoice support?',

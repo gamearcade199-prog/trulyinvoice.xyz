@@ -224,7 +224,7 @@ export default function ExcelExportPage() {
 
           <div className="mt-12 text-center">
             <p className="text-xl text-gray-600 dark:text-gray-300 mb-6">
-              <strong className="text-green-600 dark:text-green-400">Save 98% of your time</strong> and eliminate manual data entry errors
+              <strong className="text-green-600 dark:text-green-400">Save 99% of your time</strong> and eliminate manual data entry errors
             </p>
             <Link href="/signup" className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:from-blue-700 hover:to-green-700 font-semibold text-lg transition-all transform hover:scale-105 shadow-xl space-x-2">
               <span>Start Converting for Free</span>

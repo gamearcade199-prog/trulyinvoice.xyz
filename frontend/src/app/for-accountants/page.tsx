@@ -28,7 +28,7 @@ export default function ForAccountantsPage() {
               <h3 className="font-bold mb-3">Solution: TrulyInvoice Automation</h3>
               <ul className="list-disc pl-5 space-y-2 text-sm">
                 <li>Process 100+ invoices in 5 minutes</li>
-                <li>98% accuracy without manual review</li>
+                <li>99% accuracy without manual review</li>
                 <li>Automatic GSTIN & tax validation</li>
                 <li>Direct Tally, QuickBooks integration</li>
                 <li>Let staff focus on advisory work</li>
@@ -47,7 +47,7 @@ export default function ForAccountantsPage() {
             </div>
             <div className="border rounded-lg p-6">
               <div className="text-3xl mb-3">🎯</div>
-              <h3 className="font-bold mb-2">98% Accuracy</h3>
+              <h3 className="font-bold mb-2">99% Accuracy</h3>
               <p>AI trained on 10,000+ GST invoices. GSTIN extraction with 99% accuracy. Fewer compliance errors.</p>
             </div>
             <div className="border rounded-lg p-6">
