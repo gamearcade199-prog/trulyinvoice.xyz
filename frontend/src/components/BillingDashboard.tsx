@@ -155,51 +155,169 @@ export default function BillingDashboard() {
         onUpgradeClick={() => showUpgradeModal('proactive_warning')}
       />
 
-      <div className="p-6 rounded-lg bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{displayData.tier_name}</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {displayData.scans_used} / {displayData.scans_limit} scans used
+      {/* Current Plan Card */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/50 dark:via-indigo-950/40 dark:to-purple-950/30 border border-blue-200 dark:border-blue-800/50 shadow-xl">
+        {/* Decorative Background Elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-indigo-400/10 to-blue-400/10 rounded-full blur-3xl"></div>
+        
+        <div className="relative p-8">
+          {/* Header Section */}
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {displayData.tier_name}
+                </h3>
+                <span className={`
+                  px-3 py-1 rounded-full text-xs font-bold shadow-sm
+                  ${displayData.tier === 'free' 
+                    ? 'bg-gray-600 text-white' 
+                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white'
+                  }
+                `}>
+                  {displayData.tier === 'free' ? 'Free' : 'Active'}
+                </span>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                {displayData.period_end 
+                  ? `Renews ${new Date(displayData.period_end).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}` 
+                  : displayData.tier === 'free' ? 'Never expires' : 'Active subscription'}
+              </p>
+            </div>
+            
+            <div className="text-right">
+              <p className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                {displayData.tier === 'free' ? '₹0' : `₹${displayData.price}`}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-medium mt-1">
+                per month
+              </p>
+            </div>
+          </div>
+
+          {/* Usage Stats */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Scans This Month
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-gray-900 dark:text-white">
+                    {displayData.scans_used}
+                  </span>
+                  <span className="text-lg text-gray-500 dark:text-gray-400">
+                    / {displayData.scans_limit}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="text-right">
+                <div className={`
+                  inline-flex items-center gap-2 px-4 py-2 rounded-xl shadow-sm
+                  ${usagePercentage >= 90 
+                    ? 'bg-red-100 dark:bg-red-900/40' 
+                    : usagePercentage >= 80 
+                    ? 'bg-amber-100 dark:bg-amber-900/40' 
+                    : 'bg-emerald-100 dark:bg-emerald-900/40'
+                  }
+                `}>
+                  <span className={`
+                    text-2xl font-bold
+                    ${usagePercentage >= 90 
+                      ? 'text-red-600 dark:text-red-400' 
+                      : usagePercentage >= 80 
+                      ? 'text-amber-600 dark:text-amber-400' 
+                      : 'text-emerald-600 dark:text-emerald-400'
+                    }
+                  `}>
+                    {Math.round(usagePercentage)}%
+                  </span>
+                  <span className={`
+                    text-xs font-medium
+                    ${usagePercentage >= 90 
+                      ? 'text-red-700 dark:text-red-300' 
+                      : usagePercentage >= 80 
+                      ? 'text-amber-700 dark:text-amber-300' 
+                      : 'text-emerald-700 dark:text-emerald-300'
+                    }
+                  `}>
+                    used
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="relative w-full h-4 bg-gray-200/60 dark:bg-gray-800/60 rounded-full overflow-hidden shadow-inner backdrop-blur-sm">
+              <div
+                className={`
+                  absolute inset-y-0 left-0 h-full transition-all duration-700 ease-out rounded-full shadow-sm
+                  ${usagePercentage >= 90 
+                    ? 'bg-gradient-to-r from-red-500 via-rose-500 to-red-600' 
+                    : usagePercentage >= 80 
+                    ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-600' 
+                    : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600'
+                  }
+                `}
+                style={{ width: `${usagePercentage}%` }}
+              />
+            </div>
+
+            {/* Remaining Scans */}
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 font-medium">
+              {displayData.scans_limit - displayData.scans_used} scans remaining this period
             </p>
           </div>
-          <div className="text-right">
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">
-              {displayData.tier === 'free' ? 'Free' : `₹${displayData.price}`}
-            </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {displayData.period_end ? `Renews on ${new Date(displayData.period_end).toLocaleDateString()}` : 'Your free plan does not expire.'}
-            </p>
-          </div>
-        </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-          <div
-            className="bg-blue-600 h-2.5 rounded-full"
-            style={{ width: `${usagePercentage}%` }}
-          ></div>
-        </div>
-        <div className="flex justify-between mt-4">
-          <Link href="/pricing" className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors">
-            {displayData.tier === 'free' ? 'Upgrade Plan' : 'Change Plan'}
-          </Link>
-          {displayData.tier !== 'free' && (
-            <button
-              onClick={handleCancel}
-              disabled={cancelling}
-              className="px-6 py-2.5 bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-3">
+            <Link 
+              href="/pricing" 
+              className="flex-1 min-w-[160px] px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold transition-all shadow-lg shadow-blue-500/30 hover:shadow-xl hover:scale-105 active:scale-95 text-center"
             >
-              {cancelling ? 'Cancelling...' : 'Cancel Subscription'}
-            </button>
-          )}
+              {displayData.tier === 'free' ? '✨ Upgrade Plan' : '🔄 Change Plan'}
+            </Link>
+            
+            {displayData.tier !== 'free' && (
+              <button
+                onClick={handleCancel}
+                disabled={cancelling}
+                className="px-6 py-3 bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+              >
+                {cancelling ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Cancelling...
+                  </span>
+                ) : (
+                  'Cancel Subscription'
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      <div>
-        <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Payment Methods</h3>
-        <div className="p-4 rounded-lg border border-gray-200 dark:border-gray-800 text-center">
-          <p className="text-gray-500 dark:text-gray-400">No payment methods added</p>
-          <button className="mt-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold">
-            + Add Payment Method
+      {/* Payment Methods */}
+      <div className="rounded-2xl bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 shadow-lg overflow-hidden">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-800">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Payment Methods</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Manage your saved payment methods</p>
+        </div>
+        <div className="p-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <svg className="w-8 h-8 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+          </div>
+          <p className="text-gray-600 dark:text-gray-400 mb-4 font-medium">No payment methods added yet</p>
+          <button className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/30 transition-all hover:scale-105 active:scale-95">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Payment Method
           </button>
         </div>
       </div>
