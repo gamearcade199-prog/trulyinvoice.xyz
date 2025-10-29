@@ -101,22 +101,57 @@ class Settings(BaseSettings):
         """Validate production configuration on startup"""
         if self.ENVIRONMENT == "production":
             warnings = []
+            errors = []
             
             # Check SECRET_KEY
             if self.SECRET_KEY == "your-secret-key-change-in-production":
-                warnings.append("⚠️  WARNING: SECRET_KEY is using default value! Generate: python -c \"import secrets; print(secrets.token_urlsafe(32))\"")
+                errors.append("❌ CRITICAL: SECRET_KEY is using default value! Generate: python -c \"import secrets; print(secrets.token_urlsafe(32))\"")
             elif len(self.SECRET_KEY) < 32:
                 warnings.append("⚠️  WARNING: SECRET_KEY should be at least 32 characters!")
             
-            # Check JWT_SECRET_KEY
-            if hasattr(self, 'JWT_SECRET_KEY'):
-                if self.JWT_SECRET_KEY == "change-this-in-production-to-random-string":
-                    warnings.append("⚠️  WARNING: JWT_SECRET_KEY is using default value!")
+            # Check Supabase configuration
+            if not self.SUPABASE_URL or self.SUPABASE_URL == "":
+                errors.append("❌ CRITICAL: SUPABASE_URL not configured!")
             
-            # Print warnings but don't block startup
+            if not self.SUPABASE_KEY or self.SUPABASE_KEY == "":
+                errors.append("❌ CRITICAL: SUPABASE_KEY (anon key) not configured!")
+            
+            if not self.SUPABASE_SERVICE_KEY or self.SUPABASE_SERVICE_KEY == "":
+                errors.append("❌ CRITICAL: SUPABASE_SERVICE_KEY not configured!")
+            
+            # Check Payment configuration
+            if self.RAZORPAY_KEY_ID == "rzp_test_dummy_key":
+                warnings.append("⚠️  WARNING: RAZORPAY_KEY_ID is using test/default value!")
+            elif not self.RAZORPAY_KEY_ID.startswith("rzp_live"):
+                warnings.append("⚠️  WARNING: RAZORPAY_KEY_ID should use 'rzp_live' prefix for production!")
+            
+            if self.RAZORPAY_KEY_SECRET == "dummy_secret":
+                errors.append("❌ CRITICAL: RAZORPAY_KEY_SECRET is using dummy value!")
+            
+            if not self.RAZORPAY_WEBHOOK_SECRET:
+                warnings.append("⚠️  WARNING: RAZORPAY_WEBHOOK_SECRET not configured - webhooks will be rejected!")
+            
+            # Check AI Services (optional but recommended)
+            if not self.GEMINI_API_KEY and not self.GOOGLE_VISION_API_KEY and not self.GOOGLE_AI_API_KEY:
+                warnings.append("⚠️  WARNING: No AI service keys configured - AI extraction will not work!")
+            
+            # Check Monitoring (optional but recommended)
+            if not self.SENTRY_DSN:
+                warnings.append("⚠️  WARNING: SENTRY_DSN not configured - error monitoring disabled!")
+            
+            # Print errors first (blocking)
+            if errors:
+                print("\n" + "="*80)
+                print("🔴 CRITICAL CONFIGURATION ERRORS:")
+                for error in errors:
+                    print(f"   {error}")
+                print("="*80 + "\n")
+                raise ValueError("Critical configuration errors found! Fix .env file before starting.")
+            
+            # Print warnings (non-blocking)
             if warnings:
                 print("\n" + "="*80)
-                print("🔒 SECURITY WARNINGS:")
+                print("� CONFIGURATION WARNINGS:")
                 for warning in warnings:
                     print(f"   {warning}")
                 print("="*80 + "\n")

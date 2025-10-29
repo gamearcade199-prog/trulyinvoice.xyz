@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
 import { ArrowLeft, Calendar, DollarSign, Building2, FileText, Edit2, Save, X, Download, FileSpreadsheet, FileImage } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import toast from 'react-hot-toast'
 
 export default function InvoiceDetailsPage() {
   const searchParams = useSearchParams()
@@ -86,7 +87,7 @@ export default function InvoiceDetailsPage() {
       
     } catch (error) {
       console.error('❌ Error loading invoice:', error)
-      alert(`Could not load invoice details: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Could not load invoice details: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setLoading(false)
     }
@@ -115,11 +116,11 @@ export default function InvoiceDetailsPage() {
       setIsEditing(false)
       
       console.log('✅ Invoice saved successfully')
-      alert('Invoice updated successfully!')
+      toast.success('Invoice updated successfully!')
       
     } catch (error) {
       console.error('❌ Save error:', error)
-      alert('Failed to save invoice changes')
+      toast.error('Failed to save invoice changes')
     } finally {
       setSaving(false)
     }
@@ -195,7 +196,7 @@ export default function InvoiceDetailsPage() {
       console.log('✅ Excel export successful')
     } catch (error) {
       console.error('❌ Excel Export error:', error)
-      alert(`Failed to export Excel: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Failed to export Excel: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setExporting(null)
     }
@@ -246,7 +247,7 @@ export default function InvoiceDetailsPage() {
       console.log('✅ CSV export successful')
     } catch (error) {
       console.error('❌ CSV Export error:', error)
-      alert(`Failed to export CSV: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      toast.error(`Failed to export CSV: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setExporting(null)
     }

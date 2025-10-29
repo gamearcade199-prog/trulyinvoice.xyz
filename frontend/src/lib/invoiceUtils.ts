@@ -10,7 +10,13 @@ import { supabase } from './supabase'
  */
 export async function exportInvoicesToCSV(invoices: any[]) {
   if (invoices.length === 0) {
-    alert('No invoices to export')
+    window.dispatchEvent(new CustomEvent('showExportError', {
+      detail: {
+        title: 'No Invoices Selected',
+        errors: ['Please select at least one invoice to export.'],
+        type: 'noSelection'
+      }
+    }))
     return
   }
 
@@ -100,7 +106,13 @@ export async function exportInvoicesToExcel(invoices: any[]) {
  */
 export async function exportInvoicesToTallyXML(invoices: any[]) {
   if (invoices.length === 0) {
-    alert('⚠️ No invoices selected for export.\n\nPlease select at least one invoice to export to Tally.')
+    window.dispatchEvent(new CustomEvent('showExportError', {
+      detail: {
+        title: 'No Invoices Selected',
+        errors: ['Please select at least one invoice to export to Tally.'],
+        type: 'noSelection'
+      }
+    }))
     return
   }
 
@@ -130,7 +142,7 @@ export async function exportInvoicesToTallyXML(invoices: any[]) {
       warnings.push(`${invoiceLabel}: Missing GSTIN - Will be treated as B2C transaction`)
     }
     if (!invoice.place_of_supply || invoice.place_of_supply.trim() === '') {
-      warnings.push(`${invoiceLabel}: Missing Place of Supply - Defaulting to Maharashtra`)
+      warnings.push(`${invoiceLabel}: Missing Place of Supply - Using invoice location if available`)
     }
     if (!invoice.hsn_code && !invoice.sac_code) {
       warnings.push(`${invoiceLabel}: Missing HSN/SAC code - Using default 9983`)
@@ -138,14 +150,33 @@ export async function exportInvoicesToTallyXML(invoices: any[]) {
   })
 
   if (validationErrors.length > 0) {
-    alert(`❌ Export Validation Failed:\n\n${validationErrors.slice(0, 10).join('\n')}${validationErrors.length > 10 ? `\n\n... and ${validationErrors.length - 10} more errors` : ''}\n\nPlease fix these issues before exporting.`)
+    window.dispatchEvent(new CustomEvent('showExportError', {
+      detail: {
+        title: 'Export Validation Failed',
+        errors: validationErrors,
+        type: 'validation'
+      }
+    }))
     return
   }
 
   // Show warnings but allow export
   if (warnings.length > 0) {
-    const proceed = confirm(`⚠️ Export Warnings (${warnings.length}):\n\n${warnings.slice(0, 5).join('\n')}${warnings.length > 5 ? `\n\n... and ${warnings.length - 5} more warnings` : ''}\n\n✅ Click OK to export with default values\n❌ Click Cancel to review and fix`)
-    if (!proceed) return
+    // Use custom event to trigger professional modal
+    const userConfirmed = await new Promise<boolean>((resolve) => {
+      const event = new CustomEvent('showExportWarnings', { 
+        detail: { 
+          warnings,
+          onConfirm: () => resolve(true),
+          onCancel: () => resolve(false)
+        } 
+      })
+      window.dispatchEvent(event)
+    })
+    
+    if (!userConfirmed) {
+      return // User cancelled
+    }
   }
 
   // Collect all unique parties and ledgers for auto-creation
@@ -493,7 +524,18 @@ ${igst > 0 ? `            <ALLLEDGERENTRIES.LIST>
   
   // Enhanced success notification with checklist
   const warningCount = warnings.length
-  alert(`✅ Tally XML Export Successful!\n\n📦 Export Summary:\n   • ${invoices.length} invoice(s)\n   • ${parties.size} party ledger(s) auto-created\n   • ${gstLedgers.size} GST ledger(s) auto-created\n   • ${expenseLedgers.size} expense ledger(s) auto-created${warningCount > 0 ? `\n   ⚠️  ${warningCount} warning(s) - using default values` : ''}\n\n📋 Import Checklist:\n   1️⃣  Backup your Tally company first!\n   2️⃣  Gateway of Tally → Import Data → XML\n   3️⃣  Select the downloaded XML file\n   4️⃣  Check import log for any errors\n   5️⃣  Verify vouchers: Display → Vouchers\n   6️⃣  Check ledgers: Display → Ledgers\n\n💡 Tip: If ledger already exists with different name case (e.g., "ABC INDUSTRIES" vs "Abc Industries"), Tally will create duplicate. You can merge ledgers later using Alter → Ledger.`)
+  window.dispatchEvent(new CustomEvent('showExportSuccess', {
+    detail: {
+      exportType: 'tally',
+      stats: {
+        invoiceCount: invoices.length,
+        partyLedgers: parties.size,
+        gstLedgers: gstLedgers.size,
+        expenseLedgers: expenseLedgers.size,
+        warningCount: warningCount
+      }
+    }
+  }))
 }
 
 /**
@@ -502,14 +544,32 @@ ${igst > 0 ? `            <ALLLEDGERENTRIES.LIST>
  */
 export async function exportInvoicesToQuickBooksCSV(invoices: any[]) {
   if (invoices.length === 0) {
-    alert('⚠️ No invoices selected for export.\n\nPlease select at least one invoice to export to QuickBooks.')
+    window.dispatchEvent(new CustomEvent('showExportError', {
+      detail: {
+        title: 'No Invoices Selected',
+        errors: ['Please select at least one invoice to export to QuickBooks.'],
+        type: 'noSelection'
+      }
+    }))
     return
   }
 
-  // Ask user which format they prefer with better messaging
-  const useIIFFormat = confirm('📊 Choose QuickBooks Export Format:\n\n✅ Click OK for IIF format\n   → QuickBooks Desktop (2016-2025)\n   → Direct import, zero mapping needed\n   → Recommended for Desktop users\n\n❌ Click Cancel for CSV format\n   → QuickBooks Online\n   → Requires manual field mapping\n   → Recommended for Online users')
+  // Ask user which format they prefer with professional modal
+  const format = await new Promise<'iif' | 'csv' | null>((resolve) => {
+    const event = new CustomEvent('showQuickBooksFormatModal', {
+      detail: {
+        onSelectFormat: (format: 'iif' | 'csv') => resolve(format),
+        onCancel: () => resolve(null)
+      }
+    })
+    window.dispatchEvent(event)
+  })
 
-  if (useIIFFormat) {
+  if (!format) {
+    return // User cancelled
+  }
+
+  if (format === 'iif') {
     return exportInvoicesToQuickBooksIIF(invoices)
   } else {
     return exportInvoicesToQuickBooksCSVFormat(invoices)
@@ -591,7 +651,14 @@ function exportInvoicesToQuickBooksIIF(invoices: any[]) {
   link.click()
   document.body.removeChild(link)
   
-  alert(`✅ QuickBooks IIF Export Successful!\n\n📦 Export Summary:\n   • ${invoices.length} invoice(s)\n   • Format: IIF (QuickBooks Desktop)\n   • Includes: Bills with GST breakdown\n\n📋 Import Checklist:\n   1️⃣  Backup your QuickBooks company first!\n   2️⃣  File → Utilities → Import → IIF Files\n   3️⃣  Select the downloaded .iif file\n   4️⃣  Review import log for errors\n   5️⃣  Verify bills: Vendors → Vendor Center\n   6️⃣  Check accounts: Lists → Chart of Accounts\n\n💡 Tip: IIF files import directly - no field mapping needed!`)
+  window.dispatchEvent(new CustomEvent('showExportSuccess', {
+    detail: {
+      exportType: 'quickbooks',
+      stats: {
+        invoiceCount: invoices.length
+      }
+    }
+  }))
 }
 
 /**
@@ -616,7 +683,13 @@ function exportInvoicesToQuickBooksCSVFormat(invoices: any[]) {
   })
 
   if (validationErrors.length > 0) {
-    alert(`Export validation failed:\n${validationErrors.join('\n')}`)
+    window.dispatchEvent(new CustomEvent('showExportError', {
+      detail: {
+        title: 'Export Validation Failed',
+        errors: validationErrors,
+        type: 'validation'
+      }
+    }))
     return
   }
 
@@ -790,7 +863,15 @@ function exportInvoicesToQuickBooksCSVFormat(invoices: any[]) {
   link.click()
   document.body.removeChild(link)
   
-  alert(`✅ QuickBooks CSV Export Successful!\n\n📦 Export Summary:\n   • ${invoices.length} invoice(s)\n   • ${rows.length} line item(s)\n   • Format: CSV (QuickBooks Online)\n   • 25 comprehensive columns\n\n📋 Import Steps:\n   1️⃣  Login to QuickBooks Online\n   2️⃣  Expenses → Expenses → Import\n   3️⃣  Upload CSV file\n   4️⃣  Map fields (QB will auto-detect most)\n   5️⃣  Review and confirm import\n   6️⃣  Verify expenses in transaction list\n\n💡 Tip: Save field mapping as template for future imports!`)
+  window.dispatchEvent(new CustomEvent('showExportSuccess', {
+    detail: {
+      exportType: 'quickbooks',
+      stats: {
+        invoiceCount: invoices.length,
+        lineItems: rows.length
+      }
+    }
+  }))
 }
 
 /**
@@ -799,7 +880,13 @@ function exportInvoicesToQuickBooksCSVFormat(invoices: any[]) {
  */
 export async function exportInvoicesToZohoBooksCSV(invoices: any[]) {
   if (invoices.length === 0) {
-    alert('No invoices to export')
+    window.dispatchEvent(new CustomEvent('showExportError', {
+      detail: {
+        title: 'No Invoices Selected',
+        errors: ['Please select at least one invoice to export to Zoho Books.'],
+        type: 'noSelection'
+      }
+    }))
     return
   }
 
@@ -821,7 +908,13 @@ export async function exportInvoicesToZohoBooksCSV(invoices: any[]) {
   })
 
   if (validationErrors.length > 0) {
-    alert(`Export validation failed:\n${validationErrors.join('\n')}`)
+    window.dispatchEvent(new CustomEvent('showExportError', {
+      detail: {
+        title: 'Export Validation Failed',
+        errors: validationErrors,
+        type: 'validation'
+      }
+    }))
     return
   }
 
@@ -1047,7 +1140,15 @@ export async function exportInvoicesToZohoBooksCSV(invoices: any[]) {
   document.body.removeChild(link)
   
   // Enhanced success notification
-  alert(`✅ Zoho Books CSV Export Successful!\n\n📦 Export Summary:\n   • ${invoices.length} invoice(s)\n   • ${rows.length} line item(s)\n   • 37 comprehensive fields\n   • Includes: Payment terms, notes, discounts\n\n📋 Import Steps:\n   1️⃣  Login to Zoho Books\n   2️⃣  Sales → Invoices → ⋮ → Import Invoices\n   3️⃣  Upload CSV file\n   4️⃣  Map fields (most will auto-detect)\n   5️⃣  Preview and validate data\n   6️⃣  Confirm import\n   7️⃣  Check invoices list for new entries\n\n💡 Tip: Zoho Books supports 37 columns - most comprehensive format! Field mapping is automatic for standard columns.`)
+  window.dispatchEvent(new CustomEvent('showExportSuccess', {
+    detail: {
+      exportType: 'zoho',
+      stats: {
+        invoiceCount: invoices.length,
+        lineItems: rows.length
+      }
+    }
+  }))
 }
 
 /**

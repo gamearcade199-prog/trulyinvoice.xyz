@@ -12,6 +12,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import DashboardLayout from '@/components/DashboardLayout'
 import { createClient } from '@supabase/supabase-js'
+import toast from 'react-hot-toast'
 import { 
   ArrowLeft, 
   Save, 
@@ -110,7 +111,7 @@ export default function InvoiceDetailsPage() {
           message: fallbackError instanceof Error ? fallbackError.message : String(fallbackError),
           stack: fallbackError instanceof Error ? fallbackError.stack : undefined
         })
-        alert('Failed to load invoice details. Check browser console (F12) for details.')
+        toast.error('Failed to load invoice details. Check browser console (F12) for details.')
       }
     } finally {
       setLoading(false)
@@ -141,11 +142,11 @@ export default function InvoiceDetailsPage() {
 
       setInvoice(editedInvoice)
       setEditing(false)
-      alert('Invoice updated successfully!')
+      toast.success('Invoice updated successfully!')
       
     } catch (error) {
       console.error('Error saving invoice:', error)
-      alert('Failed to save changes')
+      toast.error('Failed to save changes')
     } finally {
       setSaving(false)
     }
@@ -162,12 +163,12 @@ export default function InvoiceDetailsPage() {
 
       if (error) throw error
 
-      alert('Invoice deleted successfully')
+      toast.success('Invoice deleted successfully!')
       router.push('/invoices')
       
     } catch (error) {
       console.error('Error deleting invoice:', error)
-      alert('Failed to delete invoice')
+      toast.error('Failed to delete invoice')
     }
   }
 
@@ -175,13 +176,13 @@ export default function InvoiceDetailsPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
-        alert('Please log in to export Excel')
+        toast.error('Please log in to export Excel')
         return
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
       if (!apiUrl) {
-        alert('API URL not configured')
+        toast.error('API URL not configured. Please check your environment settings.')
         return
       }
       
@@ -210,7 +211,7 @@ export default function InvoiceDetailsPage() {
       console.log('✅ Excel exported successfully')
     } catch (error) {
       console.error('❌ Excel Export error:', error)
-      alert('Failed to export Excel. Please try again.')
+      toast.error('Failed to export Excel. Please try again.')
     }
   }
 
@@ -219,7 +220,7 @@ export default function InvoiceDetailsPage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
         console.error('❌ No access token available')
-        alert('Please log in to export CSV')
+        toast.error('Please log in to export CSV')
         return
       }
 
@@ -229,7 +230,7 @@ export default function InvoiceDetailsPage() {
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
       if (!apiUrl) {
-        alert('API URL not configured')
+        toast.error('API URL not configured. Please check your environment settings.')
         return
       }
       
@@ -262,7 +263,7 @@ export default function InvoiceDetailsPage() {
       console.log('✅ CSV exported successfully')
     } catch (error) {
       console.error('❌ CSV Export error:', error)
-      alert('Failed to export CSV. Please try again.')
+      toast.error('Failed to export CSV. Please try again.')
     }
   }
 

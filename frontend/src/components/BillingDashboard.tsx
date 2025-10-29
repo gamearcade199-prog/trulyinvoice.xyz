@@ -7,6 +7,7 @@ import Link from 'next/link'
 import UsageWarning from '@/components/UsageWarning'
 import UpgradeModal from '@/components/UpgradeModal'
 import { useQuotaModal } from '@/hooks/useQuotaModal'
+import toast from 'react-hot-toast'
 
 export default function BillingDashboard() {
   const [subscription, setSubscription] = useState<any>(null)
@@ -74,7 +75,7 @@ export default function BillingDashboard() {
       await fetchSubscription()
     } catch (error) {
       console.error('Error cancelling subscription:', error)
-      alert('Failed to cancel subscription: ' + (error instanceof Error ? error.message : 'Unknown error'))
+      toast.error('Failed to cancel subscription: ' + (error instanceof Error ? error.message : 'Unknown error'))
     } finally {
       setCancelling(false)
     }

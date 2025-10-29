@@ -76,19 +76,34 @@ app = FastAPI(
 )
 
 # CORS Configuration
-# Allow frontend to make API calls from different domains
-allowed_origins = [
-    "http://localhost:3000",  # Local development
-    "http://localhost:3001",  # Alternative local port
-    "http://localhost:3004",  # Alternative local port
-    "https://trulyinvoice.xyz",  # Production domain
-    "https://www.trulyinvoice.xyz",  # Production with www
-    "https://trulyinvoice-xyz.vercel.app",  # Vercel deployment
-]
+# Environment-based origin restrictions for security
+environment = os.getenv("ENVIRONMENT", "development")
 
-# Add any preview deployments from environment
+if environment == "production":
+    # Production: Only allow production domains
+    allowed_origins = [
+        "https://trulyinvoice.xyz",
+        "https://www.trulyinvoice.xyz",
+    ]
+    print("✅ CORS: Production mode - strict origin policy")
+else:
+    # Development: Allow localhost ports
+    allowed_origins = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3004",
+    ]
+    print("⚠️  CORS: Development mode - permissive origin policy")
+
+# Add Vercel preview deployments dynamically
 if os.getenv("VERCEL_URL"):
-    allowed_origins.append(f"https://{os.getenv('VERCEL_URL')}")
+    vercel_url = f"https://{os.getenv('VERCEL_URL')}"
+    allowed_origins.append(vercel_url)
+    print(f"✅ CORS: Added Vercel preview URL: {vercel_url}")
+
+# Add official Vercel deployment
+if "trulyinvoice-xyz.vercel.app" not in allowed_origins:
+    allowed_origins.append("https://trulyinvoice-xyz.vercel.app")
 
 app.add_middleware(
     CORSMiddleware,

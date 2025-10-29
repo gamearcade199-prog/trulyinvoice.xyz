@@ -16,6 +16,11 @@ import { createClient } from '@supabase/supabase-js'
 import { exportInvoicesToCSV, exportInvoicesToTallyXML, exportInvoicesToQuickBooksCSV, exportInvoicesToZohoBooksCSV } from '@/lib/invoiceUtils'
 import { formatCurrency } from '@/lib/currency'
 import ConfidenceIndicator from '@/components/ConfidenceIndicator'
+import ExportWarningModal from '@/components/ExportWarningModal'
+import ExportSuccessModal from '@/components/ExportSuccessModal'
+import ExportErrorModal from '@/components/ExportErrorModal'
+import QuickBooksFormatModal from '@/components/QuickBooksFormatModal'
+import toast from 'react-hot-toast'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
@@ -36,6 +41,23 @@ export default function InvoicesPageClean() {
   const [currentPage, setCurrentPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const INVOICES_PER_PAGE = 20
+  
+  // Export warning modal state
+  const [showWarningModal, setShowWarningModal] = useState(false)
+  const [exportWarnings, setExportWarnings] = useState<string[]>([])
+  const [warningCallbacks, setWarningCallbacks] = useState<{ onConfirm: () => void, onCancel: () => void } | null>(null)
+  
+  // Export success modal state
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [successData, setSuccessData] = useState<any>(null)
+  
+  // Export error modal state
+  const [showErrorModal, setShowErrorModal] = useState(false)
+  const [errorData, setErrorData] = useState<any>(null)
+  
+  // QuickBooks format selection modal state
+  const [showQuickBooksFormatModal, setShowQuickBooksFormatModal] = useState(false)
+  const [quickBooksCallbacks, setQuickBooksCallbacks] = useState<{ onSelectFormat: (format: 'iif' | 'csv') => void, onCancel: () => void } | null>(null)
 
   useEffect(() => {
     fetchInvoices()
@@ -62,6 +84,49 @@ export default function InvoicesPageClean() {
     }
     loadUserTemplate()
   }, [])
+
+  // Listen for export warning events
+  useEffect(() => {
+    const handleWarnings = (e: any) => {
+      setExportWarnings(e.detail.warnings)
+      setWarningCallbacks({
+        onConfirm: e.detail.onConfirm,
+        onCancel: e.detail.onCancel
+      })
+      setShowWarningModal(true)
+    }
+    
+    const handleSuccess = (e: any) => {
+      setSuccessData(e.detail)
+      setShowSuccessModal(true)
+    }
+    
+    const handleError = (e: any) => {
+      setErrorData(e.detail)
+      setShowErrorModal(true)
+    }
+    
+    const handleQuickBooksFormat = (e: any) => {
+      setQuickBooksCallbacks({
+        onSelectFormat: e.detail.onSelectFormat,
+        onCancel: e.detail.onCancel
+      })
+      setShowQuickBooksFormatModal(true)
+    }
+    
+    window.addEventListener('showExportWarnings', handleWarnings)
+    window.addEventListener('showExportSuccess', handleSuccess)
+    window.addEventListener('showExportError', handleError)
+    window.addEventListener('showQuickBooksFormatModal', handleQuickBooksFormat)
+    
+    return () => {
+      window.removeEventListener('showExportWarnings', handleWarnings)
+      window.removeEventListener('showExportSuccess', handleSuccess)
+      window.removeEventListener('showExportError', handleError)
+      window.removeEventListener('showQuickBooksFormatModal', handleQuickBooksFormat)
+    }
+  }, [])
+
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -139,7 +204,12 @@ export default function InvoicesPageClean() {
     try {
       exportInvoicesToCSV(invoices)
     } catch (error) {
-      alert('Failed to export invoices')
+      window.dispatchEvent(new CustomEvent('show-export-error', { 
+        detail: { 
+          title: 'Export Failed',
+          message: 'Failed to export invoices. Please try again.'
+        } 
+      }))
     }
   }
 
@@ -147,7 +217,12 @@ export default function InvoicesPageClean() {
     try {
       exportInvoicesToCSV([invoice])
     } catch (error) {
-      alert('Failed to export invoice')
+      window.dispatchEvent(new CustomEvent('show-export-error', { 
+        detail: { 
+          title: 'Export Failed',
+          message: 'Failed to export invoice. Please try again.'
+        } 
+      }))
     }
   }
 
@@ -161,7 +236,12 @@ export default function InvoicesPageClean() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
-        alert('Please log in to export Excel')
+        window.dispatchEvent(new CustomEvent('show-export-error', { 
+          detail: { 
+            title: 'Authentication Required',
+            message: 'Please log in to export Excel files.'
+          } 
+        }))
         return
       }
 
@@ -193,7 +273,12 @@ export default function InvoicesPageClean() {
       document.body.removeChild(a)
     } catch (error) {
       console.error('Excel Export error:', error)
-      alert('Failed to export Excel. Please try again.')
+      window.dispatchEvent(new CustomEvent('show-export-error', { 
+        detail: { 
+          title: 'Export Failed',
+          message: 'Failed to export Excel. Please try again.'
+        } 
+      }))
     }
   }
 
@@ -201,7 +286,12 @@ export default function InvoicesPageClean() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
-        alert('Please log in to export Excel')
+        window.dispatchEvent(new CustomEvent('show-export-error', { 
+          detail: { 
+            title: 'Authentication Required',
+            message: 'Please log in to export Excel files.'
+          } 
+        }))
         return
       }
 
@@ -233,7 +323,12 @@ export default function InvoicesPageClean() {
       document.body.removeChild(a)
     } catch (error) {
       console.error('Excel Export error:', error)
-      alert('Failed to export Excel. Please try again.')
+      window.dispatchEvent(new CustomEvent('show-export-error', { 
+        detail: { 
+          title: 'Export Failed',
+          message: 'Failed to export Excel. Please try again.'
+        } 
+      }))
     }
   }
 
@@ -259,28 +354,48 @@ export default function InvoicesPageClean() {
   const exportSelectedInvoices = () => {
     const selected = invoices.filter(inv => selectedInvoices.has(inv.id))
     if (selected.length === 0) {
-      alert('Please select invoices to export')
+      window.dispatchEvent(new CustomEvent('show-export-error', { 
+        detail: { 
+          title: 'No Selection',
+          message: 'Please select at least one invoice to export.'
+        } 
+      }))
       return
     }
     try {
       exportInvoicesToCSV(selected)
     } catch (error) {
       console.error('Export error:', error)
-      alert('Failed to export selected invoices')
+      window.dispatchEvent(new CustomEvent('show-export-error', { 
+        detail: { 
+          title: 'Export Failed',
+          message: 'Failed to export selected invoices. Please try again.'
+        } 
+      }))
     }
   }
 
   const exportSelectedInvoicesExcel = async () => {
     const selected = invoices.filter(inv => selectedInvoices.has(inv.id))
     if (selected.length === 0) {
-      alert('Please select invoices to export')
+      window.dispatchEvent(new CustomEvent('show-export-error', { 
+        detail: { 
+          title: 'No Selection',
+          message: 'Please select at least one invoice to export.'
+        } 
+      }))
       return
     }
     
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
-        alert('Please log in to export Excel')
+        window.dispatchEvent(new CustomEvent('show-export-error', { 
+          detail: { 
+            title: 'Authentication Required',
+            message: 'Please log in to export Excel files.'
+          } 
+        }))
         return
       }
 
@@ -312,7 +427,12 @@ export default function InvoicesPageClean() {
       document.body.removeChild(a)
     } catch (error) {
       console.error('Excel Export error:', error)
-      alert('Failed to export Excel. Please try again.')
+      window.dispatchEvent(new CustomEvent('show-export-error', { 
+        detail: { 
+          title: 'Export Failed',
+          message: 'Failed to export Excel. Please try again.'
+        } 
+      }))
     }
   }
 
@@ -421,7 +541,12 @@ export default function InvoicesPageClean() {
 
   const deleteSelectedInvoices = async () => {
     if (selectedInvoices.size === 0) {
-      alert('Please select invoices to delete')
+      window.dispatchEvent(new CustomEvent('show-export-error', { 
+        detail: { 
+          title: 'No Selection',
+          message: 'Please select at least one invoice to delete.'
+        } 
+      }))
       return
     }
 
@@ -439,10 +564,24 @@ export default function InvoicesPageClean() {
       
       setSelectedInvoices(new Set())
       await fetchInvoices()
-      alert(`Successfully deleted ${selectedInvoices.size} invoice(s)`)
+      
+      window.dispatchEvent(new CustomEvent('show-export-success', { 
+        detail: { 
+          title: 'Deleted Successfully',
+          message: `Successfully deleted ${selectedInvoices.size} invoice(s).`,
+          stats: [
+            { label: 'Deleted', value: selectedInvoices.size.toString() }
+          ]
+        } 
+      }))
     } catch (error) {
       console.error('Delete error:', error)
-      alert('Failed to delete selected invoices')
+      window.dispatchEvent(new CustomEvent('show-export-error', { 
+        detail: { 
+          title: 'Delete Failed',
+          message: 'Failed to delete selected invoices. Please try again.'
+        } 
+      }))
     }
   }
 
@@ -458,14 +597,29 @@ export default function InvoicesPageClean() {
         if (data?.publicUrl) {
           window.open(data.publicUrl, '_blank')
         } else {
-          alert('Unable to generate view URL')
+          window.dispatchEvent(new CustomEvent('show-export-error', { 
+            detail: { 
+              title: 'View Failed',
+              message: 'Unable to generate view URL for this document.'
+            } 
+          }))
         }
       } else {
-        alert('No document file available')
+        window.dispatchEvent(new CustomEvent('show-export-error', { 
+          detail: { 
+            title: 'No Document',
+            message: 'No document file available for this invoice.'
+          } 
+        }))
       }
     } catch (error) {
       console.error('View error:', error)
-      alert('Failed to open document. Please try again.')
+      window.dispatchEvent(new CustomEvent('show-export-error', { 
+        detail: { 
+          title: 'View Failed',
+          message: 'Failed to open document. Please try again.'
+        } 
+      }))
     }
   }
 
@@ -484,7 +638,7 @@ export default function InvoicesPageClean() {
       await fetchInvoices()
     } catch (error) {
       console.error('Delete error:', error)
-      alert('Failed to delete invoice')
+      toast.error('Failed to delete invoice')
     }
   }
 
@@ -526,8 +680,12 @@ export default function InvoicesPageClean() {
           </div>
           <div className="flex items-center gap-3">
             {/* Template Selector */}
-            <div className="relative">
+            <div className="flex items-center gap-2">
+              <label htmlFor="excel-template" className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                Excel Template:
+              </label>
               <select
+                id="excel-template"
                 value={userExportTemplate}
                 onChange={async (e) => {
                   const newTemplate = e.target.value
@@ -546,10 +704,10 @@ export default function InvoicesPageClean() {
                   }
                 }}
                 className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
-                title="Export template preference"
+                title="Excel export template - controls structure of Excel file (only applies to Excel exports, not CSV/Tally/QuickBooks)"
               >
-                <option value="simple">Simple (2 sheets)</option>
-                <option value="accountant">Accountant (5 sheets)</option>
+                <option value="simple">Simple (3 sheets)</option>
+                <option value="accountant">Accountant (6 sheets)</option>
               </select>
             </div>
             
@@ -999,6 +1157,54 @@ export default function InvoicesPageClean() {
           </>
         )}
       </div>
+      
+      {/* Export Warning Modal */}
+      {showWarningModal && warningCallbacks && (
+        <ExportWarningModal
+          warnings={exportWarnings}
+          onConfirm={() => {
+            setShowWarningModal(false)
+            warningCallbacks.onConfirm()
+          }}
+          onCancel={() => {
+            setShowWarningModal(false)
+            warningCallbacks.onCancel()
+          }}
+        />
+      )}
+      
+      {/* Export Success Modal */}
+      {showSuccessModal && successData && (
+        <ExportSuccessModal
+          exportType={successData.exportType}
+          stats={successData.stats}
+          onClose={() => setShowSuccessModal(false)}
+        />
+      )}
+      
+      {/* Export Error Modal */}
+      {showErrorModal && errorData && (
+        <ExportErrorModal
+          title={errorData.title}
+          errors={errorData.errors}
+          type={errorData.type}
+          onClose={() => setShowErrorModal(false)}
+        />
+      )}
+      
+      {/* QuickBooks Format Selection Modal */}
+      {showQuickBooksFormatModal && quickBooksCallbacks && (
+        <QuickBooksFormatModal
+          onSelectFormat={(format) => {
+            setShowQuickBooksFormatModal(false)
+            quickBooksCallbacks.onSelectFormat(format)
+          }}
+          onCancel={() => {
+            setShowQuickBooksFormatModal(false)
+            quickBooksCallbacks.onCancel()
+          }}
+        />
+      )}
     </DashboardLayout>
   )
 }

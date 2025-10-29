@@ -6,6 +6,7 @@ OPTIMIZED VERSION:
 - Supports PDFs with text extraction
 - Anonymous processing for previews
 - Production-ready error handling
+- Rate limiting on critical endpoints
 """
 from fastapi import APIRouter, HTTPException, File, UploadFile, Depends, Request
 from pydantic import BaseModel
@@ -16,6 +17,7 @@ import requests
 import io
 import logging
 from app.services.supabase_helper import supabase
+from app.middleware.rate_limiter import limiter
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -65,10 +67,12 @@ class ProcessResponse(BaseModel):
 
 
 @router.post("/{document_id}/process", response_model=ProcessResponse)
+@limiter.limit("10/minute")  # Max 10 processing requests per minute per IP
 async def process_document(document_id: str, request: Request):
     """
     Process an uploaded document and create invoice
     OPTIMIZED VERSION: Supports PDFs + Images, All Users, Production-Ready
+    Rate Limited: 10 requests/minute to prevent AI extraction abuse
     """
     try:
         # Get document from Supabase
@@ -432,6 +436,7 @@ async def get_document(document_id: str):
 
 
 @router.post("/upload")
+@limiter.limit("20/minute")  # Max 20 uploads per minute per IP
 async def upload_document(
     file: UploadFile = File(...),
     user_id: str = None,  # Optional for anonymous uploads
@@ -440,6 +445,7 @@ async def upload_document(
     """
     Upload a document and optionally trigger processing
     Supports both authenticated and anonymous uploads
+    Rate Limited: 20 uploads/minute to prevent abuse
     """
     try:
         # Validate file type

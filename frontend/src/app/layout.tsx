@@ -8,6 +8,7 @@ import seoConfig from '@/config/seo.config'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { FAQSchema, SoftwareAppSchema, OrganizationSchema, LocalBusinessSchema } from '@/components/SeoSchemaMarkup'
+import { Toaster } from 'react-hot-toast'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -249,11 +250,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(seoConfig.faqSchema) }}
-        />
-        <FAQSchema />
+        {/* FAQ Schema removed from global layout - only loaded on /faq page */}
         <SoftwareAppSchema />
         <OrganizationSchema />
         
@@ -276,6 +273,29 @@ export default function RootLayout({
         <ThemeProvider>
           {children}
         </ThemeProvider>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#fff',
+              color: '#1f2937',
+              border: '1px solid #e5e7eb',
+            },
+            success: {
+              iconTheme: {
+                primary: '#10b981',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: '#ef4444',
+                secondary: '#fff',
+              },
+            },
+          }}
+        />
         <Analytics />
         <SpeedInsights />
       </body>

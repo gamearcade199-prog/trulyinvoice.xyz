@@ -49,6 +49,14 @@ coverage/
 uploads/
 temp/
 
+# Test/Debug Files with Sensitive Data
+*_PROCESSOR.py
+*_DIAGNOSTIC.py
+TEST_*.py
+SETUP_*.py
+CREATE_MOCK_*.py
+UPDATE_*.py
+
 # Production
 .vercel
 .railway

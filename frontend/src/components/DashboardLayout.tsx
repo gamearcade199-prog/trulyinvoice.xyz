@@ -20,6 +20,7 @@ import {
 import { useState } from 'react'
 import { useTheme } from './ThemeProvider'
 import { supabase } from '@/lib/supabase'
+import toast from 'react-hot-toast'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -76,13 +77,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       const { error } = await supabase.auth.signOut()
       if (error) {
         console.error('Error logging out:', error)
-        alert('Failed to logout. Please try again.')
+        toast.error('Failed to logout. Please try again.')
       } else {
         router.push('/login')
       }
     } catch (error) {
       console.error('Error logging out:', error)
-      alert('Failed to logout. Please try again.')
+      toast.error('Failed to logout. Please try again.')
     }
   }
 
@@ -133,10 +134,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   href={item.href}
                   className={`
                     flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
-                    ${isActive 
+                  {link.path === currentPath 
                       ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 font-semibold' 
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800'
-                    }
+                  }
                   `}
                 >
                   <Icon className="w-5 h-5" />
@@ -181,7 +182,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className={`transition-all duration-300 ${isSidebarOpen ? 'lg:ml-64' : 'ml-0'}`}>
         {/* Top Bar */}
         <header className="sticky top-0 z-30 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 transition-colors">
-          <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center justify-between px-4 py-3">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className="p-2 bg-gray-50 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition-colors border border-gray-200 dark:border-gray-800"

@@ -192,8 +192,31 @@ const faqs = [
 ];
 
 export default function FAQPage() {
+  // Generate FAQ Schema for Google Rich Results
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.flatMap(section => 
+      section.questions.map(item => ({
+        "@type": "Question",
+        "name": item.q,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": item.a
+        }
+      }))
+    )
+  };
+
   return (
     <main>
+      {/* FAQ Schema for Google Rich Results */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        suppressHydrationWarning
+      />
+      
       <div className="container mx-auto px-4 py-12">
         <h1 className="text-4xl font-bold mb-4">
           Frequently Asked Questions - TrulyInvoice Invoice Converter

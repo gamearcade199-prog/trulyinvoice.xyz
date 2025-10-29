@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { FileText, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { linkTempInvoicesToUser } from '@/lib/invoiceUpload'
+import toast from 'react-hot-toast'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -152,7 +153,7 @@ export default function LoginPage() {
             type="button"
             onClick={() => {
               // User will connect OAuth later
-              alert('Google Sign-In will be connected soon!')
+              toast('Google Sign-In will be connected soon!', { icon: 'ℹ️' })
             }}
             className="w-full bg-white border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all flex items-center justify-center gap-3"
           >
