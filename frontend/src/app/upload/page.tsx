@@ -68,17 +68,6 @@ export default function UploadPageRobust() {
         setProcessingStatus('🎯 Processing anonymously for preview...')
       } else {
         console.log('👤 User authenticated:', user.id)
-        
-        // Save user's selected template preference to database
-        try {
-          await supabase
-            .from('users')
-            .update({ export_template: selectedTemplate })
-            .eq('id', user.id)
-          console.log(`📋 Saved template preference to database: ${selectedTemplate}`)
-        } catch (err) {
-          console.warn('⚠️ Could not save template preference:', err)
-        }
       }
       
       for (let i = 0; i < files.length; i++) {
