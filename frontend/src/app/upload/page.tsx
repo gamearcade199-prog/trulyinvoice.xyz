@@ -31,39 +31,6 @@ export default function UploadPageRobust() {
 
   const [anonymousResult, setAnonymousResult] = useState<any>(null)
   const [showAnonymousModal, setShowAnonymousModal] = useState(false)
-  
-  const [selectedTemplate, setSelectedTemplate] = useState('simple')
-
-  // Load user's preferred template on component mount
-  useEffect(() => {
-    const loadUserPreference = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          const savedTemplate = localStorage.getItem(`export_template_${user.id}`)
-          if (savedTemplate && ['simple', 'accountant', 'analyst', 'compliance'].includes(savedTemplate)) {
-            setSelectedTemplate(savedTemplate)
-          }
-        }
-      } catch (error) {
-        console.error('Error loading template preference:', error)
-      }
-    }
-    loadUserPreference()
-  }, [])
-
-  // Save template preference when changed
-  const handleTemplateChange = async (template: string) => {
-    setSelectedTemplate(template)
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        localStorage.setItem(`export_template_${user.id}`, template)
-      }
-    } catch (error) {
-      console.error('Error saving template preference:', error)
-    }
-  }
 
   const handleFileSelect = (selectedFiles: File[]) => {
     setFiles(selectedFiles)
@@ -363,14 +330,14 @@ export default function UploadPageRobust() {
 
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-6">
           {/* Professional Header with Gradient */}
-          <div className="text-center mb-8 relative z-10">
+          <div className="text-center mb-6 sm:mb-8 relative z-10">
             {/* Floating Badge */}
-            <div className="inline-block mb-4">
+            <div className="inline-block mb-3 sm:mb-4">
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-full blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
-                <div className="relative px-4 py-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-full border border-gray-200/50 dark:border-gray-700/50 shadow-lg">
-                  <span className="text-sm font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-blue-600" />
+                <div className="relative px-3 py-1.5 sm:px-4 sm:py-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-full border border-gray-200/50 dark:border-gray-700/50 shadow-lg">
+                  <span className="text-xs sm:text-sm font-semibold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center gap-1.5 sm:gap-2">
+                    <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
                     AI-Powered Processing
                   </span>
                 </div>
@@ -378,10 +345,10 @@ export default function UploadPageRobust() {
             </div>
             
             {/* Modern Typography */}
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3 tracking-tight px-4">
               Upload Your <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Invoices</span>
             </h1>
-            <p className="text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed px-4">
               Advanced AI extracts all data automatically in seconds. 
               <span className="text-blue-600 dark:text-blue-400 font-medium"> No manual entry required.</span>
             </p>
@@ -434,18 +401,18 @@ export default function UploadPageRobust() {
 
           {/* Process Button - Premium Design */}
           {files.length > 0 && !isUploading && !uploadComplete && (
-            <div className="mb-8 flex justify-center">
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
+            <div className="mb-6 sm:mb-8 flex justify-center px-4">
+              <div className="relative group w-full sm:w-auto">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-xl sm:rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
                 <button
                   onClick={handleUpload}
-                  className="relative px-8 py-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white rounded-2xl font-bold text-lg flex items-center gap-3 shadow-2xl hover:shadow-3xl hover:scale-105 active:scale-95 transition-all duration-300"
+                  className="relative w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 text-white rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg flex items-center justify-center gap-2 sm:gap-3 shadow-2xl hover:shadow-3xl hover:scale-105 active:scale-95 transition-all duration-300 min-h-[48px]"
                 >
-                  <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-                    <Sparkles className="w-4 h-4" />
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 bg-white/20 rounded-full flex items-center justify-center">
+                    <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
                   </div>
                   Process {files.length} Invoice{files.length > 1 ? 's' : ''}
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </div>
             </div>
@@ -523,123 +490,43 @@ export default function UploadPageRobust() {
             </div>
           )}
 
-          {/* Collapsible Settings - Modern Design */}
-          <details className="mb-8 group">
-            <summary className="cursor-pointer bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 rounded-2xl p-5 hover:bg-white/90 dark:hover:bg-gray-900/90 transition-all duration-300 shadow-lg hover:shadow-xl">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-lg">⚙️</span>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 dark:text-white text-base">
-                    Export Format Settings
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm">
-                    Customize how your data will be exported (optional)
-                  </p>
-                </div>
-                <div className="w-6 h-6 text-gray-400 group-open:rotate-180 transition-transform duration-300">
-                  <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
-            </summary>
-            
-            <div className="mt-4 p-5 bg-gray-50/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label className={`cursor-pointer rounded-xl border-2 p-4 transition-all duration-300 hover:scale-105 ${
-                  selectedTemplate === 'simple' 
-                    ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 shadow-lg' 
-                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 bg-white/50 dark:bg-gray-900/50'
-                }`}>
-                  <input
-                    type="radio"
-                    name="template"
-                    value="simple"
-                    checked={selectedTemplate === 'simple'}
-                    onChange={(e) => handleTemplateChange(e.target.value)}
-                    className="sr-only"
-                  />
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                      selectedTemplate === 'simple' ? 'border-blue-500 bg-blue-500 shadow-lg' : 'border-gray-300 dark:border-gray-600'
-                    }`}>
-                      {selectedTemplate === 'simple' && <div className="w-2 h-2 bg-white rounded-full"></div>}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-gray-900 dark:text-white">Simple (2 sheets)</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Summary + Complete Data</p>
-                    </div>
-                  </div>
-                </label>
-
-                <label className={`cursor-pointer rounded-xl border-2 p-4 transition-all duration-300 hover:scale-105 ${
-                  selectedTemplate === 'accountant' 
-                    ? 'border-purple-500 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 shadow-lg' 
-                    : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600 bg-white/50 dark:bg-gray-900/50'
-                }`}>
-                  <input
-                    type="radio"
-                    name="template"
-                    value="accountant"
-                    checked={selectedTemplate === 'accountant'}
-                    onChange={(e) => handleTemplateChange(e.target.value)}
-                    className="sr-only"
-                  />
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                      selectedTemplate === 'accountant' ? 'border-purple-500 bg-purple-500 shadow-lg' : 'border-gray-300 dark:border-gray-600'
-                    }`}>
-                      {selectedTemplate === 'accountant' && <div className="w-2 h-2 bg-white rounded-full"></div>}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-gray-900 dark:text-white">Accountant (5 sheets)</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Summary, Items, GST, Analysis + Data</p>
-                    </div>
-                  </div>
-                </label>
-              </div>
-            </div>
-          </details>
-
           {/* Premium Feature Cards */}
-          <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             {[
-              { icon: FileText, title: 'Multiple Formats', desc: 'PDF, JPG, PNG, HEIC', gradient: 'from-blue-500 to-cyan-500' },
+              { icon: FileText, title: 'Multiple Formats', desc: 'PDF, JPG, PNG', gradient: 'from-blue-500 to-cyan-500' },
               { icon: Cpu, title: 'AI Extraction', desc: '60+ Fields Auto-detected', gradient: 'from-purple-500 to-pink-500' },
               { icon: Zap, title: 'Lightning Fast', desc: 'Results in <10 seconds', gradient: 'from-amber-500 to-orange-500' }
             ].map((card, idx) => (
               <div key={idx} className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-20 rounded-2xl blur transition-opacity duration-500" 
+                <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-20 rounded-xl sm:rounded-2xl blur transition-opacity duration-500" 
                      style={{ background: `linear-gradient(to right, ${card.gradient.split(' ')[1]}, ${card.gradient.split(' ')[3]})` }}></div>
-                <div className="relative text-center p-4 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                  <div className={`w-10 h-10 bg-gradient-to-br ${card.gradient} rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg group-hover:shadow-xl transition-all`}>
-                    <card.icon className="w-5 h-5 text-white" />
+                <div className="relative text-center p-3 sm:p-4 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-xl sm:rounded-2xl border border-gray-200/50 dark:border-gray-700/50 hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                  <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br ${card.gradient} rounded-lg sm:rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg group-hover:shadow-xl transition-all`}>
+                    <card.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
-                  <h3 className="font-bold text-gray-900 dark:text-white text-sm mb-1">{card.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-xs leading-relaxed">{card.desc}</p>
+                  <h3 className="font-bold text-gray-900 dark:text-white text-xs sm:text-sm mb-0.5 sm:mb-1">{card.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-[10px] sm:text-xs leading-relaxed">{card.desc}</p>
                 </div>
               </div>
             ))}
           </div>
 
           {/* Trust Indicators */}
-          <div className="text-center">
-            <div className="inline-flex items-center gap-6 px-6 py-3 bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl rounded-full border border-gray-200/50 dark:border-gray-700/50 shadow-lg">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-green-500" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">256-bit Encryption</span>
+          <div className="text-center px-4">
+            <div className="inline-flex flex-wrap items-center justify-center gap-3 sm:gap-4 md:gap-6 px-4 sm:px-6 py-2.5 sm:py-3 bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl rounded-full border border-gray-200/50 dark:border-gray-700/50 shadow-lg">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500" />
+                <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">AI-Powered</span>
               </div>
-              <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-blue-500" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">High Accuracy AI</span>
+              <div className="hidden sm:block w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-500" />
+                <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">99% Accurate</span>
               </div>
-              <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-purple-500" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Enterprise Security</span>
+              <div className="hidden sm:block w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-500" />
+                <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Secure & Private</span>
               </div>
             </div>
           </div>
