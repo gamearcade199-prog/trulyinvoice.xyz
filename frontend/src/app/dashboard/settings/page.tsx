@@ -4,25 +4,19 @@ import DashboardLayout from '@/components/DashboardLayout'
 import { useState, useEffect } from 'react'
 import { 
   User, 
-  Bell, 
   Shield, 
   CreditCard, 
-  Globe, 
   Mail,
   Phone,
   Building,
   MapPin,
   Save,
-  Moon,
-  Sun,
   Loader2
 } from 'lucide-react'
-import { useTheme } from '@/components/ThemeProvider'
 import { supabase } from '@/lib/supabase'
 import BillingDashboard from '@/components/BillingDashboard'
 
 export default function SettingsPage() {
-  const { theme, toggleTheme } = useTheme()
   const [activeTab, setActiveTab] = useState('profile')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -182,7 +176,6 @@ export default function SettingsPage() {
     { id: 'profile', name: 'Profile', icon: User },
     { id: 'security', name: 'Security', icon: Shield },
     { id: 'billing', name: 'Billing', icon: CreditCard },
-    { id: 'preferences', name: 'Preferences', icon: Globe },
   ]
 
   return (
@@ -190,8 +183,8 @@ export default function SettingsPage() {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings - Account & Preferences</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Manage your account settings and preferences.</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Manage your account settings and billing.</p>
         </div>
 
         <div className="grid lg:grid-cols-4 gap-6">
@@ -393,84 +386,6 @@ export default function SettingsPage() {
 
               {/* Billing Tab */}
               {activeTab === 'billing' && <BillingDashboard />}
-
-              {/* Preferences Tab */}
-              {activeTab === 'preferences' && (
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Preferences</h2>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">Customize your experience.</p>
-                  </div>
-
-                  <div className="space-y-4">
-                    {/* Theme Toggle */}
-                    <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-800">
-                      <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                          {theme === 'light' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                          Theme
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Current: {theme === 'light' ? 'Light Mode' : 'Dark Mode'}
-                        </p>
-                      </div>
-                      <button
-                        onClick={toggleTheme}
-                        className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg font-semibold text-gray-700 dark:text-gray-300 transition-colors"
-                      >
-                        Switch to {theme === 'light' ? 'Dark' : 'Light'}
-                      </button>
-                    </div>
-
-                    {/* Language */}
-                    <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-800">
-                      <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white">Language</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Select your preferred language</p>
-                      </div>
-                      <select className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors">
-                        <option>English</option>
-                        <option>हिन्दी (Hindi)</option>
-                        <option>తెలుగు (Telugu)</option>
-                        <option>தமிழ் (Tamil)</option>
-                      </select>
-                    </div>
-
-                    {/* Currency */}
-                    <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-800">
-                      <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white">Currency</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Default currency for invoices</p>
-                      </div>
-                      <select className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors">
-                        <option>₹ INR (Indian Rupee)</option>
-                        <option>$ USD (US Dollar)</option>
-                        <option>€ EUR (Euro)</option>
-                      </select>
-                    </div>
-
-                    {/* Date Format */}
-                    <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-800">
-                      <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white">Date Format</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">How dates are displayed</p>
-                      </div>
-                      <select className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors">
-                        <option>DD/MM/YYYY</option>
-                        <option>MM/DD/YYYY</option>
-                        <option>YYYY-MM-DD</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end pt-4">
-                    <button className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg font-semibold transition-colors">
-                      <Save className="w-4 h-4" />
-                      Save Preferences
-                    </button>
-                  </div>
-                </div>
-              )}
                 </>
               )}
             </div>
