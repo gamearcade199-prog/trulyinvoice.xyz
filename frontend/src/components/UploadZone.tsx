@@ -12,7 +12,7 @@ interface UploadZoneProps {
 
 export default function UploadZone({
   onFileSelect,
-  acceptedTypes = '.pdf,.jpg,.jpeg,.png',
+  acceptedTypes = '.pdf,.jpg,.jpeg,.png,.webp,.heic,.heif',
   multiple = true,
   maxSizeMB = 25
 }: UploadZoneProps) {
@@ -119,7 +119,7 @@ export default function UploadZone({
           </div>
 
           <div className="text-xs md:text-sm lg:text-xs text-gray-500 dark:text-gray-500">
-            Supports PDF, JPG, PNG • Max {maxSizeMB}MB per file
+            Supports PDF, JPG, PNG, WebP, HEIC • Max {maxSizeMB}MB per file
           </div>
         </div>
       </div>

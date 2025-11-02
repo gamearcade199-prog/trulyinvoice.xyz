@@ -56,28 +56,45 @@ export default function UploadPageRobust() {
     setShowAnonymousModal(false)
     setIsAnalyzing(true)
 
-    // Filter only PDFs
-    const pdfFiles = selectedFiles.filter(f => 
-      f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
-    )
-    const nonPdfFiles = selectedFiles.filter(f => 
-      !f.type.includes('pdf') && !f.name.toLowerCase().endsWith('.pdf')
-    )
+    // Filter allowed file types (PDF and Images)
+    const allowedTypes = [
+      'application/pdf',
+      'image/jpeg', 'image/jpg', 'image/png',
+      'image/webp', 'image/heic', 'image/heif'
+    ]
     
-    if (nonPdfFiles.length > 0) {
-      setError(`❌ Only PDF files are allowed. Removed: ${nonPdfFiles.map(f => f.name).join(', ')}`)
-      if (pdfFiles.length === 0) {
+    const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif']
+    
+    const validFiles = selectedFiles.filter(f => {
+      const hasValidType = allowedTypes.includes(f.type)
+      const hasValidExtension = allowedExtensions.some(ext => 
+        f.name.toLowerCase().endsWith(ext)
+      )
+      return hasValidType || hasValidExtension
+    })
+    
+    const invalidFiles = selectedFiles.filter(f => {
+      const hasValidType = allowedTypes.includes(f.type)
+      const hasValidExtension = allowedExtensions.some(ext => 
+        f.name.toLowerCase().endsWith(ext)
+      )
+      return !hasValidType && !hasValidExtension
+    })
+    
+    if (invalidFiles.length > 0) {
+      setError(`❌ Unsupported file type. Removed: ${invalidFiles.map(f => f.name).join(', ')}. Supported: PDF, JPG, PNG, WebP, HEIC`)
+      if (validFiles.length === 0) {
         setIsAnalyzing(false)
         setFiles([])
         setTotalPages(0)
         setPageDetails([])
         return
       }
-      setFiles(pdfFiles)
-      selectedFiles = pdfFiles
+      setFiles(validFiles)
+      selectedFiles = validFiles
     }
 
-    setProcessingStatus('Analyzing PDF pages...')
+    setProcessingStatus('Analyzing files...')
 
     // Count pages in all files
     try {
@@ -93,7 +110,7 @@ export default function UploadPageRobust() {
       setProcessingStatus(`✅ ${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''}, ${total} page${total > 1 ? 's' : ''} total`)
     } catch (error: any) {
       console.error('Error analyzing files:', error)
-      setError(`❌ ${error.message || 'Failed to analyze PDF files. Please ensure they are valid PDFs.'}`)
+      setError(`❌ ${error.message || 'Failed to analyze files. Please ensure they are valid.'}`)
       setFiles([])
       setTotalPages(0)
       setPageDetails([])

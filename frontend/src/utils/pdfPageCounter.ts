@@ -1,15 +1,29 @@
 import { PDFDocument } from 'pdf-lib'
 
 /**
- * Get the number of pages in a PDF file
- * @param file - The PDF file to analyze
- * @returns Promise<number> - Number of pages in the PDF
- * @throws Error if file is not a PDF or is corrupted
+ * Get the number of pages in a file (PDF or image)
+ * @param file - The file to analyze (PDF or image)
+ * @returns Promise<number> - Number of pages (1 for images, actual count for PDFs)
+ * @throws Error if file is not supported or is corrupted
  */
 export async function getPdfPageCount(file: File): Promise<number> {
-  // Validate file type
-  if (!file.type.includes('pdf') && !file.name.toLowerCase().endsWith('.pdf')) {
-    throw new Error(`${file.name} is not a PDF file. Only PDF files are supported.`)
+  // Check if it's an image file
+  const imageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif']
+  
+  const isImage = imageTypes.includes(file.type) || 
+                  imageExtensions.some(ext => file.name.toLowerCase().endsWith(ext))
+  
+  if (isImage) {
+    // Images are always 1 page
+    return 1
+  }
+  
+  // Check if it's a PDF
+  const isPdf = file.type.includes('pdf') || file.name.toLowerCase().endsWith('.pdf')
+  
+  if (!isPdf) {
+    throw new Error(`${file.name} is not a supported file type. Supported: PDF, JPG, PNG, WebP, HEIC`)
   }
   
   try {
@@ -27,7 +41,7 @@ export async function getPdfPageCount(file: File): Promise<number> {
     console.error('Error counting PDF pages:', error)
     
     // Provide specific error message
-    if (error.message.includes('not a PDF')) {
+    if (error.message.includes('not a supported file')) {
       throw error
     } else if (error.message.includes('Invalid page count')) {
       throw error

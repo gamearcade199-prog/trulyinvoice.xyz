@@ -29,6 +29,7 @@ import json
 import logging
 import re
 import hashlib
+import decimal
 from decimal import Decimal, ROUND_HALF_UP
 
 logger = logging.getLogger(__name__)
@@ -511,7 +512,26 @@ class AccountantExcelExporter:
 
     def _calculate_item_gst(self, item: Dict, invoice: Dict) -> Dict:
         """Calculate accurate GST for individual line item"""
-        amount = Decimal(str(item.get('amount', 0)))
+        try:
+            # Get amount with fallback handling
+            raw_amount = item.get('amount', 0)
+            
+            # Handle None, empty string, or invalid values
+            if raw_amount is None or raw_amount == '' or raw_amount == 'None':
+                raw_amount = 0
+            
+            # Clean the amount string (remove currency symbols, commas, etc.)
+            if isinstance(raw_amount, str):
+                raw_amount = raw_amount.replace('₹', '').replace('INR', '').replace(',', '').strip()
+                # If still empty after cleaning, set to 0
+                if not raw_amount:
+                    raw_amount = 0
+            
+            amount = Decimal(str(raw_amount))
+        except (ValueError, TypeError, decimal.InvalidOperation) as e:
+            print(f"⚠️ Warning: Invalid amount in line item: {item.get('amount', 'N/A')} - Error: {e}")
+            amount = Decimal('0')
+        
         if amount == 0:
             return {
                 'cgst_rate': 0, 'cgst_amount': 0,
@@ -520,11 +540,26 @@ class AccountantExcelExporter:
                 'total': 0
             }
 
-        # Get invoice totals
-        subtotal = Decimal(str(invoice.get('subtotal', 0)))
-        cgst_total = Decimal(str(invoice.get('cgst', 0)))
-        sgst_total = Decimal(str(invoice.get('sgst', 0)))
-        igst_total = Decimal(str(invoice.get('igst', 0)))
+        # Get invoice totals with safe conversion
+        try:
+            subtotal = Decimal(str(invoice.get('subtotal', 0) or 0))
+        except (ValueError, TypeError, decimal.InvalidOperation):
+            subtotal = Decimal('0')
+        
+        try:
+            cgst_total = Decimal(str(invoice.get('cgst', 0) or 0))
+        except (ValueError, TypeError, decimal.InvalidOperation):
+            cgst_total = Decimal('0')
+        
+        try:
+            sgst_total = Decimal(str(invoice.get('sgst', 0) or 0))
+        except (ValueError, TypeError, decimal.InvalidOperation):
+            sgst_total = Decimal('0')
+        
+        try:
+            igst_total = Decimal(str(invoice.get('igst', 0) or 0))
+        except (ValueError, TypeError, decimal.InvalidOperation):
+            igst_total = Decimal('0')
 
         if subtotal == 0:
             return {
