@@ -82,8 +82,8 @@ environment = os.getenv("ENVIRONMENT", "development")
 if environment == "production":
     # Production: Only allow production domains
     allowed_origins = [
-        "https://trulyinvoice.xyz",
-        "https://www.trulyinvoice.xyz",
+        "https://trulyinvoice.com",
+        "https://www.trulyinvoice.com",
     ]
     print("✅ CORS: Production mode - strict origin policy")
 else:

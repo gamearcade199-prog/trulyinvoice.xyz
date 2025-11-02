@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     images: ['/og-quickbooks-export.jpg'],
     type: 'website',
     locale: 'en_IN',
-    url: 'https://trulyinvoice.xyz/export/quickbooks',
+    url: 'https://trulyinvoice.com/export/quickbooks',
   },
   twitter: {
     card: 'summary_large_image',
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     images: ['/twitter-quickbooks.jpg'],
   },
   alternates: {
-    canonical: 'https://trulyinvoice.xyz/export/quickbooks',
+    canonical: 'https://trulyinvoice.com/export/quickbooks',
   },
 }
 

@@ -130,6 +130,75 @@ class UsageTracker:
         
         return False, message
     
+    async def check_and_increment_atomic(self, user_id: str, count: int = 1) -> Tuple[bool, str]:
+        """
+        SECURITY FIX: Atomically check quota and increment if allowed
+        Prevents race conditions where multiple requests bypass quota
+        
+        Args:
+            user_id: User ID
+            count: Number of scans to add
+        
+        Returns:
+            Tuple of (success: bool, message: str)
+        """
+        # Use database transaction with row-level locking
+        try:
+            # Get subscription with FOR UPDATE lock (prevents concurrent modifications)
+            subscription = self.db.query(Subscription).filter(
+                and_(
+                    Subscription.user_id == user_id,
+                    Subscription.status == 'active'
+                )
+            ).with_for_update().first()
+            
+            if not subscription:
+                # Create default free subscription
+                subscription = Subscription(
+                    user_id=user_id,
+                    tier='free',
+                    status='active',
+                    scans_used_this_period=0,
+                    current_period_start=datetime.utcnow(),
+                    current_period_end=datetime.utcnow() + timedelta(days=30)
+                )
+                self.db.add(subscription)
+                self.db.commit()
+                self.db.refresh(subscription)
+                
+                # Re-acquire lock
+                subscription = self.db.query(Subscription).filter(
+                    Subscription.user_id == user_id
+                ).with_for_update().first()
+            
+            # Check if period ended (while holding lock)
+            if datetime.utcnow() > subscription.current_period_end:
+                subscription.scans_used_this_period = 0
+                subscription.current_period_start = datetime.utcnow()
+                subscription.current_period_end = datetime.utcnow() + timedelta(days=30)
+            
+            # Get limit
+            scan_limit = get_scan_limit(subscription.tier)
+            current_usage = subscription.scans_used_this_period or 0
+            
+            # Check quota
+            if current_usage + count > scan_limit:
+                shortage = (current_usage + count) - scan_limit
+                message = f"Quota exceeded: {current_usage + count}/{scan_limit} (over by {shortage})"
+                self.db.rollback()  # Release lock
+                return False, message
+            
+            # Increment atomically
+            subscription.scans_used_this_period = current_usage + count
+            self.db.commit()
+            
+            remaining = scan_limit - subscription.scans_used_this_period
+            return True, f"Success: {subscription.scans_used_this_period}/{scan_limit} used ({remaining} remaining)"
+        
+        except Exception as e:
+            self.db.rollback()
+            return False, f"Error checking quota: {str(e)}"
+    
     async def increment_scan_count(self, user_id: str, count: int = 1) -> bool:
         """
         Increment user's scan count
@@ -327,6 +396,12 @@ async def check_user_quota(db: Session, user_id: str, scans_needed: int = 1) -> 
     """Quick check if user has quota"""
     tracker = UsageTracker(db)
     return await tracker.check_quota(user_id, scans_needed)
+
+
+async def check_and_increment_atomic(db: Session, user_id: str, count: int = 1) -> Tuple[bool, str]:
+    """SECURITY FIX: Atomically check and increment quota (prevents race conditions)"""
+    tracker = UsageTracker(db)
+    return await tracker.check_and_increment_atomic(user_id, count)
 
 
 async def increment_user_scans(db: Session, user_id: str, count: int = 1) -> bool:

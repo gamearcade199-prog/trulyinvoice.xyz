@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, Zap, Crown, Rocket, Sparkles, ArrowLeft } from 'lucide-react'
+import { Check, Zap, Crown, Rocket, Sparkles, ArrowLeft, CreditCard } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'next/link'
 import useRazorpay from '@/hooks/useRazorpay'
@@ -136,13 +136,17 @@ export default function PricingPage() {
         <div className="mb-12 text-center">
           <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-full text-sm font-semibold mb-4">
             <Sparkles className="w-4 h-4" />
-            Simple & Transparent Pricing
+            Auto-Renewing Monthly & Yearly Plans
           </div>
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-4">
             Pricing Plans - Choose the Perfect Plan for Invoice Conversion
           </h1>
-          <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-3">
             Select the perfect plan for your invoice processing needs. Upgrade or downgrade anytime.
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-500 max-w-2xl mx-auto flex items-center justify-center gap-2">
+            <CreditCard className="w-4 h-4" />
+            All paid plans auto-renew monthly or yearly. Cancel anytime before your next billing date.
           </p>
         </div>
 
@@ -228,7 +232,7 @@ export default function PricingPage() {
                     <span className="font-bold text-blue-600 dark:text-blue-400">
                       {plan.scans}
                     </span>
-                    <span className="text-gray-600 dark:text-gray-400 hidden sm:inline">
+                    <span className="text-gray-600 dark:text-gray-400">
                       {plan.period}
                     </span>
                   </div>
@@ -288,18 +292,18 @@ export default function PricingPage() {
             <div className="grid md:grid-cols-2 gap-8">
               <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 p-6 rounded-2xl border border-blue-200/50 dark:border-blue-800/50">
                 <h3 className="font-bold text-gray-900 dark:text-white mb-3 text-lg">
-                  What happens if I exceed my scan limit?
+                  How does auto-renewal work?
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400">
-                  You can upgrade your plan anytime or purchase additional scans as needed. Unused scans don&apos;t roll over to the next month.
+                  When you subscribe, you'll be automatically charged on the same date each month (or year for annual plans). You can cancel anytime before your next billing date to avoid charges. Your subscription remains active until the end of the paid period even after cancellation.
                 </p>
               </div>
               <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-6 rounded-2xl border border-purple-200/50 dark:border-purple-800/50">
                 <h3 className="font-bold text-gray-900 dark:text-white mb-3 text-lg">
-                  Can I change plans later?
+                  Can I cancel my subscription?
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately.
+                  Yes! You can cancel your subscription at any time from your account settings. Your access continues until the end of the current billing period. No partial refunds for mid-cycle cancellations, but you keep access until the period ends.
                 </p>
               </div>
               <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-6 rounded-2xl border border-green-200/50 dark:border-green-800/50">
@@ -307,7 +311,7 @@ export default function PricingPage() {
                   What payment methods do you accept?
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400">
-                  We accept UPI, credit/debit cards, net banking, and all major payment methods through our secure payment gateway.
+                  We accept UPI, credit/debit cards, net banking, and all major payment methods through our secure Razorpay payment gateway. All transactions are encrypted and PCI-DSS compliant.
                 </p>
               </div>
               <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 p-6 rounded-2xl border border-orange-200/50 dark:border-orange-800/50">
@@ -315,7 +319,7 @@ export default function PricingPage() {
                   Is there a refund policy?
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Yes! We offer a 14-day money-back guarantee if you&apos;re not satisfied with your plan.
+                  Yes! We offer a 14-day money-back guarantee on your first purchase if you haven't used the service. Refunds are not available for subscription renewals. Contact support within 14 days of your first charge for a full refund.
                 </p>
               </div>
             </div>

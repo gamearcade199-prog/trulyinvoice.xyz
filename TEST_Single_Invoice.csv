@@ -1,0 +1,45 @@
+﻿INVOICE DETAILS
+Invoice Number,INV/2024/001
+Invoice Date,2024-10-15
+Due Date,2024-11-15
+Status,Paid
+Reference Number,-
+
+VENDOR INFORMATION
+Vendor Name,Tata Motors Ltd.
+Vendor Address,"Bombay House, 24 Homi Mody Street, Mumbai, Maharashtra 400001"
+Vendor GSTIN,27AABCU9603R1ZM
+Vendor PAN,AABCU9603R
+Vendor Email,info@tatamotors.com
+Vendor Phone,+91 22 6665 8282
+
+CUSTOMER INFORMATION
+Customer Name,राजेश इंटरप्राइजेज
+Customer Address,"Shop 15, Gandhi Market, Pune, Maharashtra 411001"
+Customer GSTIN,29AABCU9603R1ZX
+Customer PAN,AABCU9603X
+Customer Email,-
+Customer Phone,-
+
+LINE ITEMS
+S.No,Description,Quantity,Unit,Rate (₹),Amount (₹),Tax Rate (%),Tax Amount (₹),Total (₹)
+1,Tata Nexon EV Battery Pack,2,Nos,"75,000.00","150,000.00",18%,0.00,"150,000.00"
+2,Electric Motor Assembly (कनेक्टेड),2,Sets,"75,000.00","150,000.00",18%,0.00,"150,000.00"
+
+TAX SUMMARY
+Subtotal (₹),"300,000.00"
+Discount (₹),0.00
+CGST (9%) (₹),"27,000.00"
+SGST (9%) (₹),"27,000.00"
+IGST (18%) (₹),0.00
+TOTAL AMOUNT (₹),"354,000.00"
+
+NOTES & TERMS
+Notes,Payment received via NEFT. GST invoice as per section 31.
+Terms & Conditions,Payment within 30 days. Late payment: 18% p.a. interest.
+
+ADDITIONAL INFORMATION
+Currency,INR
+Language,English
+Created Date,2025-11-02 20:22:21
+Document Type,INVOICE

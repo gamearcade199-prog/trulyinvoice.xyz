@@ -11,7 +11,7 @@ interface PageMetadata {
 }
 
 export function generatePageMetadata(page: PageMetadata): Metadata {
-  const baseUrl = 'https://trulyinvoice.xyz'
+  const baseUrl = 'https://trulyinvoice.com'
   
   return {
     title: page.title,
@@ -50,7 +50,7 @@ export const pageMetadata = {
   home: generatePageMetadata({
     title: seoConfig.defaultTitle,
     description: seoConfig.defaultDescription,
-    canonical: 'https://trulyinvoice.xyz',
+    canonical: 'https://trulyinvoice.com',
   }),
   
   pricing: generatePageMetadata({
@@ -65,7 +65,7 @@ export const pageMetadata = {
       'invoice automation pricing',
       'gst invoice software cost',
     ],
-    canonical: 'https://trulyinvoice.xyz/pricing',
+    canonical: 'https://trulyinvoice.com/pricing',
   }),
   
   features: generatePageMetadata({
@@ -79,7 +79,7 @@ export const pageMetadata = {
       'bulk invoice processing',
       'gst validation features',
     ],
-    canonical: 'https://trulyinvoice.xyz/features',
+    canonical: 'https://trulyinvoice.com/features',
   }),
   
   tallyExport: generatePageMetadata({
@@ -93,7 +93,7 @@ export const pageMetadata = {
       'invoice to tally voucher',
       'tally auto ledger creation',
     ],
-    canonical: 'https://trulyinvoice.xyz/export/tally',
+    canonical: 'https://trulyinvoice.com/export/tally',
   }),
   
   quickbooksExport: generatePageMetadata({
@@ -107,7 +107,7 @@ export const pageMetadata = {
       'quickbooks desktop import',
       'quickbooks online upload',
     ],
-    canonical: 'https://trulyinvoice.xyz/export/quickbooks',
+    canonical: 'https://trulyinvoice.com/export/quickbooks',
   }),
   
   zohoBooksExport: generatePageMetadata({
@@ -120,7 +120,7 @@ export const pageMetadata = {
       'zoho books csv upload',
       'invoice to zoho books online',
     ],
-    canonical: 'https://trulyinvoice.xyz/export/zoho-books',
+    canonical: 'https://trulyinvoice.com/export/zoho-books',
   }),
   
   excelExport: generatePageMetadata({
@@ -134,7 +134,7 @@ export const pageMetadata = {
       'gst invoice to excel',
       'accountant excel export',
     ],
-    canonical: 'https://trulyinvoice.xyz/export/excel',
+    canonical: 'https://trulyinvoice.com/export/excel',
   }),
   
   csvExport: generatePageMetadata({
@@ -148,42 +148,42 @@ export const pageMetadata = {
       'ca invoice processing',
       'bulk csv download',
     ],
-    canonical: 'https://trulyinvoice.xyz/export/csv',
+    canonical: 'https://trulyinvoice.com/export/csv',
   }),
   
   login: generatePageMetadata({
     title: 'Login - Access Your Invoice Dashboard | TrulyInvoice',
     description: 'Login to TrulyInvoice to manage your invoices, export to Excel, Tally, QuickBooks, Zoho Books, CSV. Secure access to your invoice automation dashboard.',
-    canonical: 'https://trulyinvoice.xyz/login',
+    canonical: 'https://trulyinvoice.com/login',
   }),
   
   signup: generatePageMetadata({
     title: 'Sign Up Free - 10 Free Invoice Exports/Month | TrulyInvoice',
     description: 'Create your free TrulyInvoice account. Get 10 free invoice conversions per month. Export to Excel, Tally, QuickBooks, Zoho Books, CSV. No credit card required.',
-    canonical: 'https://trulyinvoice.xyz/signup',
+    canonical: 'https://trulyinvoice.com/signup',
   }),
   
   dashboard: generatePageMetadata({
     title: 'Dashboard - Invoice Management & Export | TrulyInvoice',
     description: 'View and manage all your invoices. Upload, process, and export to Excel, Tally XML, QuickBooks, Zoho Books, or CSV with AI-powered automation.',
-    canonical: 'https://trulyinvoice.xyz/dashboard',
+    canonical: 'https://trulyinvoice.com/dashboard',
   }),
   
   about: generatePageMetadata({
     title: 'About TrulyInvoice | Multi-Format Invoice Export Platform',
     description: 'Learn how TrulyInvoice helps Indian businesses export invoices to Excel, Tally, QuickBooks, Zoho Books, and CSV. Our mission: automate invoice processing.',
-    canonical: 'https://trulyinvoice.xyz/about',
+    canonical: 'https://trulyinvoice.com/about',
   }),
   
   contact: generatePageMetadata({
     title: 'Contact TrulyInvoice | Get Help with Invoice Export',
     description: 'Need help with Excel, Tally, QuickBooks, or Zoho Books export? Contact our Indian support team. Quick responses, expert guidance.',
-    canonical: 'https://trulyinvoice.xyz/contact',
+    canonical: 'https://trulyinvoice.com/contact',
   }),
   
   blog: generatePageMetadata({
     title: 'Invoice Automation Blog | Excel, Tally, QuickBooks Export Guides',
     description: 'Expert guides on invoice to Excel conversion, Tally XML import, QuickBooks IIF/CSV upload, Zoho Books integration, GST compliance.',
-    canonical: 'https://trulyinvoice.xyz/blog',
+    canonical: 'https://trulyinvoice.com/blog',
   }),
 }

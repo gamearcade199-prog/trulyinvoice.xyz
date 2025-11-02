@@ -36,10 +36,18 @@ class Subscription(Base):
     # Payment Information
     razorpay_order_id = Column(String(255), nullable=True)
     razorpay_payment_id = Column(String(255), nullable=True)
-    razorpay_subscription_id = Column(String(255), nullable=True)
+    razorpay_subscription_id = Column(String(255), nullable=True, unique=True, index=True)
+    razorpay_plan_id = Column(String(255), nullable=True)
     
     # Auto-renewal
     auto_renew = Column(Boolean, nullable=False, default=True)
+    
+    # Billing Dates
+    next_billing_date = Column(DateTime, nullable=True)
+    last_payment_date = Column(DateTime, nullable=True)
+    payment_retry_count = Column(Integer, nullable=False, default=0)
+    last_payment_attempt = Column(DateTime, nullable=True)
+    grace_period_ends_at = Column(DateTime, nullable=True)
     
     # Timestamps
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow, server_default=func.now())

@@ -4,7 +4,7 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://trulyinvoice.xyz'
+  const baseUrl = 'https://trulyinvoice.com'
 
   // Core business pages - highest priority
   const corePages = [

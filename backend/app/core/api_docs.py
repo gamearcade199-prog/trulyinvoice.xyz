@@ -160,7 +160,7 @@ class APIDocumentation:
         self.version = version
         self.description = description
         self.endpoints: Dict[str, APIEndpoint] = {}
-        self.base_url = "https://api.trulyinvoice.xyz"
+        self.base_url = "https://api.trulyinvoice.com"
         self.authentication_methods: List[str] = ["Bearer Token (JWT)"]
     
     def add_endpoint(self, endpoint: APIEndpoint) -> None:

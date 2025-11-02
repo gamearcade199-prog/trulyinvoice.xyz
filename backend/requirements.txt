@@ -24,6 +24,13 @@ openpyxl==3.1.2
 # Image processing (for PDFs with images) - Updated for Python 3.14+ compatibility
 pillow>=10.1.0
 
+# SECURITY: File type validation with magic bytes
+python-magic>=0.4.27
+python-magic-bin>=0.4.14; platform_system == 'Windows'  # Windows support
+
+# SECURITY: Optional virus scanning (VirusTotal or ClamAV)
+# clamd>=1.0.2  # Uncomment if using ClamAV
+
 # Payment processing & gateway
 razorpay>=2.0.0
 

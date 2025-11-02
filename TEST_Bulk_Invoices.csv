@@ -1,0 +1,173 @@
+﻿INVOICE DETAILS
+Invoice Number,INV/2024/001
+Invoice Date,2024-10-15
+Due Date,2024-11-15
+Status,Paid
+Reference Number,-
+
+VENDOR INFORMATION
+Vendor Name,Tata Motors Ltd.
+Vendor Address,"Bombay House, 24 Homi Mody Street, Mumbai, Maharashtra 400001"
+Vendor GSTIN,27AABCU9603R1ZM
+Vendor PAN,AABCU9603R
+Vendor Email,info@tatamotors.com
+Vendor Phone,+91 22 6665 8282
+
+CUSTOMER INFORMATION
+Customer Name,राजेश इंटरप्राइजेज
+Customer Address,"Shop 15, Gandhi Market, Pune, Maharashtra 411001"
+Customer GSTIN,29AABCU9603R1ZX
+Customer PAN,AABCU9603X
+Customer Email,-
+Customer Phone,-
+
+LINE ITEMS
+S.No,Description,Quantity,Unit,Rate (₹),Amount (₹),Tax Rate (%),Tax Amount (₹),Total (₹)
+1,Tata Nexon EV Battery Pack,2,Nos,"75,000.00","150,000.00",18%,0.00,"150,000.00"
+2,Electric Motor Assembly (कनेक्टेड),2,Sets,"75,000.00","150,000.00",18%,0.00,"150,000.00"
+
+TAX SUMMARY
+Subtotal (₹),"300,000.00"
+Discount (₹),0.00
+CGST (9%) (₹),"27,000.00"
+SGST (9%) (₹),"27,000.00"
+IGST (18%) (₹),0.00
+TOTAL AMOUNT (₹),"354,000.00"
+
+NOTES & TERMS
+Notes,Payment received via NEFT. GST invoice as per section 31.
+Terms & Conditions,Payment within 30 days. Late payment: 18% p.a. interest.
+
+ADDITIONAL INFORMATION
+Currency,INR
+Language,English
+Created Date,2025-11-02 20:22:21
+Document Type,INVOICE
+
+
+INVOICE DETAILS
+Invoice Number,INV-2024-002
+Invoice Date,2024-10-20
+Due Date,2024-11-20
+Status,Unpaid
+Reference Number,-
+
+VENDOR INFORMATION
+Vendor Name,Reliance Industries Ltd
+Vendor Address,"Maker Chambers IV, 222 Nariman Point, Mumbai 400021"
+Vendor GSTIN,24AAACR5055K1ZK
+Vendor PAN,-
+Vendor Email,-
+Vendor Phone,-
+
+CUSTOMER INFORMATION
+Customer Name,Gujarat Petrochemicals Pvt Ltd
+Customer Address,"GIDC, Vapi, Gujarat 396195"
+Customer GSTIN,24AABCG1234F1Z5
+Customer PAN,-
+Customer Email,-
+Customer Phone,-
+
+LINE ITEMS
+S.No,Description,Quantity,Unit,Rate (₹),Amount (₹),Tax Rate (%),Tax Amount (₹),Total (₹)
+1,Polypropylene Granules (Grade H030G),100,MT,"51,000.00","5,100,000.00",18%,0.00,"5,100,000.00"
+
+TAX SUMMARY
+Subtotal (₹),"5,000,000.00"
+Discount (₹),"100,000.00"
+CGST (9%) (₹),0.00
+SGST (9%) (₹),0.00
+IGST (18%) (₹),"900,000.00"
+TOTAL AMOUNT (₹),"5,900,000.00"
+
+ADDITIONAL INFORMATION
+Currency,INR
+Language,English
+Created Date,2025-11-02 20:22:21
+Document Type,INVOICE
+
+
+INVOICE DETAILS
+Invoice Number,SRV/BLR/2024/157
+Invoice Date,2024-10-25
+Due Date,2024-10-30
+Status,Partial
+Reference Number,-
+
+VENDOR INFORMATION
+Vendor Name,Infosys Ltd
+Vendor Address,"Electronics City, Bangalore, Karnataka 560100"
+Vendor GSTIN,29AAACI1681G1ZT
+Vendor PAN,-
+Vendor Email,-
+Vendor Phone,-
+
+CUSTOMER INFORMATION
+Customer Name,HDFC Bank Ltd
+Customer Address,"Ramachandra Agrahara, Bangalore 560027"
+Customer GSTIN,29AAACH6188F1ZN
+Customer PAN,-
+Customer Email,-
+Customer Phone,-
+
+LINE ITEMS
+S.No,Description,Quantity,Unit,Rate (₹),Amount (₹),Tax Rate (%),Tax Amount (₹),Total (₹)
+1,IT Consulting Services (Q3 2024) - Digital Transformation,1,LS,"10,000,000.00","10,000,000.00",18%,0.00,"10,000,000.00"
+
+TAX SUMMARY
+Subtotal (₹),"10,000,000.00"
+Discount (₹),0.00
+CGST (9%) (₹),"900,000.00"
+SGST (9%) (₹),"900,000.00"
+IGST (18%) (₹),0.00
+TOTAL AMOUNT (₹),"11,800,000.00"
+
+ADDITIONAL INFORMATION
+Currency,INR
+Language,English
+Created Date,2025-11-02 20:22:21
+Document Type,INVOICE
+
+
+INVOICE DETAILS
+Invoice Number,KR-001
+Invoice Date,2024-10-28
+Due Date,2024-11-05
+Status,Paid
+Reference Number,-
+
+VENDOR INFORMATION
+Vendor Name,श्री कृष्णा किराना स्टोर
+Vendor Address,"गांधी चौक, आगरा, उत्तर प्रदेश 282001"
+Vendor GSTIN,09AABCS1234F1Z5
+Vendor PAN,-
+Vendor Email,-
+Vendor Phone,-
+
+CUSTOMER INFORMATION
+Customer Name,Agarwal Sweet House
+Customer Address,"Sadar Bazaar, Agra, UP 282001"
+Customer GSTIN,09AABCA9876G2Z8
+Customer PAN,-
+Customer Email,-
+Customer Phone,-
+
+LINE ITEMS
+S.No,Description,Quantity,Unit,Rate (₹),Amount (₹),Tax Rate (%),Tax Amount (₹),Total (₹)
+1,Sugar (चीनी),50,Kg,45.00,"2,250.00",18%,0.00,"2,250.00"
+2,Rice (बासमती),25,Kg,80.00,"2,000.00",18%,0.00,"2,000.00"
+3,Cooking Oil (खाना का तेल),5,Liters,110.00,550.00,18%,0.00,550.00
+
+TAX SUMMARY
+Subtotal (₹),"4,800.00"
+Discount (₹),0.00
+CGST (9%) (₹),432.00
+SGST (9%) (₹),432.00
+IGST (18%) (₹),0.00
+TOTAL AMOUNT (₹),"5,664.00"
+
+ADDITIONAL INFORMATION
+Currency,INR
+Language,English
+Created Date,2025-11-02 20:22:21
+Document Type,INVOICE

@@ -24,11 +24,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Pricing Plans - Invoice to Excel Converter | TrulyInvoice',
     description: 'Simple pricing for invoice to Excel conversion. Free tier with 10 scans/month, premium plans from ₹99. 95-99.5% AI accuracy. Start today!',
-    url: 'https://trulyinvoice.xyz/pricing',
+    url: 'https://trulyinvoice.com/pricing',
     siteName: 'TrulyInvoice',
     images: [
       {
-        url: 'https://trulyinvoice.xyz/og-image-pricing.jpg',
+        url: 'https://trulyinvoice.com/og-image-pricing.jpg',
         width: 1200,
         height: 630,
         alt: 'TrulyInvoice Pricing Plans - Invoice to Excel Converter',
@@ -41,10 +41,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Pricing Plans - Invoice to Excel Converter | TrulyInvoice',
     description: 'Simple pricing for invoice to Excel conversion. Free tier with 10 scans/month, premium plans from ₹99. 95-99.5% AI accuracy. Start today!',
-    images: ['https://trulyinvoice.xyz/twitter-image-pricing.jpg'],
+    images: ['https://trulyinvoice.com/twitter-image-pricing.jpg'],
   },
   alternates: {
-    canonical: 'https://trulyinvoice.xyz/pricing',
+    canonical: 'https://trulyinvoice.com/pricing',
   },
   robots: {
     index: true,

@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request, Header
 from sqlalchemy.orm import Session
 from typing import Optional
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from app.core.database import get_db
 from app.services.razorpay_service import razorpay_service
@@ -72,22 +72,25 @@ async def create_payment_order(
     db: Session = Depends(get_db)
 ):
     """
-    Create Razorpay payment order for subscription.
+    Create Razorpay subscription with auto-renewal.
     
-    Security: Only authenticated users can create orders for themselves.
+    UPDATED: Now creates recurring subscriptions instead of one-time orders.
+    This enables automatic monthly/yearly charging.
+    
+    Security: Only authenticated users can create subscriptions for themselves.
     Rate Limited: Custom Redis-based rate limiting with tier-specific limits.
     
     Args:
         request_obj: FastAPI request object
-        create_request: Order creation request with tier and billing cycle
+        create_request: Subscription creation request with tier and billing cycle
         current_user: Current authenticated user (from JWT token)
         db: Database session
     
     Returns:
-        Order details including Razorpay order ID
+        Subscription details including payment URL
     """
     try:
-        print(f"🔒 Creating order for user {current_user}")
+        print(f"🔒 Creating subscription for user {current_user}")
         
         # Validate tier
         valid_tiers = ["free", "basic", "pro", "ultra", "max"]
@@ -104,29 +107,12 @@ async def create_payment_order(
                 detail="billing_cycle must be 'monthly' or 'yearly'"
             )
         
-        # Check if free tier (can't create order for free)
+        # Check if free tier (can't create subscription for free)
         if create_request.tier.lower() == "free":
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot create payment order for free tier"
+                detail="Cannot create subscription for free tier"
             )
-
-        # FIX #2: Fetch user email and name from Supabase auth
-        user_email = 'user@example.com'
-        user_name = 'User'
-        
-        try:
-            from app.services.supabase_helper import supabase
-            if supabase:  # Only try if Supabase client is available
-                auth_user = supabase.auth.admin.get_user(current_user)
-                if auth_user and auth_user.user:
-                    user_email = getattr(auth_user.user, 'email', 'user@example.com') or 'user@example.com'
-                    # Try to get user metadata for full name
-                    user_metadata = getattr(auth_user.user, 'user_metadata', {}) or {}
-                    user_name = user_metadata.get('full_name', user_metadata.get('name', 'User')) or 'User'
-        except Exception as e:
-            print(f"⚠️ Could not fetch user details from Supabase: {str(e)}")
-            # Continue with default values
         
         # RATE LIMIT: Use Redis rate limiter per-user based on their current tier
         try:
@@ -148,18 +134,68 @@ async def create_payment_order(
             # If rate limiter fails, continue but log warning
             print(f"⚠️ Rate limiter check failed: {e}")
 
-        # Create order with user_id in notes (for verification later)
-        order = razorpay_service.create_subscription_order(
+        # ✨ NEW: Create recurring subscription instead of one-time order
+        subscription = razorpay_service.create_subscription(
             user_id=current_user,
             tier=create_request.tier.lower(),
             billing_cycle=create_request.billing_cycle,
-            user_email=user_email,
-            user_name=user_name,
-            db=db
+            customer_notify=True
         )
-
-        print(f"✅ Order created: {order['order_id']}")
-        return CreateOrderResponse(**order)
+        
+        print(f"✅ Subscription created: {subscription['subscription_id']}")
+        
+        # Store subscription in database (pending until first payment)
+        from app.models import Subscription
+        from app.config.plans import get_plan_config
+        
+        plan = get_plan_config(create_request.tier.lower())
+        
+        # Check if user already has a subscription
+        existing_sub = db.query(Subscription).filter(
+            Subscription.user_id == current_user
+        ).first()
+        
+        if existing_sub:
+            # Update existing subscription
+            existing_sub.razorpay_subscription_id = subscription['subscription_id']
+            existing_sub.razorpay_plan_id = subscription['plan_id']
+            existing_sub.tier = create_request.tier.lower()
+            existing_sub.status = 'pending'  # Will be 'active' after first payment
+            existing_sub.billing_cycle = create_request.billing_cycle
+            existing_sub.auto_renew = True
+            existing_sub.updated_at = datetime.utcnow()
+        else:
+            # Create new subscription record
+            new_sub = Subscription(
+                user_id=current_user,
+                tier=create_request.tier.lower(),
+                status='pending',  # Will be 'active' after first payment
+                scans_used_this_period=0,
+                billing_cycle=create_request.billing_cycle,
+                current_period_start=datetime.utcnow(),
+                current_period_end=datetime.utcnow() + timedelta(days=30 if create_request.billing_cycle == 'monthly' else 365),
+                razorpay_subscription_id=subscription['subscription_id'],
+                razorpay_plan_id=subscription['plan_id'],
+                auto_renew=True,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            db.add(new_sub)
+        
+        db.commit()
+        print(f"✅ Subscription stored in database")
+        
+        # Return subscription details (compatible with existing CreateOrderResponse)
+        return CreateOrderResponse(
+            order_id=subscription['subscription_id'],  # Frontend expects order_id
+            amount=subscription['amount'],
+            amount_paise=subscription['amount_paise'],
+            currency="INR",
+            tier=create_request.tier.lower(),
+            billing_cycle=create_request.billing_cycle,
+            plan_name=plan['name'],
+            key_id=razorpay_service.key_id
+        )
     
     except HTTPException:
         raise
@@ -169,10 +205,10 @@ async def create_payment_order(
             detail=str(e)
         )
     except Exception as e:
-        print(f"❌ Error creating order: {str(e)}")
+        print(f"❌ Error creating subscription: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create order: {str(e)}"
+            detail=f"Failed to create subscription: {str(e)}"
         )
 
 

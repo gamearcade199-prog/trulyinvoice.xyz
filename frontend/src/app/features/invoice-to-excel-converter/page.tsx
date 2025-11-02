@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: 'Invoice to Excel Converter | AI-Powered | TrulyInvoice',
   description: 'Convert PDF invoices to Excel in seconds. Our AI-powered tool extracts invoice data with 99% accuracy, saving you hours of manual data entry. GST compliant.',
   alternates: {
-    canonical: 'https://trulyinvoice.xyz/features/invoice-to-excel-converter',
+    canonical: 'https://trulyinvoice.com/features/invoice-to-excel-converter',
   },
 };
 

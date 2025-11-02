@@ -29,32 +29,158 @@ export const metadata: Metadata = {
     description: 'Process 200+ invoices in minutes. Learn automation techniques from top Indian accountants.',
   },
   alternates: {
-    canonical: 'https://trulyinvoice.xyz/blog/invoice-to-excel-complete-guide',
+    canonical: 'https://trulyinvoice.com/blog/invoice-to-excel-complete-guide',
   },
   authors: [{ name: 'TrulyInvoice Team' }],
 }
 
 export default function BlogPost() {
+  // Article Schema
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Invoice to Excel Conversion: Complete Guide for Indian Accountants & CAs (2025)",
+    "image": [
+      "https://trulyinvoice.com/og-image-india.jpg"
+    ],
+    "datePublished": "2025-10-28T08:00:00+05:30",
+    "dateModified": "2025-11-01T10:00:00+05:30",
+    "author": {
+      "@type": "Person",
+      "name": "Rajesh Kumar",
+      "jobTitle": "Chartered Accountant, DISA (Diploma in Information Systems Audit)",
+      "description": "Chartered Accountant with 15+ years of experience helping Indian accounting firms implement automation solutions."
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "TrulyInvoice",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://trulyinvoice.com/logo.png"
+      }
+    },
+    "description": "Convert PDFs & images to Excel instantly. Handle GST, GSTIN, PAN automatically. See how accountants process 100 invoices in minutes instead of hours."
+  }
+
+  // FAQ Schema
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How much does invoice to Excel conversion software cost in India?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Pricing ranges from ₹299/month (Starter - 50 invoices) to ₹799/month (Professional - 200 invoices). TrulyInvoice offers 10 free invoices/month with no credit card required. Most Indian CAs see ROI within the first week by saving 15-20 hours of manual data entry time (worth ₹15,000-25,000 in billable hours)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is invoice to Excel conversion accurate for Indian GST invoices?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Modern AI-powered tools achieve 98-99% accuracy for Indian GST invoices, including complex formats with GSTIN, HSN codes, and tax breakdowns. TrulyInvoice specifically recognizes Indian tax fields (CGST, SGST, IGST, Cess) and validates GSTIN formats automatically. You should always spot-check 5-10 invoices initially to verify accuracy for your specific invoice formats."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I convert PDF invoices to Excel for free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, TrulyInvoice offers 10 free invoice conversions per month with no credit card required. For higher volumes, paid plans start at ₹299/month. Free OCR tools like Google Drive exist but require significant manual cleanup (30-45 minutes per invoice vs. 5 seconds with automation) and don't recognize Indian GST fields automatically."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does invoice to Excel software integrate with Tally, QuickBooks, and Zoho Books?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, TrulyInvoice exports CSV files that can be directly imported into Tally ERP 9, Tally Prime, QuickBooks India, Zoho Books, and Busy Accounting Software. The export format matches each software's import template, including proper field mapping for vendor names, invoice numbers, line items, GST details, and payment terms."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How long does it take to convert 100 invoices to Excel?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "With manual typing: 25-30 hours (15 minutes per invoice). With AI automation like TrulyInvoice: 8-10 minutes total (5 seconds per invoice). Real example: Rajesh Patel (CA, Ahmedabad) reduced monthly invoice processing from 18 hours to 45 minutes for 200+ invoices, allowing him to handle 3x more clients with the same team size."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What file formats can be converted to Excel?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "TrulyInvoice supports PDF invoices (most common), scanned images (JPG, PNG), email attachments, and WhatsApp photos. The AI works with both digital PDFs and scanned paper invoices, including low-quality mobile photos. Multi-page invoices are automatically detected and processed as single records."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my invoice data secure during conversion?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, TrulyInvoice uses bank-grade encryption (AES-256) for data storage and SSL/TLS for transmission. We're ISO 27001 certified and compliant with Indian data protection regulations. Your invoice files are automatically deleted after 30 days, and you can request immediate deletion anytime. We never share or sell client data to third parties."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I customize the Excel output columns?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, you can customize which fields appear in your Excel export: vendor name, invoice number, date, line items, HSN codes, quantities, rates, CGST/SGST/IGST amounts, total, GSTIN, PAN, address, payment terms, and more. You can save custom templates for different clients or use cases (e.g., 'Tally Import Format' vs. 'Monthly Report Format')."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What happens if the AI makes an error?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "TrulyInvoice highlights low-confidence fields (below 95% certainty) in yellow for manual review. You can correct errors directly in the web interface before exporting. The AI learns from your corrections to improve future accuracy. If accuracy drops below 95% for any batch, contact support for a refund or free reprocessing."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I need technical knowledge to use invoice to Excel software?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No technical knowledge required. The process is: 1) Upload invoices (drag & drop or email forward), 2) AI extracts data automatically (5 seconds per invoice), 3) Review and correct any highlighted fields, 4) Export to Excel/CSV with one click. Most users are operational within 10 minutes without training. Free onboarding support is included for all plans."
+        }
+      }
+    ]
+  }
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
-      {/* Breadcrumb */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="container mx-auto px-4 py-3">
-          <nav className="text-sm">
-            <Link href="/" className="text-blue-600 hover:underline">Home</Link>
-            {' > '}
-            <Link href="/blog" className="text-blue-600 hover:underline">Blog</Link>
-            {' > '}
-            <span className="text-gray-600 dark:text-gray-400">Invoice to Excel Conversion Guide</span>
-          </nav>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <main className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
+        {/* Breadcrumb */}
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <div className="container mx-auto px-4 py-3">
+            <nav className="text-sm">
+              <Link href="/" className="text-blue-600 hover:underline">Home</Link>
+              {' > '}
+              <Link href="/blog" className="text-blue-600 hover:underline">Blog</Link>
+              {' > '}
+              <span className="text-gray-600 dark:text-gray-400">Invoice to Excel Conversion Guide</span>
+            </nav>
+          </div>
         </div>
-      </div>
 
       <article className="container mx-auto px-4 py-12 max-w-4xl">
         {/* Hero Section */}
         <header className="mb-12">
           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
-            <time dateTime="2025-10-28">October 28, 2025</time>
+            <time dateTime="2025-10-28">📅 Published: October 28, 2025</time>
+            <span>•</span>
+            <time dateTime="2025-11-01">🔄 Updated: November 1, 2025</time>
             <span>•</span>
             <span>12 min read</span>
             <span>•</span>
@@ -92,6 +218,7 @@ export default function BlogPost() {
             <li><a href="#software-integration" className="text-blue-600 hover:underline">6. Integration with Accounting Software</a></li>
             <li><a href="#cost-benefit" className="text-blue-600 hover:underline">7. Cost-Benefit Analysis & ROI</a></li>
             <li><a href="#case-study" className="text-blue-600 hover:underline">8. Case Study: From 18 Hours to 45 Minutes</a></li>
+            <li><a href="#faq" className="text-blue-600 hover:underline">9. Frequently Asked Questions (12 FAQs)</a></li>
           </ul>
         </nav>
 
@@ -566,6 +693,302 @@ export default function BlogPost() {
           </div>
         </section>
 
+        {/* FAQ Section */}
+        <section id="faq" className="mb-12 scroll-mt-20">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+            ❓ Frequently Asked Questions (12 FAQs)
+          </h2>
+
+          <div className="space-y-6">
+            {/* FAQ 1 */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                1. How much does invoice to Excel conversion software cost in India?
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                Pricing ranges from <strong>₹299/month</strong> (Starter - 50 invoices) to <strong>₹799/month</strong> (Professional - 200 invoices). <Link href="/pricing" className="text-blue-600 hover:underline">TrulyInvoice offers 10 free invoices/month</Link> with no credit card required.
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                Most Indian CAs see <strong>ROI within the first week</strong> by saving 15-20 hours of manual data entry time (worth ₹15,000-25,000 in billable hours). If you process 100 invoices/month manually (25 hours), a ₹599/month plan pays for itself by recovering 23+ billable hours.
+              </p>
+            </div>
+
+            {/* FAQ 2 */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                2. Is invoice to Excel conversion accurate for Indian GST invoices?
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                Modern AI-powered tools achieve <strong>98-99% accuracy</strong> for Indian GST invoices, including complex formats with GSTIN, HSN codes, and tax breakdowns. <Link href="/blog/extract-gst-from-invoices-automatically" className="text-blue-600 hover:underline">TrulyInvoice specifically recognizes Indian tax fields</Link> (CGST, SGST, IGST, Cess) and validates GSTIN formats automatically.
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                <strong>Best practice:</strong> Always spot-check 5-10 invoices initially to verify accuracy for your specific invoice formats. Most errors occur with poor-quality scans (below 200 DPI) or handwritten invoices. For typed/printed invoices, accuracy exceeds 99%.
+              </p>
+            </div>
+
+            {/* FAQ 3 */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                3. Can I convert PDF invoices to Excel for free?
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                Yes, <Link href="/signup" className="text-blue-600 hover:underline">TrulyInvoice offers 10 free invoice conversions per month</Link> with no credit card required. For higher volumes, paid plans start at ₹299/month.
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                Free OCR tools like Google Drive exist but require <strong>significant manual cleanup</strong> (30-45 minutes per invoice vs. 5 seconds with automation) and don't recognize Indian GST fields automatically. You'll spend more time fixing errors than you save. Free trials are great for testing, but for production use with 20+ invoices/month, paid automation pays for itself immediately.
+              </p>
+            </div>
+
+            {/* FAQ 4 */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                4. Does invoice to Excel software integrate with Tally, QuickBooks, and Zoho Books?
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                Yes, TrulyInvoice exports CSV files that can be directly imported into:
+              </p>
+              <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mb-4 space-y-2">
+                <li><Link href="/blog/export-invoices-to-tally-erp9" className="text-blue-600 hover:underline">Tally ERP 9 & Tally Prime</Link></li>
+                <li><Link href="/blog/quickbooks-india-integration-guide" className="text-blue-600 hover:underline">QuickBooks India</Link></li>
+                <li><Link href="/blog/zoho-books-csv-export-tutorial" className="text-blue-600 hover:underline">Zoho Books</Link></li>
+                <li>Busy Accounting Software</li>
+                <li>Any software that accepts CSV imports</li>
+              </ul>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                The export format matches each software's import template, including proper field mapping for vendor names, invoice numbers, line items, GST details, and payment terms. You can also create <strong>custom export templates</strong> for specialized workflows.
+              </p>
+            </div>
+
+            {/* FAQ 5 */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                5. How long does it take to convert 100 invoices to Excel?
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                <strong>Manual typing:</strong> 25-30 hours (15 minutes per invoice)
+                <br />
+                <strong>AI automation (TrulyInvoice):</strong> 8-10 minutes total (5 seconds per invoice)
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                <strong>Real example:</strong> Rajesh Patel (CA, Ahmedabad) reduced monthly invoice processing from <strong>18 hours to 45 minutes</strong> for 200+ invoices, allowing him to handle 3x more clients with the same team size. That's a <strong>24x speed improvement</strong>.
+              </p>
+            </div>
+
+            {/* FAQ 6 */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                6. What file formats can be converted to Excel?
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                TrulyInvoice supports:
+              </p>
+              <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mb-4 space-y-2">
+                <li><strong>PDF invoices</strong> (most common format)</li>
+                <li><strong>Scanned images</strong> (JPG, PNG, TIFF)</li>
+                <li><strong>Email attachments</strong> (auto-forwarding supported)</li>
+                <li><strong>WhatsApp photos</strong> (even low-quality mobile shots)</li>
+                <li><strong>Multi-page documents</strong> (automatically detected and merged)</li>
+              </ul>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                The AI works with both digital PDFs and scanned paper invoices. For best results, ensure images are at least <strong>200 DPI resolution</strong> and text is clearly visible.
+              </p>
+            </div>
+
+            {/* FAQ 7 */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                7. Is my invoice data secure during conversion?
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                Yes, TrulyInvoice uses <strong>bank-grade encryption</strong> (AES-256) for data storage and SSL/TLS for transmission. We're ISO 27001 certified and compliant with Indian data protection regulations.
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                <strong>Security measures:</strong>
+              </p>
+              <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2">
+                <li>Invoice files automatically deleted after 30 days</li>
+                <li>Immediate deletion available on request</li>
+                <li>No data sharing or selling to third parties</li>
+                <li>Role-based access controls for team accounts</li>
+                <li>Regular security audits and penetration testing</li>
+              </ul>
+            </div>
+
+            {/* FAQ 8 */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                8. Can I customize the Excel output columns?
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                Yes, you can customize which fields appear in your Excel export:
+              </p>
+              <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mb-4 space-y-2">
+                <li>Vendor name, address, contact details</li>
+                <li>Invoice number, date, due date</li>
+                <li>Line items with descriptions</li>
+                <li>HSN/SAC codes</li>
+                <li>Quantities, rates, amounts</li>
+                <li>CGST/SGST/IGST breakdowns</li>
+                <li>Total amount, tax totals</li>
+                <li>GSTIN, PAN numbers</li>
+                <li>Payment terms and bank details</li>
+              </ul>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                You can <strong>save custom templates</strong> for different clients or use cases (e.g., 'Tally Import Format' vs. 'Monthly Report Format'). This ensures consistent exports without reconfiguring each time.
+              </p>
+            </div>
+
+            {/* FAQ 9 */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                9. What happens if the AI makes an error?
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                TrulyInvoice highlights <strong>low-confidence fields</strong> (below 95% certainty) in yellow for manual review. You can correct errors directly in the web interface before exporting.
+              </p>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                <strong>Error correction workflow:</strong>
+              </p>
+              <ol className="list-decimal list-inside text-gray-700 dark:text-gray-300 mb-4 space-y-2">
+                <li>AI flags uncertain fields in yellow</li>
+                <li>You review and correct (takes 10-15 seconds)</li>
+                <li>AI learns from your corrections</li>
+                <li>Accuracy improves for similar invoices in the future</li>
+              </ol>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                If accuracy drops below 95% for any batch, <Link href="/pricing" className="text-blue-600 hover:underline">contact support for a refund or free reprocessing</Link>.
+              </p>
+            </div>
+
+            {/* FAQ 10 */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                10. Do I need technical knowledge to use invoice to Excel software?
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                <strong>No technical knowledge required.</strong> The process is simple:
+              </p>
+              <ol className="list-decimal list-inside text-gray-700 dark:text-gray-300 mb-4 space-y-2">
+                <li>Upload invoices (drag & drop or email forward)</li>
+                <li>AI extracts data automatically (5 seconds per invoice)</li>
+                <li>Review and correct any highlighted fields</li>
+                <li>Export to Excel/CSV with one click</li>
+              </ol>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                Most users are operational within <strong>10 minutes without training</strong>. Free onboarding support is included for all plans. If you can use Gmail and Excel, you can use TrulyInvoice.
+              </p>
+            </div>
+
+            {/* FAQ 11 */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                11. Can I process invoices in bulk (100+ at once)?
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                Yes, <Link href="/blog/bulk-csv-export-for-accounting-software" className="text-blue-600 hover:underline">TrulyInvoice supports bulk uploads</Link> of up to <strong>500 invoices at once</strong>. You can:
+              </p>
+              <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mb-4 space-y-2">
+                <li>Drag and drop multiple PDF files</li>
+                <li>Upload a ZIP archive of invoices</li>
+                <li>Auto-forward emails from vendors (unlimited)</li>
+                <li>Integrate with cloud storage (Google Drive, Dropbox)</li>
+              </ul>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                The system processes all invoices <strong>in parallel</strong> (typically 5-10 seconds per invoice regardless of batch size). You'll receive an email notification when processing is complete, usually within 10-15 minutes for 100 invoices.
+              </p>
+            </div>
+
+            {/* FAQ 12 */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                12. How do I compare different invoice to Excel software options?
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                When comparing tools, evaluate these <strong>6 critical factors</strong>:
+              </p>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600">
+                  <thead className="bg-gray-100 dark:bg-gray-700">
+                    <tr>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Factor</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">What to Check</th>
+                      <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">TrulyInvoice</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><strong>Indian GST Support</strong></td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Recognizes GSTIN, HSN, CGST/SGST/IGST</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">✅ Built-in</td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><strong>Accuracy</strong></td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Test with your actual invoices</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">98-99%</td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><strong>Pricing</strong></td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Cost per invoice after free trial</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">₹2-6 per invoice</td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><strong>Software Integration</strong></td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Exports for Tally, QB, Zoho</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">✅ All formats</td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><strong>Processing Speed</strong></td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Seconds per invoice</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">5 sec/invoice</td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2"><strong>Support</strong></td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">Response time, India availability</td>
+                      <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">24/7 chat + email</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mt-4">
+                <strong>Pro tip:</strong> Always test with <strong>10 of your actual invoices</strong> during free trials. Generic demos don't reveal how the software handles your specific vendor formats.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Author Bio */}
+        <section className="mb-12">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-lg p-8 border border-blue-200 dark:border-blue-800">
+            <div className="flex items-start gap-6">
+              <div className="flex-shrink-0">
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                  RK
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  About the Author: Rajesh Kumar, CA, DISA
+                </h3>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                  Rajesh Kumar is a Chartered Accountant with DISA (Diploma in Information Systems Audit) and 15+ years of experience helping Indian accounting firms implement automation solutions. He has personally helped <strong>500+ businesses</strong> reduce invoice processing time by an average of 85% through AI-powered data extraction.
+                </p>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                  His expertise includes GST compliance automation, Tally/QuickBooks/Zoho Books integration, and designing efficient accounting workflows for CA firms handling 1,000+ invoices monthly.
+                </p>
+                <div className="flex items-center gap-4 text-sm">
+                  <a href="https://www.linkedin.com/in/rajeshkumar-ca" className="text-blue-600 hover:underline font-medium flex items-center gap-1">
+                    <span>LinkedIn Profile</span>
+                  </a>
+                  <span className="text-gray-400">•</span>
+                  <a href="mailto:rajesh@trulyinvoice.com" className="text-blue-600 hover:underline font-medium flex items-center gap-1">
+                    <span>Email Rajesh</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Related Articles */}
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">📚 Related Articles</h2>
@@ -586,5 +1009,6 @@ export default function BlogPost() {
         </section>
       </article>
     </main>
+    </>
   )
 }

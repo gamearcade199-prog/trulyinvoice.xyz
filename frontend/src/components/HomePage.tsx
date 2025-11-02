@@ -330,7 +330,7 @@ export default function HomePage() {
             <div className="mt-4 sm:mt-6 flex justify-center px-4">
               <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold shadow-lg shadow-blue-500/30 dark:shadow-blue-500/20 hover:shadow-xl hover:scale-105 transition-all duration-300">
                 <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" />
-                <span className="whitespace-nowrap">AI-Powered • 99% Accuracy</span>
+                <span className="whitespace-nowrap">AI-Powered • High Accuracy</span>
               </div>
             </div>
             
@@ -338,7 +338,7 @@ export default function HomePage() {
               Convert Invoice to Excel, Tally, QuickBooks, Zoho Books <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Instantly</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-200 mb-8 max-w-3xl mx-auto">
-              Transform any invoice into Excel, CSV, Tally, QuickBooks, or Zoho Books with 99% accuracy. AI-powered extraction with GST compliance. Process hundreds of invoices simultaneously.
+              Transform any invoice into <a href="/export/excel" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Excel</a>, <a href="/export/csv" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">CSV</a>, <a href="/export/tally" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Tally</a>, <a href="/export/quickbooks" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">QuickBooks</a>, or <a href="/export/zoho-books" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Zoho Books</a> with high accuracy. AI-powered extraction with <a href="/features" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">GST compliance</a>. Process hundreds of invoices simultaneously.
             </p>
 
             {/* Interactive Upload Zone */}
@@ -453,22 +453,22 @@ export default function HomePage() {
                 Drag & drop a PDF, JPG, or PNG. No signup needed to try.
               </p>
             </div>
-            <div className="text-center group">
+              <div className="text-center group">
               <div className="bg-gradient-to-br from-purple-500 to-purple-600 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
                 <Zap className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-xl md:text-2xl font-bold mb-3 text-gray-900 dark:text-white">2. AI Extracts the Data</h3>
               <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 px-2">
-                Our AI reads vendor names, amounts, GST, and line items in seconds.
+                Our <a href="/features" className="text-blue-600 dark:text-blue-400 hover:underline">AI technology</a> reads vendor names, amounts, GST, and line items in seconds.
               </p>
             </div>
-            <div className="text-center group sm:col-span-2 md:col-span-1">
+              <div className="text-center group sm:col-span-2 md:col-span-1">
               <div className="bg-gradient-to-br from-green-500 to-green-600 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg">
                 <TrendingUp className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-xl md:text-2xl font-bold mb-3 text-gray-900 dark:text-white">3. Export Instantly</h3>
               <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 px-2">
-                Choose from Excel, CSV, Tally ERP 9, QuickBooks India, or Zoho Books. Ready for accounting software import.
+                Choose from <a href="/export/excel" className="text-blue-600 dark:text-blue-400 hover:underline">Excel</a>, <a href="/export/csv" className="text-blue-600 dark:text-blue-400 hover:underline">CSV</a>, <a href="/export/tally" className="text-blue-600 dark:text-blue-400 hover:underline">Tally ERP 9</a>, <a href="/export/quickbooks" className="text-blue-600 dark:text-blue-400 hover:underline">QuickBooks India</a>, or <a href="/export/zoho-books" className="text-blue-600 dark:text-blue-400 hover:underline">Zoho Books</a>. Ready for accounting software import.
               </p>
             </div>
           </div>
@@ -577,8 +577,8 @@ export default function HomePage() {
               {[
                 {
                   icon: Sparkles,
-                  title: '99% Accurate',
-                  description: 'Industry-leading accuracy for Indian invoice formats'
+                  title: 'High Accuracy',
+                  description: 'Industry-leading accuracy for Indian invoice formats with AI'
                 },
                 {
                   icon: Zap,
@@ -646,14 +646,14 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-sm md:text-base text-gray-700 dark:text-gray-300 mb-4 italic">
-                &ldquo;TrulyInvoice saved me 12 hours per week. I was manually entering 200+ invoices monthly. Now it&apos;s done in minutes. The GST extraction is spot-on!&rdquo;
+                &ldquo;TrulyInvoice saved me significant time each week. I was manually entering hundreds of invoices monthly. Now it&apos;s done much faster. The <a href="/features" className="text-blue-600 dark:text-blue-400 hover:underline">GST extraction</a> works very well!&rdquo;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm md:text-base">
                   RP
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">Rajesh Patel</p>
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">Rajesh P.</p>
                   <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Accountant, Mumbai</p>
                 </div>
               </div>
@@ -667,14 +667,14 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-sm md:text-base text-gray-700 dark:text-gray-300 mb-4 italic">
-                &ldquo;As a small business owner, I don&apos;t have time for data entry. This tool is a game-changer. Just snap a photo and everything is extracted perfectly!&rdquo;
+                &ldquo;As a small business owner, I don&apos;t have time for data entry. This tool is very helpful. Just upload and the <a href="/features" className="text-blue-600 dark:text-blue-400 hover:underline">extraction is accurate</a>!&rdquo;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm md:text-base">
                   SK
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">Sneha Kulkarni</p>
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">Sneha K.</p>
                   <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Restaurant Owner, Pune</p>
                 </div>
               </div>
@@ -688,14 +688,14 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-sm md:text-base text-gray-700 dark:text-gray-300 mb-4 italic">
-                &ldquo;The accuracy is incredible. I tested it with 50 invoices and only had to correct 2 fields. Export to Tally works seamlessly. Highly recommended!&rdquo;
+                &ldquo;The accuracy is very good. I tested it with many invoices and only had to correct a few fields. Export to <a href="/export/tally" className="text-blue-600 dark:text-blue-400 hover:underline">Tally works smoothly</a>. Highly recommended!&rdquo;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm md:text-base">
                   AV
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">Amit Verma</p>
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">Amit V.</p>
                   <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">CA Firm, Delhi</p>
                 </div>
               </div>
@@ -705,15 +705,15 @@ export default function HomePage() {
           {/* Additional short testimonial bar */}
           <div className="mt-10 md:mt-16 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-5xl mx-auto">
             <div className="bg-white dark:bg-gray-700 p-4 md:p-6 rounded-xl shadow border border-gray-200 dark:border-gray-600 text-center">
-              <p className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">99%</p>
-              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Accuracy Rate</p>
+              <p className="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">High Accuracy</p>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">AI-Powered Extraction</p>
             </div>
             <div className="bg-white dark:bg-gray-700 p-4 md:p-6 rounded-xl shadow border border-gray-200 dark:border-gray-600 text-center">
-              <p className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400 mb-1">10+ hrs</p>
-              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Saved Per Week</p>
+              <p className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400 mb-1">Fast</p>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Significant Time Savings</p>
             </div>
             <div className="bg-white dark:bg-gray-700 p-4 md:p-6 rounded-xl shadow border border-gray-200 dark:border-gray-600 text-center">
-              <p className="text-2xl md:text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">&lt;5 sec</p>
+              <p className="text-2xl md:text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">&lt;10 sec</p>
               <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">Processing Time</p>
             </div>
           </div>

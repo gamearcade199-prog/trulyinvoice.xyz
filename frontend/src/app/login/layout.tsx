@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: 'Login - Access Your Invoice Dashboard',
   description: 'Login to TrulyInvoice to manage your invoices, track payments, and automate GST billing. Secure access to your invoice management dashboard.',
   alternates: {
-  canonical: 'https://trulyinvoice.xyz/login',
+  canonical: 'https://trulyinvoice.com/login',
   },
   robots: {
     index: false, // Don't index login page
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Login - TrulyInvoice Invoice Management',
     description: 'Login to access your invoice dashboard.',
-  url: 'https://trulyinvoice.xyz/login',
+  url: 'https://trulyinvoice.com/login',
     siteName: 'TrulyInvoice',
     locale: 'en_IN',
     type: 'website',

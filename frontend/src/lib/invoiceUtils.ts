@@ -1011,7 +1011,7 @@ export async function exportInvoicesToZohoBooksCSV(invoices: any[]) {
     const customerEmail = invoice.vendor_email || invoice.email || ''
     const billingAddress = invoice.vendor_address || invoice.billing_address || ''
     const paymentTerms = invoice.payment_terms || (invoice.due_date ? `Due ${formatDate(invoice.due_date)}` : 'Net 30')
-    const invoiceNotes = invoice.notes || `Invoice from ${invoice.vendor_name || 'Vendor'} | Processed via TrulyInvoice.xyz`
+    const invoiceNotes = invoice.notes || `Invoice from ${invoice.vendor_name || 'Vendor'} | Processed via trulyinvoice.com`
     const termsConditions = invoice.terms_conditions || 'Payment due as per agreed terms. Late payments may attract penalties as per GST regulations.'
 
     // Check if this is a multi-item invoice

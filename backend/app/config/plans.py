@@ -136,6 +136,48 @@ PLAN_LIMITS: Dict[str, Dict[str, Any]] = {
 }
 
 
+# Razorpay Subscription Plans (v2 - Correct Pricing)
+# These map directly to plans created in Razorpay Dashboard
+RAZORPAY_PLANS: Dict[str, Dict[str, Any]] = {
+    "basic": {
+        "razorpay_plan_id": "plan_Rat85iHwIK43DF",  # Basic Monthly ₹149
+        "name": "Basic Monthly Subscription",
+        "amount": 14900,  # Amount in paise (₹149.00)
+        "currency": "INR",
+        "interval": 1,
+        "period": "monthly",
+        "scans_per_month": 80
+    },
+    "pro": {
+        "razorpay_plan_id": "plan_Rat86N89IczksF",  # Pro Monthly ₹299
+        "name": "Pro Monthly Subscription",
+        "amount": 29900,  # Amount in paise (₹299.00)
+        "currency": "INR",
+        "interval": 1,
+        "period": "monthly",
+        "scans_per_month": 200
+    },
+    "ultra": {
+        "razorpay_plan_id": "plan_Rat86vgXjHOgSe",  # Ultra Monthly ₹599
+        "name": "Ultra Monthly Subscription",
+        "amount": 59900,  # Amount in paise (₹599.00)
+        "currency": "INR",
+        "interval": 1,
+        "period": "monthly",
+        "scans_per_month": 500
+    },
+    "max": {
+        "razorpay_plan_id": "plan_Rat87q7Bsub6TI",  # Max Monthly ₹999
+        "name": "Max Monthly Subscription",
+        "amount": 99900,  # Amount in paise (₹999.00)
+        "currency": "INR",
+        "interval": 1,
+        "period": "monthly",
+        "scans_per_month": 1000
+    }
+}
+
+
 def get_plan_config(tier: str) -> Dict[str, Any]:
     """
     Get plan configuration by tier name

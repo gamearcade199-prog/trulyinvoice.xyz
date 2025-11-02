@@ -151,11 +151,11 @@ export const SoftwareAppSchema = () => {
     "applicationCategory": "BusinessApplication",
     "applicationSubCategory": "Invoice Data Extraction & Multi-Format Export",
     "operatingSystem": "Web",
-    "url": "https://trulyinvoice.xyz",
-    "image": "https://trulyinvoice.xyz/og-image-india.jpg",
+    "url": "https://trulyinvoice.com",
+    "image": "https://trulyinvoice.com/og-image-india.jpg",
     "screenshot": [
-      "https://trulyinvoice.xyz/og-image-india.jpg",
-      "https://trulyinvoice.xyz/screenshot-1.jpg"
+      "https://trulyinvoice.com/og-image-india.jpg",
+      "https://trulyinvoice.com/screenshot-1.jpg"
     ],
     "offers": {
       "@type": "AggregateOffer",
@@ -197,17 +197,17 @@ export const SoftwareAppSchema = () => {
     "author": {
       "@type": "Organization",
       "name": "TrulyInvoice",
-      "url": "https://trulyinvoice.xyz"
+      "url": "https://trulyinvoice.com"
     },
     "publisher": {
       "@type": "Organization",
       "name": "TrulyInvoice",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://trulyinvoice.xyz/favicon-32x32.png"
+        "url": "https://trulyinvoice.com/favicon-32x32.png"
       }
     },
-    "downloadUrl": "https://trulyinvoice.xyz",
+    "downloadUrl": "https://trulyinvoice.com",
     "fileFormat": ["PDF", "JPG", "PNG", "Excel (XLSX)", "CSV", "XML (Tally)", "IIF (QuickBooks)"],
     "featureList": [
       "AI-powered invoice scanning with 99% accuracy",
@@ -261,9 +261,9 @@ export const OrganizationSchema = () => {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "TrulyInvoice",
-    "alternateName": "TrulyInvoice.xyz",
-    "url": "https://trulyinvoice.xyz",
-    "logo": "https://trulyinvoice.xyz/logo.png",
+    "alternateName": "trulyinvoice.com",
+    "url": "https://trulyinvoice.com",
+    "logo": "https://trulyinvoice.com/logo.png",
     "description": "AI-powered invoice to Excel converter for Indian businesses",
     "email": "infotrulybot@gmail.com",
     "telephone": "+91-9101361482",
@@ -309,7 +309,7 @@ export const LocalBusinessSchema = () => {
           "@context": "https://schema.org",
           "@type": "LocalBusiness",
           "name": `TrulyInvoice - ${city.name}`,
-          "url": `https://trulyinvoice.xyz/${city.name.toLowerCase()}`,
+          "url": `https://trulyinvoice.com/${city.name.toLowerCase()}`,
           "description": `Invoice to Excel converter for businesses in ${city.name}`,
           "geo": {
             "@type": "GeoCoordinates",
@@ -317,7 +317,7 @@ export const LocalBusinessSchema = () => {
             "longitude": city.lon
           },
           "areaServed": city.name,
-          "image": "https://trulyinvoice.xyz/og-image-india.jpg"
+          "image": "https://trulyinvoice.com/og-image-india.jpg"
         })
       }}
       suppressHydrationWarning

@@ -13,12 +13,12 @@ export const metadata: Metadata = {
     'invoice software subscription',
   ],
   alternates: {
-  canonical: 'https://trulyinvoice.xyz/pricing',
+  canonical: 'https://trulyinvoice.com/pricing',
   },
   openGraph: {
     title: 'Pricing Plans - Affordable GST Invoice Software | TrulyInvoice',
     description: 'Simple, transparent pricing for Indian businesses. Start free with 10 invoices/month. Premium plans from ₹99/month.',
-  url: 'https://trulyinvoice.xyz/pricing',
+  url: 'https://trulyinvoice.com/pricing',
     siteName: 'TrulyInvoice',
     images: [
       {

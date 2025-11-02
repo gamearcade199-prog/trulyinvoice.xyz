@@ -36,37 +36,62 @@ async def check_export_permission(user_id: str, db: Session = Depends(get_db)):
     
     return True
 @router.get("/", response_model=List[Dict[Any, Any]])
-async def get_invoices(user_id: str = None, limit: int = 100):
+async def get_invoices(
+    user_id: str = None, 
+    limit: int = 100,
+    current_user: dict = Depends(get_current_user)
+):
     """
-    Get all invoices (optionally filtered by user)
+    Get all invoices filtered by authenticated user
+    SECURITY FIX: Always filter by current user's ID to prevent data leaks
     """
     try:
-        query = supabase.table("invoices").select("*").limit(limit)
-        if user_id:
-            query = query.eq("user_id", user_id)
-        invoices_response = query.execute()
+        # SECURITY FIX: Use authenticated user ID, not query parameter
+        authenticated_user_id = current_user.get("id") if current_user else user_id
+        
+        if not authenticated_user_id:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        
+        # Always filter by authenticated user's ID
+        invoices_response = supabase.table("invoices").select("*").eq("user_id", authenticated_user_id).limit(limit).execute()
         invoices = invoices_response.data
         
+        logger.info(f"User {authenticated_user_id} retrieved {len(invoices) if invoices else 0} invoices")
         return invoices or []
         
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"Error fetching invoices: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/{invoice_id}")
-async def get_invoice(invoice_id: str):
-    """Get single invoice by ID"""
+async def get_invoice(
+    invoice_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get single invoice by ID
+    SECURITY FIX: Verify invoice belongs to authenticated user
+    """
     print(f"🔍 GET /api/invoices/{invoice_id}")
     print(f"  📋 Invoice ID type: {type(invoice_id)} | Value: '{invoice_id}'")
     
     try:
-        print(f"  📊 Querying Supabase for invoice...")
+        authenticated_user_id = current_user.get("id") if current_user else None
+        
+        if not authenticated_user_id:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        
+        print(f"  📊 Querying Supabase for invoice (user: {authenticated_user_id})...")
         
         # Try to convert to int if possible (for numeric IDs)
         try:
             numeric_id = int(invoice_id)
             print(f"  🔢 Trying numeric ID: {numeric_id}")
-            invoices_response = supabase.table("invoices").select("*").eq("id", numeric_id).execute()
+            # SECURITY FIX: Filter by user_id
+            invoices_response = supabase.table("invoices").select("*").eq("id", numeric_id).eq("user_id", authenticated_user_id).execute()
             invoices = invoices_response.data
             if invoices:
                 print(f"  ✅ Found with numeric ID! Vendor: {invoices[0].get('vendor_name', 'Unknown')}")
@@ -74,23 +99,14 @@ async def get_invoice(invoice_id: str):
         except (ValueError, TypeError):
             print(f"  ℹ️ Not a numeric ID, trying as string/UUID")
         
-        # Try as string/UUID
-        invoices_response = supabase.table("invoices").select("*").eq("id", invoice_id).execute()
+        # Try as string/UUID - SECURITY FIX: Filter by user_id
+        invoices_response = supabase.table("invoices").select("*").eq("id", invoice_id).eq("user_id", authenticated_user_id).execute()
         invoices = invoices_response.data
         print(f"  📊 Query result: {len(invoices) if invoices else 0} rows")
         
         if not invoices:
-            print(f"  ❌ Invoice not found with ID: {invoice_id}")
-            # Debug: Get all invoice IDs to help diagnose
-            try:
-                all_invoices_response = supabase.table("invoices").select("id,vendor_name,user_id").execute()
-                all_invoices = all_invoices_response.data
-                print(f"  📊 Database contains {len(all_invoices)} total invoices")
-                print(f"  📋 Sample IDs in DB: {[inv['id'] for inv in all_invoices[:3]]}")
-            except Exception as debug_error:
-                print(f"  ⚠️ Could not list invoice IDs: {debug_error}")
-            
-            raise HTTPException(status_code=404, detail=f"Invoice {invoice_id} not found")
+            print(f"  ❌ Invoice not found or access denied: {invoice_id}")
+            raise HTTPException(status_code=404, detail=f"Invoice {invoice_id} not found or access denied")
         
         print(f"  ✅ Invoice found: {invoices[0].get('vendor_name', 'Unknown')}")
         return invoices[0]

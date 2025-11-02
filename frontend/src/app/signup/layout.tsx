@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     'invoice management registration',
   ],
   alternates: {
-  canonical: 'https://trulyinvoice.xyz/signup',
+  canonical: 'https://trulyinvoice.com/signup',
   },
   robots: {
     index: true,
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Sign Up Free - TrulyInvoice Invoice Management',
     description: 'Create your free account. Get 10 free invoice scans per month. No credit card required.',
-  url: 'https://trulyinvoice.xyz/signup',
+  url: 'https://trulyinvoice.com/signup',
     siteName: 'TrulyInvoice',
     images: [
       {

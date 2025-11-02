@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     images: ['/og-tally-export.jpg'],
     type: 'website',
     locale: 'en_IN',
-    url: 'https://trulyinvoice.xyz/export/tally',
+    url: 'https://trulyinvoice.com/export/tally',
   },
   twitter: {
     card: 'summary_large_image',
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     images: ['/twitter-tally.jpg'],
   },
   alternates: {
-    canonical: 'https://trulyinvoice.xyz/export/tally',
+    canonical: 'https://trulyinvoice.com/export/tally',
   },
 }
 

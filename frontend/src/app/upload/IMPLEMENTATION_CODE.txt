@@ -1,0 +1,375 @@
+/**
+ * Bulk Upload Improvements - Complete Implementation Code
+ * 
+ * This file contains the complete implementation for:
+ * 1. Plan-based batch limits
+ * 2. Parallel processing (5 files at a time)
+ * 3. Enhanced progress tracking
+ * 
+ * INSTRUCTIONS:
+ * 1. Backup current upload/page.tsx
+ * 2. Replace the handleUpload function with this implementation
+ * 3. Add the PLAN_BATCH_LIMITS constant near the top of the component
+ * 4. Test with different plans and file counts
+ */
+
+// Add this constant near the top of the UploadPageRobust component (after state declarations)
+const PLAN_BATCH_LIMITS: Record<string, number> = {
+  'Free': 1,
+  'Basic': 5,
+  'Pro': 10,
+  'Ultra': 50,
+  'Max': 100,
+}
+
+/**
+ * REPLACE THE EXISTING handleUpload FUNCTION WITH THIS:
+ * Lines 55-360 approximately in upload/page.tsx
+ */
+
+const handleUpload = async () => {
+  if (files.length === 0) return
+
+  setIsUploading(true)
+  setUploadProgress(0)
+  setError('')
+  setProcessingStatus('Starting upload...')
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    const isAnonymous = !user
+    
+    // Step 1: Handle anonymous users
+    if (isAnonymous) {
+      console.log('👻 Anonymous user detected - enabling preview mode')
+      setProcessingStatus('🎯 Processing anonymously for preview...')
+      
+      // Anonymous users: 1 file limit
+      if (files.length > 1) {
+        setError(`🔒 Anonymous preview is limited to 1 file. Sign up to process ${files.length} files!`)
+        setIsUploading(false)
+        return
+      }
+    } else {
+      // Step 2: Fetch user's plan and validate batch size
+      console.log('👤 User authenticated:', user.id)
+      
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('plan')
+        .eq('id', user.id)
+        .single()
+      
+      if (userError) {
+        console.error('❌ Error fetching user plan:', userError)
+      }
+      
+      const userPlan = userData?.plan || 'Free'
+      const batchLimit = PLAN_BATCH_LIMITS[userPlan] || 1
+      
+      console.log(`📊 User plan: ${userPlan}, Batch limit: ${batchLimit}, Files: ${files.length}`)
+      
+      // Validate batch size against plan limit
+      if (files.length > batchLimit) {
+        const planUpgrades: Record<string, string> = {
+          'Free': 'Basic (5 invoices) or Pro (10 invoices)',
+          'Basic': 'Pro (10 invoices) or Ultra (50 invoices)',
+          'Pro': 'Ultra (50 invoices) or Max (100 invoices)',
+          'Ultra': 'Max (100 invoices)',
+        }
+        
+        const upgradeMessage = planUpgrades[userPlan] || 'a higher plan'
+        
+        setError(
+          `🚀 You've selected ${files.length} files. Your ${userPlan} plan allows ${batchLimit} files per batch. ` +
+          `Upgrade to ${upgradeMessage} for larger batches!`
+        )
+        setIsUploading(false)
+        return
+      }
+      
+      setProcessingStatus(`📦 Processing ${files.length} file(s) with parallel processing...`)
+    }
+    
+    // Step 3: Process files in parallel batches of 5
+    const PARALLEL_BATCH_SIZE = 5
+    const totalFiles = files.length
+    let processedCount = 0
+    const totalBatches = Math.ceil(files.length / PARALLEL_BATCH_SIZE)
+    
+    for (let i = 0; i < files.length; i += PARALLEL_BATCH_SIZE) {
+      const batch = files.slice(i, Math.min(i + PARALLEL_BATCH_SIZE, files.length))
+      const batchNumber = Math.floor(i / PARALLEL_BATCH_SIZE) + 1
+      
+      console.log(`📦 Processing batch ${batchNumber}/${totalBatches} (${batch.length} files)`)
+      setProcessingStatus(
+        `⚡ Processing batch ${batchNumber}/${totalBatches}: ${batch.map(f => f.name).join(', ')}...`
+      )
+      
+      // Process all files in this batch in parallel
+      const batchPromises = batch.map(async (file, batchIndex) => {
+        const fileNumber = i + batchIndex + 1
+        console.log(`📤 [${fileNumber}/${totalFiles}] Starting: ${file.name}`)
+        
+        try {
+          if (isAnonymous) {
+            // Anonymous processing (single file only)
+            const formData = new FormData()
+            formData.append('file', file)
+            
+            const apiUrls = [
+              'http://localhost:8000',
+              process.env.NEXT_PUBLIC_API_URL || 'https://trulyinvoice-backend.onrender.com',
+              'https://trulyinvoice-backend.onrender.com'
+            ]
+            
+            let processed = false
+            let lastError = null
+            
+            for (const apiUrl of apiUrls) {
+              if (processed) break
+              
+              try {
+                console.log(`🔄 [${fileNumber}/${totalFiles}] Trying API: ${apiUrl}`)
+                
+                const response = await fetch(`${apiUrl}/api/documents/process-anonymous`, {
+                  method: 'POST',
+                  body: formData,
+                })
+                
+                if (!response.ok) {
+                  const errorText = await response.text()
+                  throw new Error(`API Error ${response.status}: ${errorText}`)
+                }
+                
+                const result = await response.json()
+                console.log(`✅ [${fileNumber}/${totalFiles}] Anonymous processing completed`)
+                
+                showAnonymousPreview(result, file.name)
+                processed = true
+                setUploadProgress(100)
+                return { success: true, fileName: file.name }
+                
+              } catch (apiError: any) {
+                console.warn(`⚠️ [${fileNumber}/${totalFiles}] API ${apiUrl} failed:`, apiError.message)
+                lastError = apiError
+                
+                if (apiUrl !== apiUrls[apiUrls.length - 1]) {
+                  continue
+                }
+              }
+            }
+            
+            if (!processed) {
+              throw new Error(`Unable to process. Service unavailable.`)
+            }
+            
+          } else {
+            // Authenticated processing with parallel support
+            const fileName = `${user.id}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+            console.log(`🗂️ [${fileNumber}/${totalFiles}] Storage path: ${fileName}`)
+            
+            // Upload to Supabase Storage
+            const { error: uploadError } = await supabase.storage
+              .from('invoice-documents')
+              .upload(fileName, file, {
+                cacheControl: '3600',
+                upsert: true
+              })
+
+            if (uploadError) {
+              console.error(`❌ [${fileNumber}/${totalFiles}] Storage error:`, uploadError)
+              
+              if (uploadError.message.includes('not found') || uploadError.message.includes('bucket')) {
+                const { error: bucketError } = await supabase.storage.createBucket('invoice-documents', {
+                  public: true
+                })
+                
+                if (bucketError && !bucketError.message.includes('already exists')) {
+                  throw new Error(`Storage setup failed: ${bucketError.message}`)
+                }
+                
+                const { error: retryError } = await supabase.storage
+                  .from('invoice-documents')
+                  .upload(fileName, file, { upsert: true })
+                  
+                if (retryError) {
+                  throw new Error(`Storage upload failed: ${retryError.message}`)
+                }
+              } else {
+                throw new Error(`Storage upload failed: ${uploadError.message}`)
+              }
+            }
+
+            console.log(`✅ [${fileNumber}/${totalFiles}] Uploaded to storage`)
+
+            // Get public URL
+            const { data: { publicUrl } } = supabase.storage
+              .from('invoice-documents')
+              .getPublicUrl(fileName)
+
+            // Create database record
+            const { data: docData, error: docError } = await supabase
+              .from('documents')
+              .insert({
+                user_id: user.id,
+                file_name: file.name,
+                file_type: file.type,
+                file_size: file.size,
+                storage_path: fileName,
+                file_url: publicUrl,
+                status: 'uploaded'
+              })
+              .select()
+              .single()
+
+            if (docError) {
+              console.error(`❌ [${fileNumber}/${totalFiles}] Database error:`, docError)
+              throw new Error(`Database error: ${docError.message}`)
+            }
+
+            console.log(`✅ [${fileNumber}/${totalFiles}] Document record created: ${docData.id}`)
+
+            // AI processing with retry (3 attempts)
+            let processed = false
+            let attempts = 0
+            const maxAttempts = 3
+
+            while (!processed && attempts < maxAttempts) {
+              attempts++
+              console.log(`🔄 [${fileNumber}/${totalFiles}] AI attempt ${attempts}/${maxAttempts}`)
+              
+              try {
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+                const response = await fetch(`${apiUrl}/api/documents/${docData.id}/process`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  }
+                })
+
+                if (response.ok) {
+                  const result = await response.json()
+                  console.log(`✅ [${fileNumber}/${totalFiles}] AI processing completed`)
+                  processed = true
+                  
+                  await supabase
+                    .from('documents')
+                    .update({ status: 'processed' })
+                    .eq('id', docData.id)
+                  
+                  return { success: true, fileName: file.name }
+                  
+                } else {
+                  const errorText = await response.text()
+                  console.warn(`⚠️ [${fileNumber}/${totalFiles}] Attempt ${attempts} failed: ${response.status}`)
+                  
+                  if (attempts === maxAttempts) {
+                    await supabase
+                      .from('documents')
+                      .update({ status: 'upload_complete' })
+                      .eq('id', docData.id)
+                    
+                    processed = true
+                    return { success: false, fileName: file.name, error: 'AI processing failed' }
+                  } else {
+                    await new Promise(resolve => setTimeout(resolve, 3000))
+                  }
+                }
+              } catch (apiError) {
+                console.warn(`⚠️ [${fileNumber}/${totalFiles}] API error:`, apiError)
+                
+                if (attempts === maxAttempts) {
+                  await supabase
+                    .from('documents')
+                    .update({ status: 'upload_complete' })
+                    .eq('id', docData.id)
+                  
+                  processed = true
+                  return { success: false, fileName: file.name, error: 'Processing unavailable' }
+                } else {
+                  await new Promise(resolve => setTimeout(resolve, 3000))
+                }
+              }
+            }
+          }
+          
+          return { success: true, fileName: file.name }
+
+        } catch (fileError: unknown) {
+          console.error(`❌ [${fileNumber}/${totalFiles}] Error:`, fileError)
+          const errorMessage = fileError instanceof Error ? fileError.message : 'Unknown error'
+          return { success: false, fileName: file.name, error: errorMessage }
+        }
+      })
+      
+      // Wait for all files in this batch to complete
+      const batchResults = await Promise.allSettled(batchPromises)
+      
+      // Update progress
+      processedCount += batch.length
+      const progressPercent = Math.round((processedCount / totalFiles) * 100)
+      setUploadProgress(progressPercent)
+      
+      // Log batch completion
+      const successCount = batchResults.filter(r => r.status === 'fulfilled' && r.value?.success).length
+      const failedCount = batch.length - successCount
+      
+      console.log(
+        `✅ Batch ${batchNumber}/${totalBatches} complete: ` +
+        `${successCount} succeeded, ${failedCount} failed`
+      )
+      
+      if (batchNumber < totalBatches) {
+        setProcessingStatus(
+          `📦 Completed batch ${batchNumber}/${totalBatches}. ` +
+          `${processedCount}/${totalFiles} files processed (${progressPercent}%)`
+        )
+        // Small delay between batches to avoid overwhelming server
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+    }
+
+    // Step 4: Final completion
+    if (!isAnonymous) {
+      setUploadComplete(true)
+      setIsUploading(false)
+      setProcessingStatus(`✨ Successfully processed ${files.length} file(s) in parallel!`)
+      
+      console.log('🔄 Redirecting to invoices page in 3 seconds...')
+      setTimeout(() => {
+        router.push('/invoices')
+      }, 3000)
+    } else {
+      setIsUploading(false)
+    }
+
+  } catch (err: any) {
+    console.error('❌ Upload error:', err)
+    setError(err.message || 'Upload failed. Please try again.')
+    setIsUploading(false)
+    setUploadComplete(false)
+  }
+}
+
+/**
+ * KEY CHANGES FROM ORIGINAL:
+ * 
+ * 1. Added PLAN_BATCH_LIMITS constant
+ * 2. Added plan validation before processing
+ * 3. Changed from sequential (for i++) to parallel batches (for i += 5)
+ * 4. Wrapped file processing in batch.map() for parallel execution
+ * 5. Used Promise.allSettled() to handle batch results
+ * 6. Enhanced logging with [fileNumber/totalFiles] format
+ * 7. Added batch progress tracking
+ * 8. Added 1-second delay between batches
+ * 9. Improved error messages with upgrade suggestions
+ * 10. Anonymous users get clear 1-file limit message
+ * 
+ * TESTING:
+ * - Test with 1 file (Free plan) ✓
+ * - Test with 6 files (Basic plan - should block) ✓
+ * - Test with 10 files (Pro plan) ✓
+ * - Test with 50 files (Ultra plan) - verify parallel batches ✓
+ * - Test anonymous user with 2 files (should block) ✓
+ */

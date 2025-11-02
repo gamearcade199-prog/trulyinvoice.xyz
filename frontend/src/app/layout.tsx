@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/ThemeProvider'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import { TrackingWrapper } from '@/components/TrackingWrapper'
 import seoConfig from '@/config/seo.config'
+import { advancedSEOSchemas } from '@/config/seo.advanced'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { FAQSchema, SoftwareAppSchema, OrganizationSchema, LocalBusinessSchema } from '@/components/SeoSchemaMarkup'
@@ -18,14 +19,14 @@ const inter = Inter({
 
 // Comprehensive SEO Metadata for Invoice to Excel Converter
 export const metadata: Metadata = {
-  metadataBase: new URL('https://trulyinvoice.xyz'),
+  metadataBase: new URL('https://trulyinvoice.com'),
   
   // Basic metadata - Multi-Export Invoice Converter
   title: {
     default: 'TrulyInvoice - Convert Invoice to Excel, Tally, QuickBooks, Zoho Books | AI-Powered Converter',
     template: '%s | TrulyInvoice - Multi-Export Invoice Converter',
   },
-  description: 'AI-powered invoice converter with 99% accuracy. Export to Excel, CSV, Tally ERP 9, QuickBooks India, Zoho Books. GST compliant, instant processing. Free plan available.',
+  description: 'AI-powered invoice converter with high accuracy. Export to Excel, CSV, Tally ERP 9, QuickBooks India, Zoho Books. GST compliant, instant processing. Free plan available.',
   keywords: [
     'convert invoice to excel', 'invoice to excel converter', 'AI invoice extraction', 'pdf to excel converter', 'GST invoice to excel', 'indian invoice processing',
     'export invoice to tally', 'tally invoice import', 'quickbooks india integration', 'zoho books csv export', 'bulk csv export', 'accounting software export',
@@ -42,7 +43,7 @@ export const metadata: Metadata = {
   
   // Canonical URL
   alternates: {
-    canonical: 'https://trulyinvoice.xyz',
+    canonical: 'https://trulyinvoice.com',
   },
   
   // Referrer policy
@@ -65,10 +66,10 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_IN',
-    url: 'https://trulyinvoice.xyz',
+    url: 'https://trulyinvoice.com',
     siteName: 'TrulyInvoice',
     title: 'Convert Invoice to Excel, Tally, QuickBooks, Zoho Books | AI-Powered Converter',
-    description: 'Transform any invoice into Excel, Tally, QuickBooks, or Zoho Books with 99% accuracy. GST compliant, automatic processing. Free plan available.',
+    description: 'Transform any invoice into Excel, Tally, QuickBooks, or Zoho Books with high accuracy. GST compliant, automatic processing. Free plan available.',
     images: [
       {
         url: '/og-image-india.jpg',
@@ -89,7 +90,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Convert Invoice to Excel, Tally, QuickBooks, Zoho | TrulyInvoice',
-    description: 'AI-powered invoice converter with 99% accuracy. Export to Excel, Tally, QuickBooks, Zoho Books. GST compliant, instant processing.',
+    description: 'AI-powered invoice converter with high accuracy. Export to Excel, Tally, QuickBooks, Zoho Books. GST compliant, instant processing.',
     creator: '@TrulyInvoice',
     images: ['/twitter-image.jpg'],
   },
@@ -142,68 +143,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // JSON-LD Structured Data for Invoice to Excel Converter
-  const organizationSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'SoftwareApplication',
-    '@id': 'https://trulyinvoice.xyz',
-    name: 'TrulyInvoice',
-    alternateName: 'Multi-Export Invoice Converter',
-    description: 'AI-powered invoice converter with 99% accuracy. Export to Excel, CSV, Tally ERP 9, QuickBooks India, Zoho Books. GST compliant, perfect for Indian businesses.',
-    applicationCategory: 'BusinessApplication',
-    operatingSystem: 'Web Browser, iOS, Android',
-    url: 'https://trulyinvoice.xyz',
-    image: 'https://trulyinvoice.xyz/og-image-india.jpg',
-    screenshot: 'https://trulyinvoice.xyz/og-image-india.jpg',
-    offers: {
-      '@type': 'AggregateOffer',
-      priceCurrency: 'INR',
-      lowPrice: '0',
-      highPrice: '999',
-      offerCount: '5',
-    },
-    author: {
-      '@type': 'Organization',
-      name: 'TrulyInvoice',
-      url: 'https://trulyinvoice.xyz',
-    },
-    publisher: {
-      '@type': 'Organization',
-      name: 'TrulyInvoice',
-      logo: {
-        '@type': 'ImageObject',
-        url: 'https://trulyinvoice.xyz/favicon-32x32.png',
-      },
-    },
-    softwareVersion: '2.0',
-    fileFormat: ['PDF', 'JPG', 'PNG'],
-    applicationSubCategory: 'Data Extraction',
-    featureList: [
-      'AI-powered invoice scanning',
-      '99% accurate data extraction',
-      'Excel export functionality',
-      'CSV export for bulk processing',
-      'Tally ERP 9 integration',
-      'QuickBooks India compatibility',
-      'Zoho Books CSV export',
-      'GST compliant processing',
-      'Bulk invoice processing',
-      'Indian invoice format support'
-    ],
-    inLanguage: 'en-IN',
-    areaServed: {
-      '@type': 'Country',
-      name: 'India',
-    },
-    audience: {
-      '@type': 'BusinessAudience',
-      audienceType: 'Small and Medium Businesses, Traders, Retailers, Manufacturers, Accountants',
-      geographicArea: {
-        '@type': 'Country',
-        name: 'India',
-      },
-    },
-  }
+  // JSON-LD Structured Data - Using Enhanced LocalBusiness Schema
+  const organizationSchema = advancedSEOSchemas.enhancedLocalBusiness
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
@@ -213,19 +154,19 @@ export default function RootLayout({
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-  item: 'https://trulyinvoice.xyz',
+  item: 'https://trulyinvoice.com',
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: 'Features',
-  item: 'https://trulyinvoice.xyz/features',
+  item: 'https://trulyinvoice.com/features',
       },
       {
         '@type': 'ListItem',
         position: 3,
         name: 'Pricing',
-  item: 'https://trulyinvoice.xyz/pricing',
+  item: 'https://trulyinvoice.com/pricing',
       },
     ],
   }
@@ -250,13 +191,24 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
+        
+        {/* Advanced SEO Schemas for Rich Snippets */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(advancedSEOSchemas.aggregateRating) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(advancedSEOSchemas.reviews) }}
+        />
+        
         {/* FAQ Schema removed from global layout - only loaded on /faq page */}
         <SoftwareAppSchema />
         <OrganizationSchema />
         
         {/* Alternate languages */}
-  <link rel="alternate" hrefLang="en-IN" href="https://trulyinvoice.xyz" />
-  <link rel="alternate" hrefLang="hi-IN" href="https://trulyinvoice.xyz/hi" />
+  <link rel="alternate" hrefLang="en-IN" href="https://trulyinvoice.com" />
+  <link rel="alternate" hrefLang="hi-IN" href="https://trulyinvoice.com/hi" />
         <link rel="alternate" hrefLang="x-default" href="https://trulyinvoice.in" />
         
         {/* Microsoft Clarity Analytics (optional) */}

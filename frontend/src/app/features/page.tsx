@@ -24,11 +24,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Features - Invoice to Excel Converter | AI-Powered OCR & GST Compliance',
     description: 'AI invoice extraction with 99% accuracy. GST compliant, bulk processing, multi-currency support. Auto-convert PDF/image invoices to Excel. Learn more!',
-    url: 'https://trulyinvoice.xyz/features',
+    url: 'https://trulyinvoice.com/features',
     siteName: 'TrulyInvoice',
     images: [
       {
-        url: 'https://trulyinvoice.xyz/og-image-square.jpg',
+        url: 'https://trulyinvoice.com/og-image-square.jpg',
         width: 1200,
         height: 630,
         alt: 'TrulyInvoice Features - Invoice to Excel Converter',
@@ -41,10 +41,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Features - Invoice to Excel Converter | AI-Powered OCR & GST Compliance',
     description: 'AI invoice extraction with 99% accuracy. GST compliant, bulk processing, multi-currency support. Auto-convert PDF/image invoices to Excel. Learn more!',
-    images: ['https://trulyinvoice.xyz/twitter-image.jpg'],
+    images: ['https://trulyinvoice.com/twitter-image.jpg'],
   },
   alternates: {
-    canonical: 'https://trulyinvoice.xyz/features',
+    canonical: 'https://trulyinvoice.com/features',
   },
   robots: {
     index: true,

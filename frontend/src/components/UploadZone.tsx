@@ -14,7 +14,7 @@ export default function UploadZone({
   onFileSelect,
   acceptedTypes = '.pdf,.jpg,.jpeg,.png',
   multiple = true,
-  maxSizeMB = 10
+  maxSizeMB = 25
 }: UploadZoneProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])

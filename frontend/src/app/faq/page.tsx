@@ -173,7 +173,7 @@ const faqs = [
     questions: [
       {
         q: 'How do I create a TrulyInvoice account?',
-        a: 'Visit TrulyInvoice.xyz, click Sign Up, provide your email and password, verify your email, and you\'re ready to go!',
+        a: 'Visit trulyinvoice.com, click Sign Up, provide your email and password, verify your email, and you\'re ready to go!',
       },
       {
         q: 'What information do I need to sign up?',
@@ -228,7 +228,7 @@ export default function FAQPage() {
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           <div className="bg-blue-50 p-4 rounded">
             <h3 className="font-bold mb-2">📞 Can't find your answer?</h3>
-            <p className="text-sm">Contact our support team at support@trulyinvoice.xyz or use live chat.</p>
+            <p className="text-sm">Contact our support team at support@trulyinvoice.com or use live chat.</p>
           </div>
           <div className="bg-green-50 p-4 rounded">
             <h3 className="font-bold mb-2">🚀 Want to get started?</h3>

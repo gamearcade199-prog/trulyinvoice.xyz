@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, Zap, Crown, Rocket, X, Sparkles, Loader2 } from 'lucide-react'
+import { Check, Zap, Crown, Rocket, X, Sparkles, Loader2, CreditCard } from 'lucide-react'
 import { useState } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
 import RazorpayCheckout, { useRazorpay } from '@/components/RazorpayCheckout'
@@ -73,7 +73,7 @@ export default function PricingPage() {
       )
       
       // Show success message
-      alert(`Payment successful! Your ${verificationResult.subscription.tier} plan is now active.`)
+      alert(`🎉 Subscription activated! Your ${verificationResult.subscription.tier} plan is now active and will auto-renew monthly.`)
       
       // Reload page to show updated plan
       window.location.reload()
@@ -137,7 +137,7 @@ export default function PricingPage() {
         'Priority support',
       ],
       limitations: [],
-      buttonText: 'Upgrade to Basic',
+      buttonText: 'Start Basic Subscription',
       buttonStyle: 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white shadow-md hover:shadow-lg transition-all',
       popular: false,
     },
@@ -158,7 +158,7 @@ export default function PricingPage() {
         '24/7 priority support',
       ],
       limitations: [],
-      buttonText: 'Upgrade to Pro',
+      buttonText: 'Start Pro Subscription',
       buttonStyle: 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all',
       popular: true,
     },
@@ -179,7 +179,7 @@ export default function PricingPage() {
         'Dedicated support',
       ],
       limitations: [],
-      buttonText: 'Upgrade to Ultra',
+      buttonText: 'Start Ultra Subscription',
       buttonStyle: 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg hover:shadow-xl transition-all',
       popular: false,
     },
@@ -200,7 +200,7 @@ export default function PricingPage() {
         '24/7 priority support',
       ],
       limitations: [],
-      buttonText: 'Upgrade to Max',
+      buttonText: 'Start Max Subscription',
       buttonStyle: 'bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-lg hover:shadow-xl transition-all',
       popular: false,
     },
@@ -213,13 +213,17 @@ export default function PricingPage() {
         <div className="mb-12 text-center">
           <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-full text-sm font-semibold mb-4">
             <Sparkles className="w-4 h-4" />
-            Simple & Transparent Pricing
+            Auto-Renewing Monthly & Yearly Plans
           </div>
           <h1 className="text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent mb-4">
             Dashboard Pricing - Upgrade Your Invoice Processing Plan
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-3">
             Select the perfect plan for your invoice processing needs. Upgrade or downgrade anytime.
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-500 flex items-center justify-center gap-2">
+            <CreditCard className="w-4 h-4" />
+            All subscriptions auto-renew. Cancel anytime from settings to avoid future charges.
           </p>
         </div>
 

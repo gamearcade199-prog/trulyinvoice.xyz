@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Mail, FileText, Shield, Users } from 'lucide-react'
+import { Mail, FileText, Shield, Users, CreditCard } from 'lucide-react'
 
 export default function Footer() {
   return (
@@ -26,6 +26,7 @@ export default function Footer() {
             <ul className="space-y-2">
               <li><Link href="/privacy" className="hover:text-blue-400 transition-colors flex items-center gap-2"><Shield className="h-4 w-4" />Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-blue-400 transition-colors flex items-center gap-2"><FileText className="h-4 w-4" />Terms of Service</Link></li>
+              <li><Link href="/billing" className="hover:text-blue-400 transition-colors flex items-center gap-2"><CreditCard className="h-4 w-4" />Billing Policy</Link></li>
               <li><Link href="/security" className="hover:text-blue-400 transition-colors">Security</Link></li>
             </ul>
           </div>
@@ -38,6 +39,7 @@ export default function Footer() {
               <li><Link href="/pricing" className="hover:text-blue-400 transition-colors">Compare Plans</Link></li>
               <li><Link href="/about" className="hover:text-blue-400 transition-colors">Customer Stories</Link></li>
               <li><Link href="/dashboard" className="hover:text-blue-400 transition-colors">Dashboard</Link></li>
+              <li><Link href="/billing" className="hover:text-blue-400 transition-colors">Billing & Subscriptions</Link></li>
             </ul>
           </div>
         </div>

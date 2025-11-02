@@ -105,7 +105,7 @@ export default function RazorpayCheckout({
       amount: amount,
       currency: currency,
       name: 'TrulyInvoice',
-      description: `${planName} - ${billingCycle === 'monthly' ? 'Monthly' : 'Yearly'} Subscription`,
+      description: `${planName} - ${billingCycle === 'monthly' ? 'Monthly' : 'Yearly'} Auto-Renewal Subscription`,
       order_id: orderId,
       prefill: {
         name: userName,
@@ -196,9 +196,9 @@ export function useRazorpay() {
         },
         credentials: 'include', // Include auth cookies
         body: JSON.stringify({
-          order_id: orderId,
-          payment_id: paymentId,
-          signature: signature
+          razorpay_order_id: orderId,
+          razorpay_payment_id: paymentId,
+          razorpay_signature: signature
         })
       })
       

@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: 'Dashboard - Your Invoice History & Statistics | TrulyInvoice',
   description: 'Access your invoice history, processing statistics, and account overview. Track uploads, conversions, and usage on your TrulyInvoice dashboard.',
   alternates: {
-    canonical: 'https://trulyinvoice.xyz/dashboard',
+    canonical: 'https://trulyinvoice.com/dashboard',
   },
   robots: {
     index: false, // Don't index dashboard (user-specific content)

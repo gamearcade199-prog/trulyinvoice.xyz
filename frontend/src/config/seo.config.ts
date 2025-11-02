@@ -4,7 +4,7 @@
 export const seoConfig = {
   // Base configuration
   siteName: 'TrulyInvoice',
-  siteUrl: 'https://trulyinvoice.xyz',
+  siteUrl: 'https://trulyinvoice.com',
   defaultTitle: 'TrulyInvoice - Convert Invoice to Excel, Tally, QuickBooks, Zoho Books, CSV | AI-Powered',
   defaultDescription: 'AI-powered invoice converter - Export to Excel, Tally XML, QuickBooks IIF/CSV, Zoho Books CSV, Bulk CSV. 99% accuracy. GST compliant. Free plan available.',
   
@@ -214,11 +214,11 @@ export const seoConfig = {
   openGraph: {
     type: 'website',
     locale: 'en_IN',
-    url: 'https://trulyinvoice.xyz',
+    url: 'https://trulyinvoice.com',
     siteName: 'TrulyInvoice',
     images: [
       {
-        url: 'https://trulyinvoice.xyz/og-image.jpg',
+        url: 'https://trulyinvoice.com/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'TrulyInvoice - Convert Invoice to Excel, Tally, QuickBooks, Zoho Books, CSV',
@@ -276,9 +276,9 @@ export const seoConfig = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareCompany',
     name: 'TrulyInvoice',
-    image: 'https://trulyinvoice.xyz/logo.png',
-    '@id': 'https://trulyinvoice.xyz',
-    url: 'https://trulyinvoice.xyz',
+    image: 'https://trulyinvoice.com/logo.png',
+    '@id': 'https://trulyinvoice.com',
+    url: 'https://trulyinvoice.com',
     priceRange: '₹0 - ₹999',
     address: {
       '@type': 'PostalAddress',
@@ -404,18 +404,18 @@ export const seoConfig = {
         allow: '/',
       },
     ],
-    sitemap: 'https://trulyinvoice.xyz/sitemap.xml',
+    sitemap: 'https://trulyinvoice.com/sitemap.xml',
   },
   
   // Canonical URLs
-  canonicalBase: 'https://trulyinvoice.xyz',
+  canonicalBase: 'https://trulyinvoice.com',
   
   // Alternate language versions (for future)
   alternates: {
-    canonical: 'https://trulyinvoice.xyz',
+    canonical: 'https://trulyinvoice.com',
     languages: {
-      'en-IN': 'https://trulyinvoice.xyz',
-      'hi-IN': 'https://trulyinvoice.xyz/hi', // Future Hindi version
+      'en-IN': 'https://trulyinvoice.com',
+      'hi-IN': 'https://trulyinvoice.com/hi', // Future Hindi version
     },
   },
 }
@@ -426,13 +426,13 @@ export const pageSEO = {
     title: 'TrulyInvoice - Convert Invoice to Excel, Tally, QuickBooks, Zoho Books, CSV | AI-Powered',
     description: 'AI-powered invoice converter - Export to Excel, Tally XML, QuickBooks IIF/CSV, Zoho Books CSV, Bulk CSV. 99% accuracy. GST compliant. Free 10 invoices/month.',
     keywords: 'convert invoice to excel, invoice to tally, invoice to quickbooks, invoice to zoho books, invoice to csv, AI invoice converter, GST invoice processing, bulk invoice export',
-    canonical: 'https://trulyinvoice.xyz',
+    canonical: 'https://trulyinvoice.com',
     structuredData: {
       '@context': 'https://schema.org',
       '@type': 'WebApplication',
       name: 'TrulyInvoice - Multi-Format Invoice Converter',
       description: 'AI-powered tool to convert invoices to Excel, Tally, QuickBooks, Zoho Books, and CSV instantly',
-      url: 'https://trulyinvoice.xyz',
+      url: 'https://trulyinvoice.com',
       applicationCategory: 'BusinessApplication',
       operatingSystem: 'Web Browser',
       offers: {
@@ -447,7 +447,7 @@ export const pageSEO = {
     title: 'Pricing - Excel, Tally, QuickBooks, Zoho Export Plans | TrulyInvoice',
     description: 'Transparent pricing for all export formats. Free (₹0/10 invoices), Basic (₹149/80), Pro (₹299/300), Ultra (₹599/unlimited). Excel, Tally XML, QuickBooks, Zoho Books, CSV exports included.',
     keywords: 'invoice converter pricing india, tally export pricing, quickbooks export cost, zoho books pricing, excel converter plans',
-    canonical: 'https://trulyinvoice.xyz/pricing',
+    canonical: 'https://trulyinvoice.com/pricing',
     structuredData: {
       '@context': 'https://schema.org',
       '@type': 'Product',
@@ -476,7 +476,7 @@ export const pageSEO = {
     title: 'Features - Excel, Tally XML, QuickBooks IIF, Zoho CSV Export | TrulyInvoice',
     description: 'Powerful features: Excel export with formulas, Tally XML with auto-ledgers, QuickBooks IIF/CSV dual format, Zoho Books 37-column CSV, Bulk CSV for accountants, GST validation, 99% AI accuracy.',
     keywords: 'invoice to excel features, tally xml export, quickbooks iif converter, zoho books csv, bulk invoice processing, gst validation',
-    canonical: 'https://trulyinvoice.xyz/features',
+    canonical: 'https://trulyinvoice.com/features',
   },
   
   // EXPORT FORMAT LANDING PAGES
@@ -484,56 +484,56 @@ export const pageSEO = {
     title: 'Invoice to Tally XML Converter | Auto-Ledger Creation | TrulyInvoice',
     description: 'Convert invoices to Tally XML instantly. Auto-creates ledgers, detects place of supply from GSTIN (37 states), generates purchase vouchers. Compatible with Tally ERP 9 & Tally Prime. Free trial.',
     keywords: 'invoice to tally xml, convert invoice to tally, tally erp invoice import, tally prime xml, invoice to tally voucher, tally auto ledger creation',
-    canonical: 'https://trulyinvoice.xyz/export/tally',
+    canonical: 'https://trulyinvoice.com/export/tally',
   },
   
   quickbooksExport: {
     title: 'Invoice to QuickBooks Converter | IIF & CSV Export | TrulyInvoice',
     description: 'Export invoices to QuickBooks Desktop (IIF) or QuickBooks Online (CSV). Dual format support, auto-balancing entries, vendor management, tax calculations. Free 10 invoices/month.',
     keywords: 'invoice to quickbooks, quickbooks iif converter, quickbooks csv import, invoice to qbo, quickbooks desktop import, quickbooks online upload',
-    canonical: 'https://trulyinvoice.xyz/export/quickbooks',
+    canonical: 'https://trulyinvoice.com/export/quickbooks',
   },
   
   zohoBooksExport: {
     title: 'Invoice to Zoho Books CSV Converter | 37 Columns | TrulyInvoice',
     description: 'Export invoices to Zoho Books CSV with 37 comprehensive columns: payment terms, billing address, item descriptions, discount %, notes, terms & conditions. Fully compatible with Zoho Books import.',
     keywords: 'invoice to zoho books, zoho books csv converter, zoho books invoice import, zoho books csv upload, invoice to zoho books online',
-    canonical: 'https://trulyinvoice.xyz/export/zoho-books',
+    canonical: 'https://trulyinvoice.com/export/zoho-books',
   },
   
   excelExport: {
     title: 'Invoice to Excel Converter | Formatted Sheets with Formulas | TrulyInvoice',
     description: 'Convert invoices to Excel with professional formatting, formulas, GST calculations, multi-sheet structure. Accountant Excel with summary, details, GST analysis, reconciliation sheets. 99% accuracy.',
     keywords: 'invoice to excel converter, convert invoice to excel, invoice pdf to excel, ai invoice to excel, gst invoice to excel',
-    canonical: 'https://trulyinvoice.xyz/export/excel',
+    canonical: 'https://trulyinvoice.com/export/excel',
   },
   
   csvExport: {
     title: 'Bulk Invoice to CSV Converter | For Accountants & CA Firms | TrulyInvoice',
     description: 'Export multiple invoices to CSV in bulk. Perfect for accountants, CA firms, bookkeepers. Consolidated CSV with all invoice data, GST details, vendor info. 8-section professional format.',
     keywords: 'bulk invoice to csv, invoice to csv converter, invoice csv export, accountant csv export, ca invoice processing',
-    canonical: 'https://trulyinvoice.xyz/export/csv',
+    canonical: 'https://trulyinvoice.com/export/csv',
   },
   
   about: {
     title: 'About TrulyInvoice | Multi-Format Invoice Export Platform',
     description: 'Learn how TrulyInvoice helps Indian businesses export invoices to Excel, Tally, QuickBooks, Zoho Books, and CSV. Our mission: automate invoice processing and save 90% manual entry time.',
     keywords: 'about trulyinvoice, invoice automation india, multi-format invoice export',
-    canonical: 'https://trulyinvoice.xyz/about',
+    canonical: 'https://trulyinvoice.com/about',
   },
   
   contact: {
     title: 'Contact TrulyInvoice | Get Help with Invoice Export',
     description: 'Need help with Excel, Tally, QuickBooks, or Zoho Books export? Contact our Indian support team. Quick responses, expert guidance, GST compliance assistance.',
     keywords: 'trulyinvoice contact, invoice export support, tally export help, quickbooks import assistance',
-    canonical: 'https://trulyinvoice.xyz/contact',
+    canonical: 'https://trulyinvoice.com/contact',
   },
   
   blog: {
     title: 'Invoice Automation Blog | Excel, Tally, QuickBooks Export Guides',
     description: 'Expert guides on invoice to Excel conversion, Tally XML import, QuickBooks IIF/CSV upload, Zoho Books integration, GST compliance, and accounting automation for Indian businesses.',
     keywords: 'invoice automation blog, tally xml guide, quickbooks import tutorial, zoho books integration, gst compliance tips',
-    canonical: 'https://trulyinvoice.xyz/blog',
+    canonical: 'https://trulyinvoice.com/blog',
   },
 }
 

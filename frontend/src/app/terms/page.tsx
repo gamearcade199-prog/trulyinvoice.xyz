@@ -153,13 +153,25 @@ export default function TermsPage() {
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">4. Subscription & Payment</h2>
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
-                  <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-400">
-                    <li>Free plan includes 10 invoice scans per month</li>
-                    <li>Subscription fees are billed monthly or annually as selected</li>
-                    <li>All payments are processed securely through third-party payment processors</li>
-                    <li>You can cancel your subscription at any time</li>
-                    <li>Refunds are provided within 14 days of purchase if service not used</li>
-                    <li>Prices may change with 30 days notice</li>
+                  <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4 flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold text-blue-900 dark:text-blue-100 mb-2">Auto-Renewal Subscription Service</p>
+                      <p className="text-blue-800 dark:text-blue-200 text-sm">
+                        By subscribing to any paid plan, you agree to automatic monthly or yearly recurring billing. 
+                        Your subscription will automatically renew at the end of each billing period unless you cancel before the renewal date.
+                      </p>
+                    </div>
+                  </div>
+                  <ul className="list-disc list-inside space-y-3 text-gray-600 dark:text-gray-400">
+                    <li><strong className="text-gray-900 dark:text-white">Free Plan:</strong> Includes 10 invoice scans per month with no payment required</li>
+                    <li><strong className="text-gray-900 dark:text-white">Paid Plans:</strong> Billed automatically on a monthly or yearly basis as selected at signup</li>
+                    <li><strong className="text-gray-900 dark:text-white">Auto-Renewal:</strong> Your subscription automatically renews each billing cycle. You will be charged on the same date each month/year</li>
+                    <li><strong className="text-gray-900 dark:text-white">Payment Processing:</strong> All payments are processed securely through Razorpay payment gateway</li>
+                    <li><strong className="text-gray-900 dark:text-white">Cancellation:</strong> You can cancel your subscription at any time from your account settings. Cancellation takes effect at the end of the current billing period</li>
+                    <li><strong className="text-gray-900 dark:text-white">Refund Policy:</strong> Full refunds are provided within 14 days of initial purchase if the service has not been used. No refunds for subsequent renewal charges</li>
+                    <li><strong className="text-gray-900 dark:text-white">Price Changes:</strong> We will provide 30 days advance notice of any price changes via email</li>
+                    <li><strong className="text-gray-900 dark:text-white">Failed Payments:</strong> If payment fails, we will retry up to 3 times. Access may be restricted after failed payment attempts</li>
                   </ul>
                 </div>
               </div>

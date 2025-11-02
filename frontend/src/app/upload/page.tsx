@@ -19,6 +19,7 @@ import {
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import { getTotalPageCount, getMultipleFilePageCounts } from '@/utils/pdfPageCounter'
 
 export default function UploadPageRobust() {
   const router = useRouter()
@@ -32,13 +33,73 @@ export default function UploadPageRobust() {
   const [anonymousResult, setAnonymousResult] = useState<any>(null)
   const [showAnonymousModal, setShowAnonymousModal] = useState(false)
 
-  const handleFileSelect = (selectedFiles: File[]) => {
+  // Page tracking state
+  const [totalPages, setTotalPages] = useState(0)
+  const [pageDetails, setPageDetails] = useState<{fileName: string, pageCount: number}[]>([])
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+
+  // Plan-based HYBRID limits (files per batch + pages per month)
+  const PLAN_LIMITS: Record<string, { files: number, pagesPerMonth: number }> = {
+    'Free': { files: 1, pagesPerMonth: 10 },
+    'Basic': { files: 5, pagesPerMonth: 100 },
+    'Pro': { files: 10, pagesPerMonth: 500 },
+    'Ultra': { files: 50, pagesPerMonth: 2000 },
+    'Max': { files: 100, pagesPerMonth: 10000 },
+  }
+
+  const handleFileSelect = async (selectedFiles: File[]) => {
     setFiles(selectedFiles)
     setUploadComplete(false)
     setError('')
-    setProcessingStatus('')
+    setProcessingStatus('Validating files...')
     setAnonymousResult(null)
     setShowAnonymousModal(false)
+    setIsAnalyzing(true)
+
+    // Filter only PDFs
+    const pdfFiles = selectedFiles.filter(f => 
+      f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
+    )
+    const nonPdfFiles = selectedFiles.filter(f => 
+      !f.type.includes('pdf') && !f.name.toLowerCase().endsWith('.pdf')
+    )
+    
+    if (nonPdfFiles.length > 0) {
+      setError(`❌ Only PDF files are allowed. Removed: ${nonPdfFiles.map(f => f.name).join(', ')}`)
+      if (pdfFiles.length === 0) {
+        setIsAnalyzing(false)
+        setFiles([])
+        setTotalPages(0)
+        setPageDetails([])
+        return
+      }
+      setFiles(pdfFiles)
+      selectedFiles = pdfFiles
+    }
+
+    setProcessingStatus('Analyzing PDF pages...')
+
+    // Count pages in all files
+    try {
+      const pageInfo = await getMultipleFilePageCounts(selectedFiles)
+      const total = pageInfo.reduce((sum, info) => sum + info.pageCount, 0)
+      
+      setTotalPages(total)
+      setPageDetails(pageInfo.map(info => ({
+        fileName: info.fileName,
+        pageCount: info.pageCount
+      })))
+      
+      setProcessingStatus(`✅ ${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''}, ${total} page${total > 1 ? 's' : ''} total`)
+    } catch (error: any) {
+      console.error('Error analyzing files:', error)
+      setError(`❌ ${error.message || 'Failed to analyze PDF files. Please ensure they are valid PDFs.'}`)
+      setFiles([])
+      setTotalPages(0)
+      setPageDetails([])
+    }
+    
+    setIsAnalyzing(false)
   }
 
   const showAnonymousPreview = (result: any, fileName: string) => {
@@ -58,6 +119,9 @@ export default function UploadPageRobust() {
     setUploadProgress(0)
     setError('')
     setProcessingStatus('Starting upload...')
+    
+    // Track successfully processed pages for accurate rollback on partial failures
+    let processedPages = 0
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -66,8 +130,96 @@ export default function UploadPageRobust() {
       if (isAnonymous) {
         console.log('👻 Anonymous user detected - enabling preview mode')
         setProcessingStatus('🎯 Processing anonymously for preview...')
+        
+        // Anonymous users: 1 file limit
+        if (files.length > 1) {
+          setError(`🔒 Anonymous preview is limited to 1 file. Sign up to process ${files.length} files!`)
+          setIsUploading(false)
+          return
+        }
       } else {
         console.log('👤 User authenticated:', user.id)
+        
+        // Step 1: Check and reset billing period if expired
+        const { data: resetData, error: resetError } = await supabase.rpc('check_and_reset_billing_period', {
+          user_id_param: user.id
+        })
+        
+        if (resetError) {
+          console.error('❌ Error checking billing period:', resetError)
+        } else if (resetData?.was_reset) {
+          console.log('🔄 Billing period reset:', resetData.reason || 'expired')
+        }
+        
+        // Step 2: Fetch user's plan and page usage from database
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('plan, custom_batch_limit, pages_used_this_month, billing_period_start')
+          .eq('id', user.id)
+          .single()
+        
+        if (userError) {
+          console.error('❌ Error fetching user data:', userError)
+        }
+        
+        const userPlan = userData?.plan || 'Free'
+        const planLimits = PLAN_LIMITS[userPlan] || PLAN_LIMITS['Free']
+        const batchLimit = userData?.custom_batch_limit || planLimits.files
+        const pagesUsed = userData?.pages_used_this_month || 0
+        const pagesRemaining = planLimits.pagesPerMonth - pagesUsed
+        
+        console.log(`📊 User plan: ${userPlan}`)
+        console.log(`📄 Files: ${files.length}/${batchLimit}`)
+        console.log(`📃 Pages in upload: ${totalPages}`)
+        console.log(`📊 Monthly quota: ${pagesUsed}/${planLimits.pagesPerMonth} used, ${pagesRemaining} remaining`)
+        
+        // Check if files exceed batch limit
+        if (files.length > batchLimit) {
+          const planUpgrades: Record<string, string> = {
+            'Free': 'Basic (5 files) or Pro (10 files)',
+            'Basic': 'Pro (10 files) or Ultra (50 files)',
+            'Pro': 'Ultra (50 files) or Max (100 files)',
+            'Ultra': 'Max (100 files)',
+          }
+          
+          const upgradeMessage = planUpgrades[userPlan] || 'a higher plan'
+          
+          setError(
+            `🚀 You've selected ${files.length} files. Your ${userPlan} plan allows ${batchLimit} files per batch. ` +
+            `Upgrade to ${upgradeMessage} for larger batches!`
+          )
+          setIsUploading(false)
+          return
+        }
+        
+        // Step 3: Reserve page quota atomically (prevents race conditions)
+        setProcessingStatus('Reserving page quota...')
+        const { data: reserveData, error: reserveError } = await supabase.rpc('reserve_page_quota', {
+          user_id_param: user.id,
+          pages_needed: totalPages,
+          plan_limit: planLimits.pagesPerMonth
+        })
+        
+        if (reserveError) {
+          console.error('❌ Error reserving quota:', reserveError)
+          setError('❌ Failed to reserve page quota. Please try again.')
+          setIsUploading(false)
+          return
+        }
+        
+        if (!reserveData?.success) {
+          setError(
+            `❌ Not enough page quota! You have ${reserveData.pages_remaining || 0} pages remaining this month. ` +
+            `These files contain ${totalPages} pages (1 page = 1 scan). ` +
+            `Upgrade your plan or wait for next billing cycle.`
+          )
+          setIsUploading(false)
+          return
+        }
+        
+        console.log(`✅ Quota reserved: ${totalPages} pages, ${reserveData.pages_remaining} remaining`)
+        
+        setProcessingStatus(`📦 Processing ${files.length} file(s) with ${totalPages} pages...`)
       }
       
       for (let i = 0; i < files.length; i++) {
@@ -277,6 +429,13 @@ export default function UploadPageRobust() {
               }
             }
           }
+          
+          // Track successfully processed pages for this file (only for authenticated users)
+          if (!isAnonymous) {
+            const filePageCount = pageDetails.find(pd => pd.fileName === file.name)?.pageCount || 0
+            processedPages += filePageCount
+            console.log(`✅ File ${file.name} processed successfully (${filePageCount} pages). Total processed: ${processedPages}/${totalPages}`)
+          }
 
         } catch (fileError: unknown) {
           console.error(`❌ Error processing file ${file.name}:`, fileError)
@@ -287,9 +446,12 @@ export default function UploadPageRobust() {
       }
 
       if (!isAnonymous) {
+        // Quota already reserved at the start, so just confirm success
+        console.log(`✅ Processing complete - ${totalPages} pages already deducted from quota`)
+        
         setUploadComplete(true)
         setIsUploading(false)
-        setProcessingStatus(`Successfully processed ${files.length} file(s)!`)
+        setProcessingStatus(`Successfully processed ${files.length} file(s) with ${totalPages} pages!`)
         
         console.log('🔄 Redirecting to invoices page in 3 seconds...')
         setTimeout(() => {
@@ -301,6 +463,29 @@ export default function UploadPageRobust() {
 
     } catch (err: any) {
       console.error('💥 Upload process failed:', err)
+      
+      // Rollback only unprocessed pages on failure
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user && totalPages > 0) {
+        const failedPages = totalPages - processedPages
+        
+        if (failedPages > 0) {
+          console.log(`🔄 Rolling back ${failedPages} unprocessed pages (${processedPages} pages were successfully processed)...`)
+          const { data: rollbackData, error: rollbackError } = await supabase.rpc('rollback_page_quota', {
+            user_id_param: user.id,
+            pages_to_rollback: failedPages
+          })
+          
+          if (rollbackError) {
+            console.error('❌ Error rolling back quota:', rollbackError)
+          } else {
+            console.log(`✅ Rolled back ${failedPages} pages, new usage: ${rollbackData}`)
+          }
+        } else {
+          console.log(`✅ All ${processedPages} pages were processed successfully before error - no rollback needed`)
+        }
+      }
+      
       setError(err.message || 'Upload failed. Please try again.')
       setIsUploading(false)
       setProcessingStatus('')
@@ -384,6 +569,49 @@ export default function UploadPageRobust() {
               {/* Upload Zone */}
               <div className="p-6">
                 <UploadZone onFileSelect={handleFileSelect} />
+                
+                {/* Page Count Analysis */}
+                {isAnalyzing && (
+                  <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-4 h-4 text-blue-600 dark:text-blue-400 animate-spin" />
+                      <p className="text-sm text-blue-900 dark:text-blue-100 font-medium">
+                        Analyzing PDF pages...
+                      </p>
+                    </div>
+                  </div>
+                )}
+                
+                {pageDetails.length > 0 && !isAnalyzing && (
+                  <div className="mt-4 p-4 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-center gap-2 mb-3">
+                      <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      <h4 className="font-semibold text-blue-900 dark:text-blue-100">
+                        📊 File Analysis (1 page = 1 scan)
+                      </h4>
+                    </div>
+                    <div className="space-y-2">
+                      {pageDetails.map((detail, idx) => (
+                        <div key={idx} className="flex justify-between items-center text-sm">
+                          <span className="text-blue-800 dark:text-blue-200 truncate max-w-[70%]">
+                            {detail.fileName}
+                          </span>
+                          <span className="font-bold text-blue-900 dark:text-blue-100 bg-blue-100 dark:bg-blue-900/40 px-2 py-1 rounded">
+                            {detail.pageCount} {detail.pageCount === 1 ? 'page' : 'pages'}
+                          </span>
+                        </div>
+                      ))}
+                      <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-700 flex justify-between items-center font-bold">
+                        <span className="text-blue-900 dark:text-blue-100">
+                          Total:
+                        </span>
+                        <span className="text-lg text-blue-600 dark:text-blue-400">
+                          {files.length} {files.length === 1 ? 'file' : 'files'}, {totalPages} {totalPages === 1 ? 'page' : 'pages'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
