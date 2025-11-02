@@ -4,6 +4,7 @@
  */
 
 import { useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 
 interface RazorpayOptions {
   key: string
@@ -157,14 +158,26 @@ export default function RazorpayCheckout({
  * Makes it easy to integrate payment flow into any component
  */
 export function useRazorpay() {
+  const getAuthHeaders = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (!session) {
+      throw new Error('Not authenticated. Please login first.')
+    }
+    
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session.access_token}`
+    }
+  }
+  
   const createOrder = async (tier: string, billingCycle: 'monthly' | 'yearly') => {
     try {
+      const headers = await getAuthHeaders()
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/create-order`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Include auth cookies
+        headers,
         body: JSON.stringify({
           tier,
           billing_cycle: billingCycle
@@ -189,12 +202,11 @@ export function useRazorpay() {
     signature: string
   ) => {
     try {
+      const headers = await getAuthHeaders()
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/verify`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Include auth cookies
+        headers,
         body: JSON.stringify({
           razorpay_order_id: orderId,
           razorpay_payment_id: paymentId,
@@ -216,9 +228,7 @@ export function useRazorpay() {
   
   const getRazorpayConfig = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/config`, {
-        credentials: 'include'
-      })
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/config`)
       
       if (!response.ok) {
         throw new Error('Failed to get Razorpay config')

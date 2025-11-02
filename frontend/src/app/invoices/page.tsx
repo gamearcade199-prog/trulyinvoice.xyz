@@ -10,7 +10,8 @@ import {
   Filter, 
   Trash2,
   Plus,
-  ChevronDown
+  ChevronDown,
+  Download
 } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 import { exportInvoicesToCSV, exportInvoicesToTallyXML, exportInvoicesToQuickBooksCSV, exportInvoicesToZohoBooksCSV } from '@/lib/invoiceUtils'
@@ -879,12 +880,12 @@ export default function InvoicesPageClean() {
         ) : (
           <>
             {/* Desktop Table */}
-            <div className="hidden sm:block bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-x-auto">
-              <div className="min-w-[1200px]">
+            <div className="hidden sm:block bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+              <div className="overflow-x-auto">
                 <table className="w-full table-auto">
                 <thead className="bg-gray-100 dark:bg-gray-950">
                   <tr>
-                    <th className="px-4 py-4 w-12">
+                    <th className="px-3 py-3 w-10">
                       <input
                         type="checkbox"
                         checked={selectedInvoices.size === filteredInvoices.length && filteredInvoices.length > 0}
@@ -892,21 +893,21 @@ export default function InvoicesPageClean() {
                         className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 cursor-pointer"
                       />
                     </th>
-                    <th className="text-left px-4 py-4 font-semibold text-gray-900 dark:text-gray-300">VENDOR</th>
-                    <th className="text-left px-4 py-4 font-semibold text-gray-900 dark:text-gray-300 w-32">INVOICE #</th>
-                    <th className="text-left px-4 py-4 font-semibold text-gray-900 dark:text-gray-300 w-32">DATE</th>
-                    <th className="text-left px-4 py-4 font-semibold text-gray-900 dark:text-gray-300 w-32 hidden lg:table-cell">DUE DATE</th>
-                    <th className="text-left px-4 py-4 font-semibold text-gray-900 dark:text-gray-300 w-40">AMOUNT</th>
-                    <th className="text-left px-4 py-4 font-semibold text-gray-900 dark:text-gray-300 w-32 hidden xl:table-cell">GST</th>
-                    <th className="text-left px-4 py-4 font-semibold text-gray-900 dark:text-gray-300 w-32">STATUS</th>
-                    <th className="text-left px-4 py-4 font-semibold text-gray-900 dark:text-gray-300 w-36 hidden lg:table-cell">CONFIDENCE</th>
-                    <th className="text-left px-4 py-4 font-semibold text-gray-900 dark:text-gray-300 w-48">ACTIONS</th>
+                    <th className="text-left px-3 py-3 font-semibold text-gray-900 dark:text-gray-300 text-sm">VENDOR</th>
+                    <th className="text-left px-3 py-3 font-semibold text-gray-900 dark:text-gray-300 text-sm">INVOICE #</th>
+                    <th className="text-left px-3 py-3 font-semibold text-gray-900 dark:text-gray-300 text-sm">DATE</th>
+                    <th className="text-left px-3 py-3 font-semibold text-gray-900 dark:text-gray-300 text-sm hidden xl:table-cell">DUE DATE</th>
+                    <th className="text-right px-3 py-3 font-semibold text-gray-900 dark:text-gray-300 text-sm">AMOUNT</th>
+                    <th className="text-right px-3 py-3 font-semibold text-gray-900 dark:text-gray-300 text-sm hidden 2xl:table-cell">GST</th>
+                    <th className="text-center px-3 py-3 font-semibold text-gray-900 dark:text-gray-300 text-sm">STATUS</th>
+                    <th className="text-center px-3 py-3 font-semibold text-gray-900 dark:text-gray-300 text-sm hidden 2xl:table-cell">CONFIDENCE</th>
+                    <th className="text-center px-3 py-3 font-semibold text-gray-900 dark:text-gray-300 text-sm">ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                   {filteredInvoices.map((invoice) => (
                     <tr key={invoice.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50">
-                      <td className="px-4 py-4">
+                      <td className="px-3 py-3">
                         <input
                           type="checkbox"
                           checked={selectedInvoices.has(invoice.id)}
@@ -914,49 +915,55 @@ export default function InvoicesPageClean() {
                           className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 cursor-pointer"
                         />
                       </td>
-                      <td className="px-4 py-4">
-                        <div className="font-medium text-gray-900 dark:text-white truncate max-w-xs" title={invoice.vendor_name || 'Unknown Vendor'}>
+                      <td className="px-3 py-3">
+                        <div className="font-medium text-gray-900 dark:text-white truncate max-w-[180px]" title={invoice.vendor_name || 'Unknown Vendor'}>
                           {invoice.vendor_name || 'Unknown Vendor'}
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-gray-600 dark:text-gray-400 truncate" title={invoice.invoice_number || 'N/A'}>
-                        {invoice.invoice_number || 'N/A'}
+                      <td className="px-3 py-3">
+                        <div className="text-gray-600 dark:text-gray-400 text-sm truncate max-w-[120px]" title={invoice.invoice_number || 'N/A'}>
+                          {invoice.invoice_number || 'N/A'}
+                        </div>
                       </td>
-                      <td className="px-4 py-4 text-gray-600 dark:text-gray-400 text-sm">
-                        {invoice.invoice_date ? new Date(invoice.invoice_date).toLocaleDateString() : 'N/A'}
+                      <td className="px-3 py-3 text-gray-600 dark:text-gray-400 text-sm whitespace-nowrap">
+                        {invoice.invoice_date ? new Date(invoice.invoice_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'N/A'}
                       </td>
-                      <td className="px-4 py-4 text-gray-600 dark:text-gray-400 text-sm hidden lg:table-cell">
-                        {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString() : 'N/A'}
+                      <td className="px-3 py-3 text-gray-600 dark:text-gray-400 text-sm whitespace-nowrap hidden xl:table-cell">
+                        {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'N/A'}
                       </td>
-                      <td className="px-4 py-4 font-semibold text-gray-900 dark:text-white">
+                      <td className="px-3 py-3 font-semibold text-gray-900 dark:text-white text-sm text-right whitespace-nowrap">
                         {formatCurrency(invoice.total_amount || 0, invoice.currency)}
                       </td>
-                      <td className="px-4 py-4 text-gray-600 dark:text-gray-400 hidden xl:table-cell">
+                      <td className="px-3 py-3 text-gray-600 dark:text-gray-400 text-sm text-right whitespace-nowrap hidden 2xl:table-cell">
                         {formatCurrency((invoice.cgst + invoice.sgst + invoice.igst || 0), invoice.currency)}
                       </td>
-                      <td className="px-4 py-4">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                          invoice.payment_status === 'paid' 
-                            ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300'
-                            : invoice.payment_status === 'overdue'
-                            ? 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300'
-                            : 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300'
-                        }`}>
-                          {(invoice.payment_status || 'pending').charAt(0).toUpperCase() + (invoice.payment_status || 'pending').slice(1)}
-                        </span>
+                      <td className="px-3 py-3">
+                        <div className="flex justify-center">
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+                            invoice.payment_status === 'paid' 
+                              ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300'
+                              : invoice.payment_status === 'overdue'
+                              ? 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300'
+                              : 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300'
+                          }`}>
+                            {(invoice.payment_status || 'pending').charAt(0).toUpperCase() + (invoice.payment_status || 'pending').slice(1)}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-4 py-4 hidden lg:table-cell">
-                        <ConfidenceIndicator 
-                          confidence={invoice.confidence_score || 0}
-                          size="sm"
-                        />
+                      <td className="px-3 py-3 hidden 2xl:table-cell">
+                        <div className="flex justify-center">
+                          <ConfidenceIndicator 
+                            confidence={invoice.confidence_score || 0}
+                            size="sm"
+                          />
+                        </div>
                       </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-2">
+                      <td className="px-3 py-3">
+                        <div className="flex items-center justify-center gap-1.5">
                           {/* View Details Button */}
                           <Link
                             href={`/invoices/details?id=${invoice.id}`}
-                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
+                            className="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-colors whitespace-nowrap"
                           >
                             View
                           </Link>
@@ -968,11 +975,10 @@ export default function InvoicesPageClean() {
                                 e.stopPropagation()
                                 toggleRowExportDropdown(invoice.id)
                               }}
-                              className="px-1.5 py-1 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-colors group flex items-center gap-1 text-xs"
+                              className="px-2 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-colors group flex items-center gap-1"
                               title="Export Options"
                             >
-                              <span className="text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 text-xs">Export</span>
-                              <ChevronDown className="w-3 h-3 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
+                              <Download className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                             </button>
                             {showRowExportDropdown[invoice.id] && (
                               <div className="absolute right-0 mt-1 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
@@ -1011,10 +1017,10 @@ export default function InvoicesPageClean() {
                           </div>
                           <button
                             onClick={() => deleteDocument(invoice.id)}
-                            className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors group mr-2"
+                            className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors group"
                             title="Delete"
                           >
-                            <Trash2 className="w-4 h-4 text-gray-600 dark:text-gray-400 group-hover:text-red-600 dark:group-hover:text-red-400" />
+                            <Trash2 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400 group-hover:text-red-600 dark:group-hover:text-red-400" />
                           </button>
                         </div>
                       </td>
