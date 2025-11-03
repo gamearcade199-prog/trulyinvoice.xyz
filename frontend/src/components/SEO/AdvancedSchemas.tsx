@@ -4,9 +4,9 @@
 import React from 'react'
 import { advancedSEOSchemas } from '@/config/seo.advanced'
 
-// AggregateRating + Review Schema Component
+// AggregateRating Schema Component (Reviews removed - waiting for real reviews)
 export const RatingsAndReviewsSchema: React.FC = () => {
-  const { aggregateRating, reviews } = advancedSEOSchemas
+  const { aggregateRating } = advancedSEOSchemas
 
   return (
     <>
@@ -14,12 +14,6 @@ export const RatingsAndReviewsSchema: React.FC = () => {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(aggregateRating),
-        }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(reviews),
         }}
       />
     </>
