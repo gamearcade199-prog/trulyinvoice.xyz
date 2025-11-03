@@ -29,17 +29,54 @@ export default function LoginPage() {
         password: formData.password
       })
 
-      if (authError) throw authError
+      if (authError) {
+        // Provide user-friendly error messages
+        if (authError.message.includes('Invalid login credentials')) {
+          throw new Error('Invalid email or password. Please check your credentials and try again.')
+        } else if (authError.message.includes('Email not confirmed')) {
+          throw new Error('Please verify your email address before logging in.')
+        } else if (authError.message.includes('User not found')) {
+          throw new Error('No account found with this email. Please sign up first.')
+        }
+        throw authError
+      }
 
       // Link any temporary invoices to the logged-in user
       if (data.user) {
-        await linkTempInvoicesToUser(data.user.id)
+        try {
+          await linkTempInvoicesToUser(data.user.id)
+        } catch (linkError) {
+          console.error('Error linking temp invoices:', linkError)
+          // Non-critical, continue
+        }
       }
 
+      // Show success message
+      toast.success('Welcome back!', { duration: 2000 })
+
       // Redirect to dashboard
-      window.location.href = '/dashboard'
+      setTimeout(() => {
+        window.location.href = '/dashboard'
+      }, 500)
     } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.')
+      console.error('Login error:', err)
+      
+      // Provide user-friendly error messages
+      let errorMessage = 'Login failed. Please try again.'
+      
+      if (err.message) {
+        if (err.message.includes('credentials') || err.message.includes('Invalid')) {
+          errorMessage = 'Invalid email or password. Please check your credentials.'
+        } else if (err.message.includes('network')) {
+          errorMessage = 'Network error. Please check your connection and try again.'
+        } else if (err.message.includes('verify') || err.message.includes('confirmed')) {
+          errorMessage = 'Please verify your email address before logging in.'
+        } else {
+          errorMessage = err.message
+        }
+      }
+      
+      setError(errorMessage)
       setIsLoading(false)
     }
   }
@@ -126,7 +163,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
             >
               {isLoading ? (
                 <>

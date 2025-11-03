@@ -27,21 +27,27 @@ export default function BillingDashboard() {
       if (sessionError) throw sessionError
       if (!session) throw new Error('No session')
 
-      // Call the function with proper auth
-      const { data, error } = await supabase.functions.invoke('get-subscription-status', {
+      // Call backend API instead of Edge Function
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/subscription/${session.user.id}`, {
         headers: {
-          Authorization: `Bearer ${session.access_token}`
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
         }
       })
       
-      if (error) {
-        // If the function itself throws an error (e.g., network issue)
-        throw error;
+      if (!response.ok) {
+        throw new Error(`Failed to fetch subscription: ${response.status}`)
       }
       
-      // data can be null if no subscription exists, which is a valid state.
-      // We set the subscription state to whatever is returned (data or null).
-      setSubscription(data);
+      const result = await response.json()
+      
+      // Backend returns { success: true, subscription: {...} }
+      if (result.success && result.subscription) {
+        setSubscription(result.subscription);
+      } else {
+        // No subscription found - user is on free plan
+        setSubscription(null);
+      }
       setError(null); // Clear any previous errors
     } catch (error) {
       console.error('Error fetching subscription:', error)
@@ -64,14 +70,23 @@ export default function BillingDashboard() {
       if (sessionError) throw sessionError
       if (!session) throw new Error('No session')
 
-      const { error } = await supabase.functions.invoke('cancel-subscription', {
+      // Call backend API to cancel subscription
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/subscriptions/cancel`, {
+        method: 'POST',
         headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          user_id: session.user.id
+        })
       })
       
-      if (error) throw error
+      if (!response.ok) {
+        throw new Error('Failed to cancel subscription')
+      }
       
+      toast.success('Subscription cancelled successfully')
       await fetchSubscription()
     } catch (error) {
       console.error('Error cancelling subscription:', error)

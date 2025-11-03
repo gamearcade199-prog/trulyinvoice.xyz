@@ -2,9 +2,11 @@
 Invoices API - Retrieve and manage invoices
 Compatible with existing Supabase invoices table
 """
-from fastapi import APIRouter, HTTPException, Depends, Header
+from fastapi import APIRouter, HTTPException, Depends, Header, Body
 from fastapi.responses import FileResponse
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+from pydantic import BaseModel
+from datetime import datetime
 import os
 import logging
 from app.services.supabase_helper import supabase
@@ -19,6 +21,40 @@ from app.core.database import get_db
 from app.auth import get_current_user
 
 router = APIRouter()
+
+
+class InvoiceUpdate(BaseModel):
+    """Model for invoice update requests"""
+    vendor_name: Optional[str] = None
+    invoice_number: Optional[str] = None
+    invoice_date: Optional[str] = None
+    due_date: Optional[str] = None
+    total_amount: Optional[float] = None
+    subtotal: Optional[float] = None
+    cgst: Optional[float] = None
+    sgst: Optional[float] = None
+    igst: Optional[float] = None
+    gstin: Optional[str] = None
+    payment_status: Optional[str] = None
+    place_of_supply: Optional[str] = None
+    hsn_code: Optional[str] = None
+    sac_code: Optional[str] = None
+    line_items: Optional[Any] = None
+    
+    class Config:
+        extra = 'allow'  # Allow additional fields
+
+
+@router.get("/health")
+async def invoice_health():
+    """
+    Health check endpoint for invoice API - no authentication required
+    """
+    return {
+        "status": "healthy",
+        "message": "Invoice API operational",
+        "endpoints": ["GET /", "GET /{id}", "POST /upload"]
+    }
 
 
 async def check_export_permission(user_id: str, db: Session = Depends(get_db)):
@@ -39,15 +75,15 @@ async def check_export_permission(user_id: str, db: Session = Depends(get_db)):
 async def get_invoices(
     user_id: str = None, 
     limit: int = 100,
-    current_user: dict = Depends(get_current_user)
+    current_user: str = Depends(get_current_user)
 ):
     """
     Get all invoices filtered by authenticated user
     SECURITY FIX: Always filter by current user's ID to prevent data leaks
     """
     try:
-        # SECURITY FIX: Use authenticated user ID, not query parameter
-        authenticated_user_id = current_user.get("id") if current_user else user_id
+        # SECURITY FIX: Use authenticated user ID directly (it's already a string)
+        authenticated_user_id = current_user
         
         if not authenticated_user_id:
             raise HTTPException(status_code=401, detail="Authentication required")
@@ -69,7 +105,7 @@ async def get_invoices(
 @router.get("/{invoice_id}")
 async def get_invoice(
     invoice_id: str,
-    current_user: dict = Depends(get_current_user)
+    current_user: str = Depends(get_current_user)
 ):
     """
     Get single invoice by ID
@@ -79,7 +115,7 @@ async def get_invoice(
     print(f"  📋 Invoice ID type: {type(invoice_id)} | Value: '{invoice_id}'")
     
     try:
-        authenticated_user_id = current_user.get("id") if current_user else None
+        authenticated_user_id = current_user
         
         if not authenticated_user_id:
             raise HTTPException(status_code=401, detail="Authentication required")
@@ -118,15 +154,82 @@ async def get_invoice(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{invoice_id}")
-async def delete_invoice(invoice_id: str):
-    """Delete an invoice"""
+@router.put("/{invoice_id}")
+async def update_invoice(
+    invoice_id: str,
+    invoice_update: InvoiceUpdate,
+    current_user: str = Depends(get_current_user)
+):
+    """
+    Update an invoice
+    SECURITY: Verify invoice belongs to authenticated user
+    """
     try:
-        supabase.table("invoices").delete().eq("id", invoice_id).execute()
+        authenticated_user_id = current_user
         
+        if not authenticated_user_id:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        
+        # First verify the invoice exists and belongs to user
+        existing_response = supabase.table("invoices").select("id, user_id").eq("id", invoice_id).eq("user_id", authenticated_user_id).execute()
+        
+        if not existing_response.data:
+            raise HTTPException(status_code=404, detail="Invoice not found or access denied")
+        
+        # Convert Pydantic model to dict and remove None values
+        update_data = invoice_update.dict(exclude_unset=True, exclude_none=True)
+        
+        # Remove fields that shouldn't be updated
+        protected_fields = ['id', 'user_id', 'created_at', 'document_id']
+        update_data = {k: v for k, v in update_data.items() if k not in protected_fields}
+        
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No valid fields to update")
+        
+        # Update the invoice
+        update_response = supabase.table("invoices").update(update_data).eq("id", invoice_id).eq("user_id", authenticated_user_id).execute()
+        
+        if not update_response.data:
+            raise HTTPException(status_code=500, detail="Failed to update invoice")
+        
+        logger.info(f"User {authenticated_user_id} updated invoice {invoice_id}")
+        return update_response.data[0]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating invoice: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/{invoice_id}")
+async def delete_invoice(
+    invoice_id: str,
+    current_user: str = Depends(get_current_user)
+):
+    """
+    Delete an invoice
+    SECURITY: Verify invoice belongs to authenticated user
+    """
+    try:
+        authenticated_user_id = current_user
+        
+        if not authenticated_user_id:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        
+        # Delete only if belongs to user
+        delete_response = supabase.table("invoices").delete().eq("id", invoice_id).eq("user_id", authenticated_user_id).execute()
+        
+        if not delete_response.data:
+            raise HTTPException(status_code=404, detail="Invoice not found or access denied")
+        
+        logger.info(f"User {authenticated_user_id} deleted invoice {invoice_id}")
         return {"success": True, "message": "Invoice deleted"}
         
+    except HTTPException:
+        raise
     except Exception as e:
+        logger.error(f"Error deleting invoice: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

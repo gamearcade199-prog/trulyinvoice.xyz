@@ -95,9 +95,19 @@ class InvoiceValidator:
             vendor_name = str(cleaned_data.get('vendor_name', '')).strip() if cleaned_data.get('vendor_name') else ''
             
             if not vendor_name:
-                errors.append("CRITICAL: vendor_name cannot be empty")
+                # Allow missing vendor_name if it's a consolidated invoice or if we have sub-vendors
+                is_consolidated = cleaned_data.get('is_consolidated', False)
+                line_items = cleaned_data.get('line_items', [])
+                has_sub_vendors = False
+                if isinstance(line_items, list):
+                    has_sub_vendors = any(item.get('sub_vendor') for item in line_items if isinstance(item, dict))
+                
+                if is_consolidated or has_sub_vendors:
+                    warnings.append("vendor_name empty but consolidated invoice detected - will auto-generate")
+                else:
+                    errors.append("CRITICAL: vendor_name cannot be empty")
             elif len(vendor_name) < cls.MIN_VENDOR_NAME_LENGTH:
-                errors.append(f"vendor_name too short (min {cls.MIN_VENDOR_NAME_LENGTH} chars)")
+                warnings.append(f"vendor_name very short ({len(vendor_name)} chars) - might be incomplete")
             elif len(vendor_name) > cls.MAX_VENDOR_NAME_LENGTH:
                 errors.append(f"vendor_name too long (max {cls.MAX_VENDOR_NAME_LENGTH} chars)")
             else:

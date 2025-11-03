@@ -46,13 +46,42 @@ class AccountantExcelExporter:
 
     # Standard database fields that should always be checked
     # NOTE: Excluded 'confidence_score', 'uploaded_at', 'processing_status' - these are UI-only fields
+    # ENTERPRISE-GRADE: 50+ fields covering all sectors (invoices, POs, receipts, contracts, etc.)
     STANDARD_FIELDS = [
-        'id', 'invoice_number', 'invoice_date', 'due_date', 'vendor_name',
-        'vendor_gstin', 'vendor_address', 'vendor_state', 'vendor_phone',
-        'customer_name', 'customer_gstin', 'customer_address', 'customer_state',
-        'payment_status', 'paid_amount', 'subtotal', 'cgst', 'sgst', 'igst',
-        'total_amount', 'discount', 'shipping_charges', 'notes', 'created_at',
-        'updated_at'
+        # Core Invoice Fields
+        'id', 'user_id', 'document_id', 'invoice_number', 'invoice_date', 'due_date',
+        'po_number', 'reference_number', 'invoice_type', 'order_id',
+        
+        # Vendor Details (Complete)
+        'vendor_name', 'vendor_gstin', 'vendor_pan', 'vendor_tan',
+        'vendor_address', 'vendor_state', 'vendor_pincode',
+        'vendor_phone', 'vendor_email', 'vendor_type',
+        
+        # Customer Details (Complete)
+        'customer_name', 'customer_gstin', 'customer_pan',
+        'customer_address', 'customer_state',
+        'customer_phone', 'customer_email',
+        
+        # Financial Fields
+        'subtotal', 'discount', 'discount_percentage', 'shipping_charges',
+        'cgst', 'sgst', 'igst', 'cess', 'tcs_amount', 'tds_amount', 'tds_percentage',
+        'total_amount', 'currency', 'exchange_rate',
+        
+        # Payment Fields
+        'payment_status', 'paid_amount', 'payment_method', 'payment_terms',
+        'payment_date', 'payment_reference',
+        
+        # Banking Details
+        'bank_account', 'bank_name', 'ifsc_code', 'account_number',
+        
+        # Tax & Compliance
+        'place_of_supply', 'reverse_charge', 'hsn_code', 'sac_code',
+        
+        # Additional Info
+        'notes', 'tags', 'project_name', 'department', 'cost_center',
+        
+        # Metadata
+        'created_at', 'updated_at', 'confidence_score'
     ]
 
     def __init__(self):
@@ -391,10 +420,14 @@ class AccountantExcelExporter:
         ws['A4'] = f'Total Invoices: {len(invoices)}'
         ws['A5'] = f'Period: {self._get_date_range(invoices)}'
 
-        # Headers
+        # Headers - ENTERPRISE-GRADE (25+ columns for complete invoice data)
         headers = [
-            'Invoice No', 'Date', 'Due Date', 'Vendor Name', 'Vendor GSTIN',
-            'Customer Name', 'Total Amount', 'Paid Amount', 'Balance', 'Payment Status', 'GST Type'
+            'Invoice No', 'Date', 'Due Date', 'PO Number',
+            'Vendor Name', 'Vendor GSTIN', 'Vendor PAN', 'Vendor Phone', 'Vendor Email',
+            'Customer Name', 'Customer GSTIN', 'Customer PAN', 'Customer Phone', 'Customer Email',
+            'Subtotal', 'Discount', 'CGST', 'SGST', 'IGST', 'Total Amount',
+            'Paid Amount', 'Balance', 'Payment Status', 'Payment Method', 'Payment Terms',
+            'Bank Account', 'Notes'
         ]
 
         for col, header in enumerate(headers, 1):
@@ -405,20 +438,36 @@ class AccountantExcelExporter:
             cell.border = self.thin_border
             cell.alignment = Alignment(horizontal='center', vertical='center')
 
-        # Data rows
+        # Data rows - ENTERPRISE-GRADE (all extracted fields)
         for row, invoice in enumerate(invoices, 8):
             data = [
                 invoice.get('invoice_number', ''),
                 self._format_date(invoice.get('invoice_date', '')),
                 self._format_date(invoice.get('due_date', '')),
+                invoice.get('po_number', ''),
                 invoice.get('vendor_name', ''),
                 invoice.get('vendor_gstin', ''),
+                invoice.get('vendor_pan', ''),
+                invoice.get('vendor_phone', ''),
+                invoice.get('vendor_email', ''),
                 invoice.get('customer_name', ''),
+                invoice.get('customer_gstin', ''),
+                invoice.get('customer_pan', ''),
+                invoice.get('customer_phone', ''),
+                invoice.get('customer_email', ''),
+                invoice.get('subtotal', 0),
+                invoice.get('discount', 0),
+                invoice.get('cgst', 0),
+                invoice.get('sgst', 0),
+                invoice.get('igst', 0),
                 invoice.get('total_amount', 0),
                 invoice.get('paid_amount', 0),
                 self._calculate_balance(invoice),
                 invoice.get('payment_status', 'Unpaid'),
-                self._determine_gst_type(invoice)
+                invoice.get('payment_method', ''),
+                invoice.get('payment_terms', ''),
+                invoice.get('bank_account', ''),
+                invoice.get('notes', '')
             ]
 
             for col, value in enumerate(data, 1):
@@ -440,13 +489,13 @@ class AccountantExcelExporter:
         # Note: Data validation will be added in _apply_final_formatting
 
     def _build_line_items_sheet(self, ws, invoices: List[Dict]):
-        """Build detailed line items sheet with proper relationships"""
+        """Build detailed line items sheet with proper relationships and sub-vendor tracking"""
 
         # Headers
         headers = [
-            'Invoice No', 'Item No', 'Description', 'HSN/SAC', 'Quantity',
-            'Unit', 'Rate', 'Amount', 'CGST %', 'CGST Amount', 'SGST %',
-            'SGST Amount', 'IGST %', 'IGST Amount', 'Total'
+            'Description', 'HSN/SAC', 'Quantity', 'Unit', 'Rate', 'Amount',
+            'CGST %', 'CGST Amount', 'SGST %', 'SGST Amount', 
+            'IGST %', 'IGST Amount', 'Total'
         ]
 
         for col, header in enumerate(headers, 1):
@@ -457,58 +506,167 @@ class AccountantExcelExporter:
             cell.border = self.thin_border
             cell.alignment = Alignment(horizontal='center', vertical='center')
 
+        # Styling for sub-vendor headers
+        sub_vendor_fill = PatternFill(start_color='D9E1F2', end_color='D9E1F2', fill_type='solid')  # Light blue
+        sub_vendor_font = Font(name='Calibri', size=11, bold=True, color='1F4E78')  # Dark blue
+        
+        subtotal_fill = PatternFill(start_color='E2EFDA', end_color='E2EFDA', fill_type='solid')  # Light green
+        subtotal_font = Font(name='Calibri', size=10, bold=True)
+
         row = 2
         for invoice in invoices:
             invoice_no = invoice.get('invoice_number', '')
             line_items = invoice.get('line_items', [])
+            is_consolidated = invoice.get('is_consolidated', False)
 
             if not line_items:
                 # Invoice with no line items
-                ws.cell(row=row, column=1).value = invoice_no
-                ws.cell(row=row, column=2).value = 1
-                ws.cell(row=row, column=3).value = 'Invoice Total'
-                ws.cell(row=row, column=15).value = invoice.get('total_amount', 0)
+                ws.cell(row=row, column=1).value = f"Invoice: {invoice_no}"
+                ws.cell(row=row, column=6).value = invoice.get('total_amount', 0)
                 row += 1
                 continue
 
-            for item_no, item in enumerate(line_items, 1):
-                gst_details = self._calculate_item_gst(item, invoice)
+            # Group items by sub-vendor for consolidated invoices
+            if is_consolidated and any(item.get('sub_vendor') for item in line_items):
+                # Grouped by sub-vendor
+                grouped_items = {}
+                for item in line_items:
+                    sub_vendor = item.get('sub_vendor', 'Unknown Vendor')
+                    if sub_vendor not in grouped_items:
+                        grouped_items[sub_vendor] = {
+                            'bill_no': item.get('sub_bill_number', ''),
+                            'gstin': item.get('sub_gstin', ''),
+                            'items': []
+                        }
+                    grouped_items[sub_vendor]['items'].append(item)
 
-                data = [
-                    invoice_no,
-                    item_no,
-                    item.get('description', ''),
-                    item.get('hsn_sac', ''),
-                    item.get('quantity', 1),
-                    item.get('unit', 'Pcs'),
-                    item.get('rate', 0),
-                    item.get('amount', 0),
-                    gst_details['cgst_rate'],
-                    gst_details['cgst_amount'],
-                    gst_details['sgst_rate'],
-                    gst_details['sgst_amount'],
-                    gst_details['igst_rate'],
-                    gst_details['igst_amount'],
-                    gst_details['total']
-                ]
-
-                for col, value in enumerate(data, 1):
-                    cell = ws.cell(row=row, column=col)
-                    cell.value = value
-                    cell.border = self.thin_border
-                    cell.font = self.body_font
-
-                    # Formatting
-                    if col in [5, 7, 8, 10, 12, 14, 15]:  # Numeric columns
-                        cell.number_format = self.currency_format
-                        cell.alignment = Alignment(horizontal='right')
-                    elif col in [9, 11, 13]:  # Percentage columns
-                        cell.number_format = self.percentage_format
-                        cell.alignment = Alignment(horizontal='right')
-
+                # Add main invoice header
+                main_header = ws.cell(row=row, column=1)
+                main_header.value = f"📄 Invoice: {invoice_no}"
+                main_header.font = Font(name='Calibri', size=12, bold=True, color='FFFFFF')
+                main_header.fill = PatternFill(start_color='4472C4', end_color='4472C4', fill_type='solid')
+                ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=13)
                 row += 1
 
-        self._auto_adjust_columns(ws, headers)
+                # Process each sub-vendor group
+                for sub_vendor, vendor_data in grouped_items.items():
+                    # Sub-vendor header
+                    header_cell = ws.cell(row=row, column=1)
+                    header_text = f"🏪 {sub_vendor}"
+                    if vendor_data['bill_no']:
+                        header_text += f" | Bill No: {vendor_data['bill_no']}"
+                    if vendor_data['gstin']:
+                        header_text += f" | GSTIN: {vendor_data['gstin']}"
+                    
+                    header_cell.value = header_text
+                    header_cell.font = sub_vendor_font
+                    header_cell.fill = sub_vendor_fill
+                    header_cell.alignment = Alignment(horizontal='left', vertical='center')
+                    ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=13)
+                    row += 1
+
+                    # Add items for this sub-vendor
+                    sub_total = 0
+                    for item in vendor_data['items']:
+                        gst_details = self._calculate_item_gst(item, invoice)
+                        
+                        data = [
+                            item.get('description', ''),
+                            item.get('hsn_sac', ''),
+                            item.get('quantity', 1),
+                            item.get('unit', 'Pcs'),
+                            item.get('rate', 0),
+                            item.get('amount', 0),
+                            gst_details['cgst_rate'],
+                            gst_details['cgst_amount'],
+                            gst_details['sgst_rate'],
+                            gst_details['sgst_amount'],
+                            gst_details['igst_rate'],
+                            gst_details['igst_amount'],
+                            gst_details['total']
+                        ]
+                        
+                        sub_total += float(gst_details['total'])
+
+                        for col, value in enumerate(data, 1):
+                            cell = ws.cell(row=row, column=col)
+                            cell.value = value
+                            cell.border = self.thin_border
+                            cell.font = self.body_font
+
+                            # Formatting
+                            if col in [3, 5, 6, 8, 10, 12, 13]:  # Numeric columns
+                                cell.number_format = self.currency_format if col >= 5 else '0.00'
+                                cell.alignment = Alignment(horizontal='right')
+                            elif col in [7, 9, 11]:  # Percentage columns
+                                cell.number_format = self.percentage_format
+                                cell.alignment = Alignment(horizontal='right')
+
+                        row += 1
+
+                    # Sub-vendor subtotal
+                    subtotal_cell = ws.cell(row=row, column=1)
+                    subtotal_cell.value = f"Subtotal - {sub_vendor}"
+                    subtotal_cell.font = subtotal_font
+                    subtotal_cell.fill = subtotal_fill
+                    
+                    amount_cell = ws.cell(row=row, column=13)
+                    amount_cell.value = sub_total
+                    amount_cell.font = subtotal_font
+                    amount_cell.fill = subtotal_fill
+                    amount_cell.number_format = self.currency_format
+                    amount_cell.alignment = Alignment(horizontal='right')
+                    row += 1
+                    row += 1  # Extra spacing between vendors
+
+            else:
+                # Regular invoice (not consolidated) - simple list
+                invoice_header = ws.cell(row=row, column=1)
+                invoice_header.value = f"📄 Invoice: {invoice_no}"
+                invoice_header.font = Font(name='Calibri', size=11, bold=True)
+                invoice_header.fill = PatternFill(start_color='E7E6E6', end_color='E7E6E6', fill_type='solid')
+                ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=13)
+                row += 1
+
+                for item in line_items:
+                    gst_details = self._calculate_item_gst(item, invoice)
+
+                    data = [
+                        item.get('description', ''),
+                        item.get('hsn_sac', ''),
+                        item.get('quantity', 1),
+                        item.get('unit', 'Pcs'),
+                        item.get('rate', 0),
+                        item.get('amount', 0),
+                        gst_details['cgst_rate'],
+                        gst_details['cgst_amount'],
+                        gst_details['sgst_rate'],
+                        gst_details['sgst_amount'],
+                        gst_details['igst_rate'],
+                        gst_details['igst_amount'],
+                        gst_details['total']
+                    ]
+
+                    for col, value in enumerate(data, 1):
+                        cell = ws.cell(row=row, column=col)
+                        cell.value = value
+                        cell.border = self.thin_border
+                        cell.font = self.body_font
+
+                        # Formatting
+                        if col in [3, 5, 6, 8, 10, 12, 13]:  # Numeric columns
+                            cell.number_format = self.currency_format if col >= 5 else '0.00'
+                            cell.alignment = Alignment(horizontal='right')
+                        elif col in [7, 9, 11]:  # Percentage columns
+                            cell.number_format = self.percentage_format
+                            cell.alignment = Alignment(horizontal='right')
+
+                    row += 1
+                
+                row += 1  # Spacing after invoice
+
+        # Auto-adjust with wider columns for amounts
+        self._auto_adjust_columns_enhanced(ws, headers)
 
     def _calculate_item_gst(self, item: Dict, invoice: Dict) -> Dict:
         """Calculate accurate GST for individual line item"""
@@ -894,6 +1052,34 @@ class AccountantExcelExporter:
 
             # Set width with padding
             width = min(max_length + 2, 50)  # Max 50 chars
+            ws.column_dimensions[get_column_letter(col_num)].width = width
+
+    def _auto_adjust_columns_enhanced(self, ws, headers: List[str]):
+        """Auto-adjust column widths with minimum widths for amount columns"""
+        for col_num, header in enumerate(headers, 1):
+            max_length = len(header)
+
+            # Sample first 100 rows for performance
+            for row in range(1, min(ws.max_row + 1, 101)):
+                cell_value = ws.cell(row=row, column=col_num).value
+                if cell_value:
+                    # For formatted currency, add extra width
+                    if isinstance(cell_value, (int, float)) and cell_value > 1000:
+                        max_length = max(max_length, len(f"{cell_value:,.2f}") + 3)
+                    else:
+                        max_length = max(max_length, len(str(cell_value)))
+
+            # Set minimum widths for specific columns
+            if 'Amount' in header or 'Rate' in header or 'Total' in header:
+                width = max(max_length + 2, 15)  # Minimum 15 for amounts
+            elif 'Description' in header:
+                width = max(max_length + 2, 40)  # Wider for descriptions
+            elif 'GSTIN' in header:
+                width = max(max_length + 2, 18)  # GSTIN needs 15 chars
+            else:
+                width = max_length + 2
+            
+            width = min(width, 60)  # Max 60 chars
             ws.column_dimensions[get_column_letter(col_num)].width = width
 
     def _get_file_size_mb(self, filename: str) -> float:

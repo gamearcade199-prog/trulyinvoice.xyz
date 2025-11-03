@@ -67,8 +67,29 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         // Use email username as fallback
         setUserName(user.email.split('@')[0])
       }
+
+      // Fetch subscription tier from subscriptions table
+      const { data: subscriptionData } = await supabase
+        .from('subscriptions')
+        .select('tier, status')
+        .eq('user_id', user.id)
+        .single()
+
+      if (subscriptionData && subscriptionData.status === 'active') {
+        const tierMap: Record<string, string> = {
+          'free': 'Free Plan',
+          'basic': 'Basic Plan',
+          'pro': 'Pro Plan',
+          'ultra': 'Ultra Plan',
+          'max': 'Max Plan'
+        }
+        setUserPlan(tierMap[subscriptionData.tier.toLowerCase()] || `${subscriptionData.tier} Plan`)
+      } else {
+        setUserPlan('Free Plan')
+      }
     } catch (error) {
       console.error('Error loading user data:', error)
+      setUserPlan('Free Plan')
     }
   }
 

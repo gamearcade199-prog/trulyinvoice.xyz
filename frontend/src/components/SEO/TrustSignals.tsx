@@ -98,7 +98,7 @@ export const TrustBadges: React.FC<TrustBadgesProps> = ({
             '@context': 'https://schema.org',
             '@type': 'Organization',
             name: 'TrulyInvoice',
-            slogan: 'Convert invoices to Excel, Tally, QuickBooks, Zoho Books with AI',
+            slogan: 'Convert invoices to Excel, QuickBooks, Zoho Books with 99% AI accuracy',
             certification: trustSignals.badges.map(b => b.name).join(', '),
           }),
         }}

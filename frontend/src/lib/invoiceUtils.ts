@@ -245,7 +245,8 @@ export async function exportInvoicesToTallyXML(invoices: any[]) {
   }
 
   // Generate Party Ledger Masters (Auto-creation) with normalized names
-  const partyLedgers = Array.from(parties).map(partyName => `        <LEDGER NAME="${escapeXml(partyName)}" ACTION="Create">
+  // ACTION="Create Or Alter" allows safe re-imports (won't create duplicates)
+  const partyLedgers = Array.from(parties).map(partyName => `        <LEDGER NAME="${escapeXml(partyName)}" ACTION="Create Or Alter">
           <PARENT>Sundry Creditors</PARENT>
           <ISBILLWISEON>Yes</ISBILLWISEON>
           <ISCOSTCENTRESON>No</ISCOSTCENTRESON>
@@ -262,12 +263,13 @@ export async function exportInvoicesToTallyXML(invoices: any[]) {
         </LEDGER>`).join('\n')
 
   // Generate GST Ledger Masters (Auto-creation)
+  // ACTION="Create Or Alter" prevents duplicate GST ledgers on re-import
   const gstLedgerMasters = Array.from(gstLedgers).map(ledgerName => {
     const isIGST = ledgerName.includes('IGST')
     const isCGST = ledgerName.includes('CGST')
     const isSGST = ledgerName.includes('SGST')
     
-    return `        <LEDGER NAME="${escapeXml(ledgerName)}" ACTION="Create">
+    return `        <LEDGER NAME="${escapeXml(ledgerName)}" ACTION="Create Or Alter">
           <PARENT>Duties &amp; Taxes</PARENT>
           <ISBILLWISEON>No</ISBILLWISEON>
           <ISCOSTCENTRESON>No</ISCOSTCENTRESON>
@@ -279,7 +281,8 @@ export async function exportInvoicesToTallyXML(invoices: any[]) {
   }).join('\n')
 
   // Generate Expense Ledger Masters (Auto-creation) including Non-GST
-  const expenseLedgerMasters = Array.from(expenseLedgers).map(ledgerName => `        <LEDGER NAME="${escapeXml(ledgerName)}" ACTION="Create">
+  // ACTION="Create Or Alter" prevents duplicate expense ledgers on re-import
+  const expenseLedgerMasters = Array.from(expenseLedgers).map(ledgerName => `        <LEDGER NAME="${escapeXml(ledgerName)}" ACTION="Create Or Alter">
           <PARENT>Purchase Accounts</PARENT>
           <ISBILLWISEON>No</ISBILLWISEON>
           <ISCOSTCENTRESON>Yes</ISCOSTCENTRESON>
@@ -289,7 +292,25 @@ export async function exportInvoicesToTallyXML(invoices: any[]) {
           <TAXTYPE>GST</TAXTYPE>
         </LEDGER>`).join('\n')
 
-  // Generate Tally XML structure with proper GST compliance + AUTO LEDGER CREATION
+  // Calculate date range for automatic Financial Year coverage
+  const allDates = invoices
+    .map(inv => inv.invoice_date)
+    .filter(date => date)
+    .map(date => new Date(date))
+    .filter(date => !isNaN(date.getTime()))
+  
+  const earliestDate = allDates.length > 0 ? new Date(Math.min(...allDates.map(d => d.getTime()))) : new Date()
+  const latestDate = allDates.length > 0 ? new Date(Math.max(...allDates.map(d => d.getTime()))) : new Date()
+  
+  // Set FY to cover ALL invoice dates (3 years back to 1 year forward for safety)
+  const fyStartYear = earliestDate.getFullYear() - 1  // Go 1 year earlier for safety
+  const fyEndYear = latestDate.getFullYear() + 2      // Go 2 years later for safety
+  const fyStart = formatDateTally(`${fyStartYear}-04-01`) // 1st April
+  const fyEnd = formatDateTally(`${fyEndYear}-03-31`)     // 31st March
+  
+  console.log(`📅 Setting Tally FY: ${fyStartYear}-04-01 to ${fyEndYear}-03-31 (covers ${earliestDate.toDateString()} to ${latestDate.toDateString()})`)
+
+  // Generate Tally XML structure with proper GST compliance + AUTO LEDGER CREATION + EXTENDED FY
   const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
 <ENVELOPE>
   <HEADER>
@@ -301,6 +322,8 @@ export async function exportInvoicesToTallyXML(invoices: any[]) {
         <REPORTNAME>All Masters</REPORTNAME>
         <STATICVARIABLES>
           <SVCURRENTCOMPANY>##SVCURRENTCOMPANY</SVCURRENTCOMPANY>
+          <PERIODSTARTDATE>${fyStart}</PERIODSTARTDATE>
+          <PERIODENDDATE>${fyEnd}</PERIODENDDATE>
         </STATICVARIABLES>
       </REQUESTDESC>
       <REQUESTDATA>

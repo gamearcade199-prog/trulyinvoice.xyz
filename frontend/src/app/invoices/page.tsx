@@ -14,7 +14,7 @@ import {
   Download
 } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
-import { exportInvoicesToCSV, exportInvoicesToTallyXML, exportInvoicesToQuickBooksCSV, exportInvoicesToZohoBooksCSV } from '@/lib/invoiceUtils'
+import { exportInvoicesToCSV, exportInvoicesToQuickBooksCSV, exportInvoicesToZohoBooksCSV } from '@/lib/invoiceUtils'
 import { formatCurrency } from '@/lib/currency'
 import ConfidenceIndicator from '@/components/ConfidenceIndicator'
 import ExportWarningModal from '@/components/ExportWarningModal'
@@ -452,7 +452,7 @@ export default function InvoicesPageClean() {
     }))
   }
 
-  const handleMainExport = (format: 'excel' | 'csv' | 'tally' | 'quickbooks' | 'zoho') => {
+  const handleMainExport = (format: 'excel' | 'csv' | 'quickbooks' | 'zoho') => {
     console.log('Export format selected:', format)
     setShowMainExportDropdown(false)
     switch(format) {
@@ -461,9 +461,6 @@ export default function InvoicesPageClean() {
         break
       case 'csv':
         handleExport()
-        break
-      case 'tally':
-        exportInvoicesToTallyXML(invoices)
         break
       case 'quickbooks':
         exportInvoicesToQuickBooksCSV(invoices)
@@ -474,7 +471,7 @@ export default function InvoicesPageClean() {
     }
   }
 
-  const handleBulkExport = (format: 'excel' | 'csv' | 'tally' | 'quickbooks' | 'zoho') => {
+  const handleBulkExport = (format: 'excel' | 'csv' | 'quickbooks' | 'zoho') => {
     setShowBulkExportDropdown(false)
     switch(format) {
       case 'excel':
@@ -482,10 +479,6 @@ export default function InvoicesPageClean() {
         break
       case 'csv':
         exportSelectedInvoices()
-        break
-      case 'tally':
-        const selectedForTally = invoices.filter(inv => selectedInvoices.has(inv.id))
-        exportInvoicesToTallyXML(selectedForTally)
         break
       case 'quickbooks':
         const selectedForQuickBooks = invoices.filter(inv => selectedInvoices.has(inv.id))
@@ -498,7 +491,7 @@ export default function InvoicesPageClean() {
     }
   }
 
-  const handleRowExport = (invoice: any, format: 'excel' | 'csv' | 'tally' | 'quickbooks' | 'zoho') => {
+  const handleRowExport = (invoice: any, format: 'excel' | 'csv' | 'quickbooks' | 'zoho') => {
     setShowRowExportDropdown({})
     switch(format) {
       case 'excel':
@@ -506,9 +499,6 @@ export default function InvoicesPageClean() {
         break
       case 'csv':
         exportSingleInvoice(invoice)
-        break
-      case 'tally':
-        exportInvoicesToTallyXML([invoice])
         break
       case 'quickbooks':
         exportInvoicesToQuickBooksCSV([invoice])
@@ -519,7 +509,7 @@ export default function InvoicesPageClean() {
     }
   }
 
-  const handleMobileExport = (invoice: any, format: 'excel' | 'csv' | 'tally' | 'quickbooks' | 'zoho') => {
+  const handleMobileExport = (invoice: any, format: 'excel' | 'csv' | 'quickbooks' | 'zoho') => {
     setShowMobileExportDropdown({})
     switch(format) {
       case 'excel':
@@ -527,9 +517,6 @@ export default function InvoicesPageClean() {
         break
       case 'csv':
         exportSingleInvoice(invoice)
-        break
-      case 'tally':
-        exportInvoicesToTallyXML([invoice])
         break
       case 'quickbooks':
         exportInvoicesToQuickBooksCSV([invoice])
@@ -705,7 +692,7 @@ export default function InvoicesPageClean() {
                   }
                 }}
                 className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent"
-                title="Excel export template - controls structure of Excel file (only applies to Excel exports, not CSV/Tally/QuickBooks)"
+                title="Excel export template - controls structure of Excel file (only applies to Excel exports, not CSV/QuickBooks)"
               >
                 <option value="simple">Simple (3 sheets)</option>
                 <option value="accountant">Accountant (6 sheets)</option>
@@ -775,12 +762,7 @@ export default function InvoicesPageClean() {
                     >
                       CSV
                     </button>
-                    <button
-                      onClick={() => handleMainExport('tally')}
-                      className="w-full text-left px-4 py-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 font-semibold"
-                    >
-                      Tally XML
-                    </button>
+
                     <button
                       onClick={() => handleMainExport('quickbooks')}
                       className="w-full text-left px-4 py-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 font-semibold"
@@ -833,12 +815,7 @@ export default function InvoicesPageClean() {
                     >
                       CSV
                     </button>
-                    <button
-                      onClick={() => handleBulkExport('tally')}
-                      className="w-full text-left px-4 py-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 font-semibold"
-                    >
-                      Tally XML
-                    </button>
+
                     <button
                       onClick={() => handleBulkExport('quickbooks')}
                       className="w-full text-left px-4 py-2 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 font-semibold"
@@ -995,12 +972,6 @@ export default function InvoicesPageClean() {
                                   CSV
                                 </button>
                                 <button
-                                  onClick={() => handleRowExport(invoice, 'tally')}
-                                  className="w-full text-left px-3 py-2 text-xs text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 font-semibold"
-                                >
-                                  Tally
-                                </button>
-                                <button
                                   onClick={() => handleRowExport(invoice, 'quickbooks')}
                                   className="w-full text-left px-3 py-2 text-xs text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 font-semibold"
                                 >
@@ -1114,12 +1085,7 @@ export default function InvoicesPageClean() {
                           >
                             CSV
                           </button>
-                          <button
-                            onClick={() => handleMobileExport(invoice, 'tally')}
-                            className="w-full text-left px-3 py-2 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 font-semibold"
-                          >
-                            Tally XML
-                          </button>
+
                           <button
                             onClick={() => handleMobileExport(invoice, 'quickbooks')}
                             className="w-full text-left px-3 py-2 text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 font-semibold"

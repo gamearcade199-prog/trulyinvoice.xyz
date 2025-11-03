@@ -29,6 +29,12 @@ export default function RegisterPage() {
       return
     }
 
+    // Validate password strength
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters long')
+      return
+    }
+
     setIsLoading(true)
 
     try {
@@ -44,41 +50,95 @@ export default function RegisterPage() {
         }
       })
 
-      if (authError) throw authError
+      if (authError) {
+        // Provide user-friendly error messages
+        if (authError.message.includes('already registered')) {
+          throw new Error('This email is already registered. Please sign in instead.')
+        }
+        throw authError
+      }
 
       // Set up free subscription for new user
       if (authData.user) {
         // Link any temporary invoices to the new user
-        await linkTempInvoicesToUser(authData.user.id)
-        
-        // Call backend to set up free plan subscription
         try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/setup-user`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              user_id: authData.user.id,
-              email: formData.email,
-              full_name: formData.fullName,
-              company_name: formData.companyName
+          await linkTempInvoicesToUser(authData.user.id)
+        } catch (linkError) {
+          console.error('Error linking temp invoices:', linkError)
+          // Non-critical, continue
+        }
+        
+        // Call backend to set up free plan subscription with retry logic
+        let setupSuccess = false
+        let retryCount = 0
+        const maxRetries = 3
+        
+        while (!setupSuccess && retryCount < maxRetries) {
+          try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/setup-user`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                user_id: authData.user.id,
+                email: formData.email,
+                full_name: formData.fullName,
+                company_name: formData.companyName
+              })
             })
-          })
-          
-          if (!response.ok) {
-            console.error('Failed to set up user subscription')
+            
+            if (response.ok) {
+              setupSuccess = true
+            } else {
+              const errorData = await response.json().catch(() => ({}))
+              console.error('Subscription setup failed:', errorData)
+              retryCount++
+              
+              if (retryCount < maxRetries) {
+                // Wait before retrying (exponential backoff)
+                await new Promise(resolve => setTimeout(resolve, 1000 * retryCount))
+              }
+            }
+          } catch (setupError) {
+            console.error('Error setting up subscription:', setupError)
+            retryCount++
+            
+            if (retryCount < maxRetries) {
+              await new Promise(resolve => setTimeout(resolve, 1000 * retryCount))
+            }
           }
-        } catch (setupError) {
-          console.error('Error setting up subscription:', setupError)
-          // Don't block registration if subscription setup fails
+        }
+        
+        if (!setupSuccess) {
+          // Still allow user to continue - they can use the app
+          console.warn('Subscription setup failed after retries, but user account created')
         }
       }
 
       // Redirect to dashboard
       window.location.href = '/dashboard'
     } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.')
+      console.error('Registration error:', err)
+      
+      // Provide user-friendly error messages
+      let errorMessage = 'Registration failed. Please try again.'
+      
+      if (err.message) {
+        if (err.message.includes('already registered')) {
+          errorMessage = 'This email is already registered. Please sign in instead.'
+        } else if (err.message.includes('invalid email')) {
+          errorMessage = 'Please enter a valid email address.'
+        } else if (err.message.includes('weak password')) {
+          errorMessage = 'Please use a stronger password (at least 8 characters).'
+        } else if (err.message.includes('network')) {
+          errorMessage = 'Network error. Please check your connection and try again.'
+        } else {
+          errorMessage = err.message
+        }
+      }
+      
+      setError(errorMessage)
       setIsLoading(false)
     }
   }
@@ -201,7 +261,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
             >
               {isLoading ? (
                 <>

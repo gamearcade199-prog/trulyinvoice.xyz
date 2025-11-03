@@ -137,27 +137,64 @@ async def setup_new_user(
             "updated_at": now
         }
         
-        # Insert into Supabase
-        response = supabase.table("subscriptions").insert([subscription_data]).execute()
-        
-        if response.data:
-            new_subscription = response.data[0]
-            print(f"📝 New user registered in Supabase: {request.user_id} ({request.email})")
+        # Insert into Supabase using upsert to handle duplicates gracefully
+        try:
+            response = supabase.table("subscriptions").upsert(
+                subscription_data,
+                on_conflict='user_id',
+                ignore_duplicates=False
+            ).execute()
             
-            return UserRegistrationResponse(
-                success=True,
-                message=f"Free plan activated! You have 10 scans per month.",
-                subscription={
-                    "tier": new_subscription.get("tier", "free"),
-                    "status": new_subscription.get("status", "active"),
-                    "scans_used": new_subscription.get("scans_used_this_period", 0),
-                    "scans_limit": 10,  # Free plan limit
-                    "period_start": new_subscription.get("current_period_start"),
-                    "period_end": new_subscription.get("current_period_end")
-                }
-            )
-        else:
-            raise Exception("Failed to insert subscription into Supabase")
+            if response.data:
+                new_subscription = response.data[0]
+                logger.info(f"New user registered: {request.user_id[:8]}... ({request.email})")
+                
+                return UserRegistrationResponse(
+                    success=True,
+                    message=f"Free plan activated! You have 10 scans per month.",
+                    subscription={
+                        "tier": new_subscription.get("tier", "free"),
+                        "status": new_subscription.get("status", "active"),
+                        "scans_used": new_subscription.get("scans_used_this_period", 0),
+                        "scans_limit": 10,  # Free plan limit
+                        "period_start": new_subscription.get("current_period_start"),
+                        "period_end": new_subscription.get("current_period_end")
+                    }
+                )
+            else:
+                raise Exception("No data returned from subscription upsert")
+        except Exception as insert_error:
+            error_message = str(insert_error)
+            logger.error(f"Subscription upsert failed: {error_message}")
+            
+            # Check for common errors
+            if "duplicate key" in error_message.lower():
+                # If duplicate, just fetch the existing subscription
+                try:
+                    existing_response = supabase.table("subscriptions").select("*").eq("user_id", request.user_id).execute()
+                    if existing_response.data:
+                        existing_sub = existing_response.data[0]
+                        return UserRegistrationResponse(
+                            success=True,
+                            message="Subscription already exists",
+                            subscription={
+                                "tier": existing_sub.get("tier", "free"),
+                                "status": existing_sub.get("status", "active"),
+                                "scans_used": existing_sub.get("scans_used_this_period", 0),
+                                "scans_limit": 10,
+                                "period_start": existing_sub.get("current_period_start"),
+                                "period_end": existing_sub.get("current_period_end")
+                            }
+                        )
+                except:
+                    pass
+                raise Exception("User subscription already exists but couldn't fetch it")
+            elif "permission denied" in error_message.lower() or "rls" in error_message.lower() or "policy" in error_message.lower():
+                raise Exception("Database permission error. RLS policies may be blocking. Contact support.")
+            elif "violates foreign key" in error_message.lower():
+                raise Exception("User account setup incomplete. Please try again.")
+            else:
+                raise Exception(f"Failed to create subscription: {error_message}")
         
     except HTTPException:
         raise
@@ -246,46 +283,50 @@ async def setup_subscription(
 
 
 @router.get("/subscription/{user_id}")
-async def get_user_subscription(
-    user_id: str,
-    db: Session = Depends(get_db)
-):
+async def get_user_subscription(user_id: str):
     """
-    Get a user's current subscription details.
+    Get a user's current subscription details from Supabase.
     Returns subscription info or indicates if user needs setup.
     """
     try:
-        subscription = db.query(Subscription).filter(
-            Subscription.user_id == user_id
-        ).first()
+        # Query Supabase directly (not SQLite)
+        response = supabase.table("subscriptions").select("*").eq("user_id", user_id).execute()
         
-        if not subscription:
+        if not response.data or len(response.data) == 0:
             return {
                 "success": False,
                 "message": "User needs subscription setup",
                 "subscription": None
             }
         
+        subscription = response.data[0]
+        
         # Import plan config to get limits
         from app.config.plans import get_plan_config
-        plan_config = get_plan_config(subscription.tier)
+        tier = subscription.get("tier", "free")
+        plan_config = get_plan_config(tier)
         
+        scans_used = subscription.get("scans_used_this_period", 0)
+        scans_limit = plan_config["scans_per_month"]  # Direct key, not nested in 'limits'
+        
+        # Return in format expected by frontend: { success: true, subscription: {...} }
         return {
             "success": True,
             "subscription": {
-                "tier": subscription.tier,
-                "status": subscription.status,
-                "scans_used": subscription.scans_used_this_period,
-                "scans_limit": plan_config["limits"]["scans_per_month"],
-                "scans_remaining": max(0, plan_config["limits"]["scans_per_month"] - subscription.scans_used_this_period),
-                "period_start": subscription.current_period_start.isoformat(),
-                "period_end": subscription.current_period_end.isoformat(),
-                "auto_renew": subscription.auto_renew,
+                "tier": tier,
+                "status": subscription.get("status", "active"),
+                "scans_used_this_period": scans_used,  # Frontend expects this field name
+                "scans_limit": scans_limit,
+                "scans_remaining": max(0, scans_limit - scans_used),
+                "current_period_start": subscription.get("current_period_start"),
+                "current_period_end": subscription.get("current_period_end"),
+                "auto_renew": subscription.get("auto_renew", False),
                 "features": plan_config["features"]
             }
         }
         
     except Exception as e:
+        logger.error(f"Failed to get subscription for {user_id}: {e}")
         raise HTTPException(
             status_code=500,
             detail=f"Failed to get subscription: {str(e)}"

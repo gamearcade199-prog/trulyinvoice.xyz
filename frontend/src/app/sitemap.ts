@@ -37,28 +37,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.95,
     },
     {
-      url: `${baseUrl}/export/tally`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 0.95,
-    },
-    {
       url: `${baseUrl}/export/quickbooks`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
-      priority: 0.95,
+      priority: 0.90,
     },
     {
       url: `${baseUrl}/export/zoho-books`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
-      priority: 0.95,
+      priority: 0.85,
     },
     {
       url: `${baseUrl}/export/csv`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
-      priority: 0.9,
+      priority: 0.85,
     },
   ]
 

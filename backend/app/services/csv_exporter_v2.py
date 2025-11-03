@@ -67,24 +67,28 @@ class ProfessionalCSVExporterV2:
         writer.writerow(['Reference Number', invoice.get('reference_number', '-')])
         writer.writerow([])
         
-        # SECTION 2: VENDOR INFORMATION
+        # SECTION 2: VENDOR INFORMATION - ENTERPRISE-GRADE (Complete Vendor Details)
         writer.writerow(['VENDOR INFORMATION'])
         writer.writerow(['Vendor Name', invoice.get('vendor_name', 'N/A')])
-        writer.writerow(['Vendor Address', invoice.get('vendor_address', 'N/A')])
         writer.writerow(['Vendor GSTIN', invoice.get('vendor_gstin', 'N/A')])
-        writer.writerow(['Vendor PAN', invoice.get('vendor_pan', '-')])
+        writer.writerow(['Vendor PAN', invoice.get('vendor_pan', 'N/A')])
+        writer.writerow(['Vendor TAN', invoice.get('vendor_tan', '-')])
+        writer.writerow(['Vendor Address', invoice.get('vendor_address', 'N/A')])
+        writer.writerow(['Vendor State', invoice.get('vendor_state', 'N/A')])
+        writer.writerow(['Vendor Pincode', invoice.get('vendor_pincode', '-')])
+        writer.writerow(['Vendor Phone', invoice.get('vendor_phone', 'N/A')])
         writer.writerow(['Vendor Email', invoice.get('vendor_email', '-')])
-        writer.writerow(['Vendor Phone', invoice.get('vendor_phone', '-')])
         writer.writerow([])
         
-        # SECTION 3: CUSTOMER INFORMATION
+        # SECTION 3: CUSTOMER INFORMATION - ENTERPRISE-GRADE (Complete Customer Details)
         writer.writerow(['CUSTOMER INFORMATION'])
         writer.writerow(['Customer Name', invoice.get('customer_name', 'N/A')])
-        writer.writerow(['Customer Address', invoice.get('customer_address', 'N/A')])
         writer.writerow(['Customer GSTIN', invoice.get('customer_gstin', 'N/A')])
         writer.writerow(['Customer PAN', invoice.get('customer_pan', '-')])
-        writer.writerow(['Customer Email', invoice.get('customer_email', '-')])
+        writer.writerow(['Customer Address', invoice.get('customer_address', 'N/A')])
+        writer.writerow(['Customer State', invoice.get('customer_state', 'N/A')])
         writer.writerow(['Customer Phone', invoice.get('customer_phone', '-')])
+        writer.writerow(['Customer Email', invoice.get('customer_email', '-')])
         writer.writerow([])
         
         # SECTION 4: LINE ITEMS
@@ -144,31 +148,43 @@ class ProfessionalCSVExporterV2:
         writer.writerow(['TOTAL AMOUNT (₹)', f"{total:,.2f}"])
         writer.writerow([])
         
-        # SECTION 6: PAYMENT INFORMATION
-        if invoice.get('payment_method') or invoice.get('bank_account'):
-            writer.writerow(['PAYMENT INFORMATION'])
-            writer.writerow(['Payment Method', invoice.get('payment_method', '-')])
-            writer.writerow(['Bank Account', invoice.get('bank_account', '-')])
-            writer.writerow(['Bank Name', invoice.get('bank_name', '-')])
-            writer.writerow(['IFSC Code', invoice.get('ifsc_code', '-')])
-            writer.writerow(['Payment Status', invoice.get('payment_status', 'Pending')])
-            writer.writerow(['Amount Paid (₹)', invoice.get('amount_paid', '-')])
-            writer.writerow(['Balance (₹)', invoice.get('balance', '-')])
-            writer.writerow([])
+        # SECTION 6: PAYMENT INFORMATION - ENTERPRISE-GRADE (Complete Payment Details)
+        writer.writerow(['PAYMENT INFORMATION'])
+        writer.writerow(['Payment Status', invoice.get('payment_status', 'Pending')])
+        writer.writerow(['Payment Method', invoice.get('payment_method', '-')])
+        writer.writerow(['Payment Terms', invoice.get('payment_terms', '-')])
+        writer.writerow(['Payment Date', invoice.get('payment_date', '-')])
+        writer.writerow(['Payment Reference', invoice.get('payment_reference', '-')])
+        writer.writerow(['Amount Paid (₹)', f"{invoice.get('paid_amount', 0):,.2f}" if invoice.get('paid_amount') else '-'])
+        writer.writerow(['Balance Due (₹)', f"{(invoice.get('total_amount', 0) - invoice.get('paid_amount', 0)):,.2f}"  if invoice.get('total_amount') and invoice.get('paid_amount') else '-'])
+        writer.writerow([])
         
-        # SECTION 7: NOTES AND TERMS
-        if invoice.get('notes') or invoice.get('terms'):
-            writer.writerow(['NOTES & TERMS'])
-            writer.writerow(['Notes', invoice.get('notes', '-')])
-            writer.writerow(['Terms & Conditions', invoice.get('terms', '-')])
-            writer.writerow([])
+        # SECTION 7: BANKING DETAILS
+        writer.writerow(['BANKING DETAILS'])
+        writer.writerow(['Bank Account', invoice.get('bank_account', '-')])
+        writer.writerow(['Account Number', invoice.get('account_number', '-')])
+        writer.writerow(['Bank Name', invoice.get('bank_name', '-')])
+        writer.writerow(['IFSC Code', invoice.get('ifsc_code', '-')])
+        writer.writerow([])
         
-        # SECTION 8: ADDITIONAL INFORMATION
+        # SECTION 8: NOTES AND TERMS
+        writer.writerow(['NOTES & TERMS'])
+        writer.writerow(['PO Number', invoice.get('po_number', '-')])
+        writer.writerow(['Reference Number', invoice.get('reference_number', '-')])
+        writer.writerow(['Notes', invoice.get('notes', '-')])
+        writer.writerow(['Terms & Conditions', invoice.get('terms', '-')])
+        writer.writerow([])
+        
+        # SECTION 9: ADDITIONAL INFORMATION
         writer.writerow(['ADDITIONAL INFORMATION'])
-        writer.writerow(['Currency', 'INR'])
-        writer.writerow(['Language', 'English'])
-        writer.writerow(['Created Date', datetime.now().strftime('%Y-%m-%d %H:%M:%S')])
+        writer.writerow(['Currency', invoice.get('currency', 'INR')])
+        writer.writerow(['Place of Supply', invoice.get('place_of_supply', '-')])
+        writer.writerow(['Reverse Charge', 'Yes' if invoice.get('reverse_charge') else 'No'])
+        writer.writerow(['Invoice Type', invoice.get('invoice_type', 'Regular')])
+        writer.writerow(['Created Date', invoice.get('created_at', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))])
         writer.writerow(['Document Type', 'INVOICE'])
+        writer.writerow(['Export Date', datetime.now().strftime('%Y-%m-%d %H:%M:%S')])
+        writer.writerow([])
     
     def export_single_invoice(self, invoice: Dict, filename: str = None) -> str:
         """Export single invoice to CSV"""

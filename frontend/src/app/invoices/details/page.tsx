@@ -66,13 +66,20 @@ export default function InvoiceDetailsPage() {
       setLoading(true)
       console.log('🔍 Fetching invoice:', invoiceId)
       
+      // Get authentication token
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        throw new Error('You must be logged in to view invoice details')
+      }
+      
       // Use environment variable for API URL
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://trulyinvoice-backend.onrender.com'
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
         }
       })
       
@@ -98,10 +105,18 @@ export default function InvoiceDetailsPage() {
       setSaving(true)
       console.log('💾 Saving invoice changes:', editedInvoice)
       
-      const response = await fetch(`https://trulyinvoice-backend.onrender.com/api/invoices/${invoiceId}`, {
+      // Get authentication token
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        throw new Error('You must be logged in to save changes')
+      }
+      
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const response = await fetch(`${apiUrl}/api/invoices/${invoiceId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify(editedInvoice)
       })

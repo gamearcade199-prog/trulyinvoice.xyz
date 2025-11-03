@@ -21,16 +21,44 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL('https://trulyinvoice.com'),
   
-  // Basic metadata - Multi-Export Invoice Converter
+  // Basic metadata - Optimized for organic search
   title: {
-    default: 'TrulyInvoice - Convert Invoice to Excel, Tally, QuickBooks, Zoho Books | AI-Powered Converter',
-    template: '%s | TrulyInvoice - Multi-Export Invoice Converter',
+    default: 'Invoice to Excel Converter | 99% AI Accuracy | Free GST Tool',
+    template: '%s | TrulyInvoice',
   },
-  description: 'AI-powered invoice converter with high accuracy. Export to Excel, CSV, Tally ERP 9, QuickBooks India, Zoho Books. GST compliant, instant processing. Free plan available.',
+  description: 'Convert invoice PDF to Excel in seconds with 99% AI accuracy. Auto-extract vendor, GST, items, totals. FREE for 10 invoices/month. Export to QuickBooks, Zoho Books, CSV. India\'s #1 GST-compliant tool.',
   keywords: [
-    'convert invoice to excel', 'invoice to excel converter', 'AI invoice extraction', 'pdf to excel converter', 'GST invoice to excel', 'indian invoice processing',
-    'export invoice to tally', 'tally invoice import', 'quickbooks india integration', 'zoho books csv export', 'bulk csv export', 'accounting software export',
-    'invoice to tally converter', 'quickbooks invoice import', 'zoho books integration', 'csv invoice export', 'erp invoice import'
+    // Primary conversion keywords (high intent)
+    'invoice to excel converter', 'convert invoice to excel', 'pdf invoice to excel', 'invoice to excel free', 
+    'invoice to excel online', 'invoice pdf to excel converter', 'convert pdf invoice to excel', 
+    
+    // AI and accuracy (differentiators)
+    'ai invoice to excel', 'ai invoice converter', 'automatic invoice to excel', 'invoice ocr to excel',
+    'invoice data extraction', 'invoice scanning software', 'invoice text extraction',
+    
+    // India-specific (local SEO)
+    'invoice to excel india', 'gst invoice to excel', 'gst invoice converter', 'indian invoice to excel',
+    'gstin extraction tool', 'invoice converter india', 'gst compliant invoice tool',
+    
+    // Format specific
+    'invoice image to excel', 'jpg invoice to excel', 'png invoice to excel', 'scanned invoice to excel',
+    'photo invoice to excel', 'mobile invoice to excel',
+    
+    // Bulk processing
+    'bulk invoice to excel', 'multiple invoice converter', 'batch invoice processing', 'bulk invoice to csv',
+    'invoice to csv converter', 'convert invoice to csv', 'invoice csv export',
+    
+    // Accounting software integration
+    'invoice to quickbooks', 'quickbooks invoice import', 'invoice to zoho books', 'zoho books csv',
+    'invoice to accounting software', 'quickbooks iif converter', 'invoice to qbo',
+    
+    // Use case keywords
+    'invoice converter for accountants', 'invoice to excel for ca', 'vendor invoice to excel',
+    'supplier invoice converter', 'expense invoice to excel', 'bill to excel converter',
+    
+    // Feature-based
+    'invoice to excel with formulas', 'invoice to excel with gst', 'invoice to excel free trial',
+    'invoice converter no signup', 'secure invoice converter'
   ],
   
   // Author and publisher
@@ -62,26 +90,26 @@ export const metadata: Metadata = {
     },
   },
   
-  // Open Graph (for Facebook, LinkedIn) - Multi-Export focus
+  // Open Graph (for Facebook, LinkedIn) - Optimized for social sharing
   openGraph: {
     type: 'website',
     locale: 'en_IN',
     url: 'https://trulyinvoice.com',
     siteName: 'TrulyInvoice',
-    title: 'Convert Invoice to Excel, Tally, QuickBooks, Zoho Books | AI-Powered Converter',
-    description: 'Transform any invoice into Excel, Tally, QuickBooks, or Zoho Books with high accuracy. GST compliant, automatic processing. Free plan available.',
+    title: 'Invoice to Excel Converter | 99% AI Accuracy | Free GST Tool',
+    description: 'Convert invoice PDF to Excel in seconds. 99% accurate AI extraction. FREE for 10 invoices/month. Auto-extract vendor, GST, items. QuickBooks & Zoho Books support.',
     images: [
       {
         url: '/og-image-india.jpg',
         width: 1200,
         height: 630,
-        alt: 'TrulyInvoice - Convert Invoice to Excel, Tally, QuickBooks, Zoho Books',
+        alt: 'TrulyInvoice - Convert Invoice to Excel with 99% AI Accuracy',
       },
       {
         url: '/og-image-square.jpg',
         width: 1200,
         height: 1200,
-        alt: 'TrulyInvoice Logo - Multi-Export Invoice Converter',
+        alt: 'TrulyInvoice - AI-Powered Invoice Converter',
       },
     ],
   },
@@ -89,8 +117,8 @@ export const metadata: Metadata = {
   // Twitter Card
   twitter: {
     card: 'summary_large_image',
-    title: 'Convert Invoice to Excel, Tally, QuickBooks, Zoho | TrulyInvoice',
-    description: 'AI-powered invoice converter with high accuracy. Export to Excel, Tally, QuickBooks, Zoho Books. GST compliant, instant processing.',
+    title: 'Invoice to Excel Converter | 99% AI Accuracy | Free',
+    description: 'Convert invoice PDF to Excel instantly. 99% accurate AI. FREE for 10 invoices/month. GST compliant. QuickBooks & Zoho Books export.',
     creator: '@TrulyInvoice',
     images: ['/twitter-image.jpg'],
   },
@@ -199,7 +227,7 @@ export default function RootLayout({
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(advancedSEOSchemas.reviews) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(advancedSEOSchemas.howTo) }}
         />
         
         {/* FAQ Schema removed from global layout - only loaded on /faq page */}

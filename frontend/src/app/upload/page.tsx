@@ -168,21 +168,25 @@ export default function UploadPageRobust() {
           console.log('🔄 Billing period reset:', resetData.reason || 'expired')
         }
         
-        // Step 2: Fetch user's plan and page usage from database
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('plan, custom_batch_limit, pages_used_this_month, billing_period_start')
-          .eq('id', user.id)
+        // Step 2: Fetch user's subscription tier and page usage from database
+        const { data: subscriptionData, error: subscriptionError } = await supabase
+          .from('subscriptions')
+          .select('tier, status, scans_used_this_period')
+          .eq('user_id', user.id)
           .single()
         
-        if (userError) {
-          console.error('❌ Error fetching user data:', userError)
+        if (subscriptionError) {
+          console.error('❌ Error fetching subscription data:', subscriptionError)
         }
         
-        const userPlan = userData?.plan || 'Free'
+        // Get tier from subscriptions table (capitalize first letter for PLAN_LIMITS lookup)
+        const userTier = subscriptionData?.tier || 'Free'
+        const userPlan = userTier.charAt(0).toUpperCase() + userTier.slice(1).toLowerCase()
         const planLimits = PLAN_LIMITS[userPlan] || PLAN_LIMITS['Free']
-        const batchLimit = userData?.custom_batch_limit || planLimits.files
-        const pagesUsed = userData?.pages_used_this_month || 0
+        const batchLimit = planLimits.files
+        
+        // Get page usage from subscriptions table (scans_used = pages_used)
+        const pagesUsed = subscriptionData?.scans_used_this_period || 0
         const pagesRemaining = planLimits.pagesPerMonth - pagesUsed
         
         console.log(`📊 User plan: ${userPlan}`)

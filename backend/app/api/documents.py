@@ -178,6 +178,9 @@ async def process_document(document_id: str, request: Request):
                     print(f"  ✅ AI extracted: {ai_result.get('vendor_name')} - ₹{ai_result.get('total_amount'):,.2f}")
                     print(f"  📊 Fields found: {list(ai_result.keys())}")
                     
+                    # Store raw text for vendor name extraction fallback
+                    raw_text_for_vendor_detection = extracted_text if 'extracted_text' in locals() else ""
+                    
                     # Build invoice data with ONLY the fields that were extracted
                     invoice_data = {
                         "user_id": user_id,  # Always required
@@ -185,8 +188,13 @@ async def process_document(document_id: str, request: Request):
                     }
                     
                     # Add extracted fields, but exclude internal metadata, confidence scores, and error fields
-                    # Error fields: 'error', 'error_message', '_extraction_metadata' don't exist in database schema
-                    excluded_fields = {'error', 'error_message', '_extraction_metadata'}
+                    # Only exclude AI metadata and fields that truly don't belong in DB
+                    excluded_fields = {
+                        'error', 'error_message', '_extraction_metadata',
+                        # Fields that aggregate/summarize other fields (calculated fields):
+                        'total_taxable_amount', 'total_cgst_amount', 'total_sgst_amount',
+                        'due_amount'  # Use balance_due instead
+                    }
                     for key, value in ai_result.items():
                         if key not in excluded_fields and not key.startswith('_') and not key.endswith('_confidence'):
                             invoice_data[key] = value
@@ -224,6 +232,66 @@ async def process_document(document_id: str, request: Request):
                         invoice_num = str(invoice_num).strip()
                     invoice_data['invoice_number'] = invoice_num
                     
+                    # ✨ NEW: Detect if this is a consolidated invoice (multiple sub-vendors)
+                    line_items = invoice_data.get('line_items', [])
+                    if isinstance(line_items, list) and line_items:
+                        # Check if any line items have sub_vendor field
+                        sub_vendors = set()
+                        for item in line_items:
+                            if isinstance(item, dict) and item.get('sub_vendor'):
+                                sub_vendors.add(item['sub_vendor'])
+                        
+                        if sub_vendors:
+                            invoice_data['is_consolidated'] = True
+                            invoice_data['sub_vendor_count'] = len(sub_vendors)
+                            print(f"  📋 Consolidated invoice detected: {len(sub_vendors)} sub-vendors ({', '.join(list(sub_vendors)[:3])}...)")
+                            
+                            # ✨ SMART VENDOR DETECTION: If vendor_name is empty but we have sub-vendors,
+                            # extract the main vendor from document header or use first sub-vendor
+                            vendor_name = invoice_data.get('vendor_name', '').strip() if invoice_data.get('vendor_name') else ''
+                            if not vendor_name:
+                                # Try to extract from raw text (look for header/title)
+                                if raw_text_for_vendor_detection:
+                                    # Look for common patterns like "ABC TRADING AND MAI" at the top
+                                    lines = raw_text_for_vendor_detection.split('\n')[:5]  # Check first 5 lines
+                                    for line in lines:
+                                        line = line.strip()
+                                        # Look for lines with "TRADING", "COMPANY", "LTD", "PVT", etc.
+                                        if any(keyword in line.upper() for keyword in ['TRADING', 'COMPANY', 'CORPORATION', 'LTD', 'PRIVATE', 'PVT', 'INC', 'LLC']):
+                                            if len(line) > 5 and len(line) < 100:  # Reasonable company name length
+                                                vendor_name = line
+                                                print(f"  🔍 Detected main vendor from header: {vendor_name}")
+                                                break
+                                
+                                # If still empty, use descriptive name based on sub-vendors
+                                if not vendor_name:
+                                    first_sub = list(sub_vendors)[0] if sub_vendors else "UNKNOWN"
+                                    vendor_name = f"Consolidated Bill - {first_sub} + {len(sub_vendors)-1} more"
+                                    print(f"  🔧 Generated vendor name: {vendor_name}")
+                                
+                                invoice_data['vendor_name'] = vendor_name
+                        else:
+                            invoice_data['is_consolidated'] = False
+                            invoice_data['sub_vendor_count'] = 0
+                    else:
+                        invoice_data['is_consolidated'] = False
+                        invoice_data['sub_vendor_count'] = 0
+                    
+                    # ✨ FALLBACK: If vendor_name is still empty, generate from invoice number or document
+                    vendor_name = invoice_data.get('vendor_name', '').strip() if invoice_data.get('vendor_name') else ''
+                    if not vendor_name:
+                        # Try customer_name as vendor (sometimes documents are reversed)
+                        customer_name = invoice_data.get('customer_name', '').strip() if invoice_data.get('customer_name') else ''
+                        if customer_name:
+                            print(f"  🔄 Using customer_name as vendor (might be reversed): {customer_name}")
+                            invoice_data['vendor_name'] = customer_name
+                            invoice_data['customer_name'] = "Unknown Customer"
+                        else:
+                            # Last resort: use invoice number
+                            vendor_name = f"Vendor-{invoice_num}"
+                            print(f"  ⚠️  No vendor name found, using fallback: {vendor_name}")
+                            invoice_data['vendor_name'] = vendor_name
+                    
                     # Clean up other string fields to remove extra whitespace
                     string_fields = ['vendor_name', 'customer_name', 'vendor_address', 'customer_address']
                     for field in string_fields:
@@ -232,6 +300,14 @@ async def process_document(document_id: str, request: Request):
                                 invoice_data[field] = invoice_data[field].strip()
                             else:
                                 invoice_data[field] = str(invoice_data[field]).strip()
+                    
+                    # FIX DATE FIELDS: Convert empty strings to None for database
+                    date_fields = ['invoice_date', 'due_date', 'payment_date', 'created_date', 'updated_date']
+                    for field in date_fields:
+                        if field in invoice_data:
+                            value = invoice_data[field]
+                            if value == '' or value is None or (isinstance(value, str) and value.strip() == ''):
+                                invoice_data[field] = None  # NULL in database
 
                 if not invoice_data:
                     print(f"⚠️ AI extraction returned no results")

@@ -1,7 +1,7 @@
 import { CheckCircle2, Download, FileText, Users, DollarSign, X } from 'lucide-react'
 
 interface ExportSuccessModalProps {
-  exportType: 'tally' | 'quickbooks' | 'zoho' | 'csv'
+  exportType: 'quickbooks' | 'zoho' | 'csv'
   stats: {
     invoiceCount: number
     partyLedgers?: number
@@ -15,21 +15,12 @@ interface ExportSuccessModalProps {
 
 export default function ExportSuccessModal({ exportType, stats, onClose }: ExportSuccessModalProps) {
   const titles = {
-    tally: 'Tally XML Export Successful!',
     quickbooks: 'QuickBooks Export Successful!',
     zoho: 'Zoho Books Export Successful!',
     csv: 'CSV Export Successful!'
   }
 
   const importSteps = {
-    tally: [
-      'Backup your Tally company first!',
-      'Gateway of Tally → Import Data → XML',
-      'Select the downloaded XML file',
-      'Check import log for any errors',
-      'Verify vouchers: Display → Vouchers',
-      'Check ledgers: Display → Ledgers'
-    ],
     quickbooks: [
       'Backup your QuickBooks company first!',
       'File → Utilities → Import → IIF Files',

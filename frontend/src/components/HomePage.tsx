@@ -335,10 +335,10 @@ export default function HomePage() {
             </div>
             
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 dark:text-gray-50 mb-4 leading-tight">
-              Convert Invoice to Excel, Tally, QuickBooks, Zoho Books <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Instantly</span>
+              Convert Invoice to Excel with <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">99% AI Accuracy</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-600 dark:text-gray-200 mb-8 max-w-3xl mx-auto">
-              Transform any invoice into <a href="/export/excel" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Excel</a>, <a href="/export/csv" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">CSV</a>, <a href="/export/tally" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Tally</a>, <a href="/export/quickbooks" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">QuickBooks</a>, or <a href="/export/zoho-books" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Zoho Books</a> with high accuracy. AI-powered extraction with <a href="/features" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">GST compliance</a>. Process hundreds of invoices simultaneously.
+              Transform invoice PDFs into <a href="/export/excel" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Excel spreadsheets</a> instantly. Auto-extract vendor names, <a href="/features" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">GST numbers</a>, line items, totals with 99% accuracy. Export to <a href="/export/quickbooks" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">QuickBooks</a>, <a href="/export/zoho-books" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Zoho Books</a>, or <a href="/export/csv" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">CSV</a>. <strong>FREE for 10 invoices/month.</strong>
             </p>
 
             {/* Interactive Upload Zone */}
@@ -468,7 +468,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl md:text-2xl font-bold mb-3 text-gray-900 dark:text-white">3. Export Instantly</h3>
               <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 px-2">
-                Choose from <a href="/export/excel" className="text-blue-600 dark:text-blue-400 hover:underline">Excel</a>, <a href="/export/csv" className="text-blue-600 dark:text-blue-400 hover:underline">CSV</a>, <a href="/export/tally" className="text-blue-600 dark:text-blue-400 hover:underline">Tally ERP 9</a>, <a href="/export/quickbooks" className="text-blue-600 dark:text-blue-400 hover:underline">QuickBooks India</a>, or <a href="/export/zoho-books" className="text-blue-600 dark:text-blue-400 hover:underline">Zoho Books</a>. Ready for accounting software import.
+                Choose from <a href="/export/excel" className="text-blue-600 dark:text-blue-400 hover:underline">Excel</a>, <a href="/export/csv" className="text-blue-600 dark:text-blue-400 hover:underline">CSV</a>, <a href="/export/excel" className="text-blue-600 dark:text-blue-400 hover:underline">ERP 9</a>, <a href="/export/quickbooks" className="text-blue-600 dark:text-blue-400 hover:underline">QuickBooks India</a>, or <a href="/export/zoho-books" className="text-blue-600 dark:text-blue-400 hover:underline">Zoho Books</a>. Ready for accounting software import.
               </p>
             </div>
           </div>
@@ -533,7 +533,7 @@ export default function HomePage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-green-500 font-bold mt-1">✓</span>
-                    <span>Export to Excel, CSV, Tally, QuickBooks, or Zoho Books instantly</span>
+                    <span>Export to Excel, CSV QuickBooks, or Zoho Books instantly</span>
                   </li>
                 </ul>
               </div>
@@ -688,7 +688,7 @@ export default function HomePage() {
                 ))}
               </div>
               <p className="text-sm md:text-base text-gray-700 dark:text-gray-300 mb-4 italic">
-                &ldquo;The accuracy is very good. I tested it with many invoices and only had to correct a few fields. Export to <a href="/export/tally" className="text-blue-600 dark:text-blue-400 hover:underline">Tally works smoothly</a>. Highly recommended!&rdquo;
+                &ldquo;The accuracy is very good. I tested it with many invoices and only had to correct a few fields. Export to <a href="/export/excel" className="text-blue-600 dark:text-blue-400 hover:underline">works smoothly</a>. Highly recommended!&rdquo;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm md:text-base">
@@ -907,7 +907,7 @@ export default function HomePage() {
             </div>
 
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3 md:mt-4">
-              💡 You can export this invoice to Excel, Tally, or other formats from your dashboard
+              💡 You can export this invoice to Excel or other formats from your dashboard
             </p>
           </div>
         </div>
