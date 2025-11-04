@@ -3,13 +3,15 @@ Bulk Export API Router - Multiple invoice exports with Professional Exporters
 PDF Export has been disabled
 """
 import json
+import os
+from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List
 from app.services.supabase_helper import supabase
 from app.services.accountant_excel_exporter import AccountantExcelExporter
-from app.services.csv_exporter_v2 import ProfessionalCSVExporterV2
+from app.services.excel_exporter import export_invoices
 from app.auth import get_current_user
 
 router = APIRouter()
@@ -69,48 +71,38 @@ async def bulk_export_pdf(request: BulkExportRequest, current_user_id: str = Dep
 
 @router.post("/export-csv")
 async def bulk_export_csv(request: BulkExportRequest, current_user_id: str = Depends(get_current_user)):
-    """Bulk export multiple invoices to CSV"""
+    """Export invoices to Excel with dynamic column widths"""
     try:
-        print(f"🔵 CSV Export request received for user: {current_user_id}")
-        print(f"   Invoice IDs: {request.invoice_ids}")
-        
         # Get invoices
         invoice_ids = [str(inv_id) for inv_id in request.invoice_ids]
         invoices_response = supabase.table("invoices").select("*").in_("id", invoice_ids).execute()
         invoices = invoices_response.data
         
         if not invoices:
-            print(f"❌ No invoices found for IDs: {invoice_ids}")
             raise HTTPException(status_code=404, detail="No invoices found")
         
-        print(f"📊 Bulk Export-CSV: Processing {len(invoices)} invoices")
-        
-        # Manually parse line_items from JSON string to list
-        for idx, invoice in enumerate(invoices):
+        # Parse line_items JSON
+        for invoice in invoices:
             if isinstance(invoice.get('line_items'), str):
                 try:
                     invoice['line_items'] = json.loads(invoice['line_items'])
-                except json.JSONDecodeError:
+                except:
                     invoice['line_items'] = []
-            print(f"   Invoice {idx+1}: {invoice.get('vendor_name', 'Unknown')} - {invoice.get('invoice_number', 'N/A')}")
         
-        # Export to CSV
-        exporter = ProfessionalCSVExporterV2()
-        csv_filename = exporter.export_invoices_bulk(invoices)
-        
-        print(f"✅ Bulk CSV export successful: {csv_filename}")
+        # Export to Excel with dynamic columns
+        excel_path = export_invoices(invoices)
         
         return FileResponse(
-            path=csv_filename,
-            filename=f"invoices_bulk_{len(invoices)}.csv",
-            media_type="text/csv"
+            path=excel_path,
+            filename=f"invoices_{datetime.now().strftime('%Y-%m-%d')}.xlsx",
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
         
     except Exception as e:
-        print(f"❌ Bulk Export-CSV Error: {str(e)}")
+        print(f"❌ Export Error: {str(e)}")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"CSV Export failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
 
 
 # Note: /export-pdf now uses the new HTMLPDFExporter by default
